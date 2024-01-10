@@ -210,7 +210,6 @@ async function updateBalls(grpId) {
     let updateWicket = await groupModel.findByIdAndUpdate({ _id: grpId });
     let ballCountForWicket = updateWicket.ball;
     let tableId = updateWicket.tableId;
-
     if (ballCountForWicket < 6 && !updateWicket.isMatchOver) {
       let updatedPlayers = updateWicket.updatedPlayers.map((player) => {
         if (!player.hit && player.isBot === false) {
@@ -275,13 +274,22 @@ async function updateBalls(grpId) {
       }
 
       //____________________________"profit" when all 5 players came so entryFee- prize remaining profit__________
-
+      const currentDt = new Date()
+      const currentDate = currentDt.getDate()
+      const currentMonth = currentDt.getMonth();
+      const currentYear = currentDt.getFullYear()
+      console.log(currentDate,"====currentDate===",currentMonth,"===currentMonth====",currentYear,"========currentYear");
       if (count === 5) {
         // const tournamentData = await tournamentModel.findById({ _id: tableId });
+       
         const lastDayProfit = await profitLossModel.findOne(
           { gameType: "cricket" },
           { sort: { createdAt: -1 } }
         );
+        const lastUpdatedDate = lastDayProfit.createdAt.getDate();
+        const updatedMonth = lastDayProfit.createdAt.getMonth();
+        const updatedYear = lastDayProfit.createdAt.getFullYear();
+        console.log(lastUpdatedDate,"===lastUpdatedDate===",updatedYear,"=====updatedYear====", updatedMonth,"==========updatedMonth");
         const currentDate = moment();
         const currentDateFormat = currentDate.format("DD-MM-YYYY");
         // if (tournamentData) {
@@ -296,22 +304,51 @@ async function updateBalls(grpId) {
           const profitData = {
             gameType: "cricket",
             groupId: [grpId],
-            currentTime: currentDateFormat,
             profit: profit,
+            loss: 0,
+            currentTime: currentDateFormat,
             fullDayProfit: profit,
-            fullMonthProfit: lastDayProfit.fullMonthProfit,
-            fullYearProfit: lastDayProfit.fullYearProfit,
+            fullMonthProfit: profit,
+            fullYearProfit: profit,
           };
           const createProfit = await profitLossModel.create(profitData);
-        }else if (currentDateFormat !== lastDayProfit.currentTime) {
+        }else if (currentYear !== updatedYear) {
           const profitData = {
             gameType: "cricket",
             groupId: [grpId],
-            currentTime: currentDateFormat,
             profit: profit,
+            currentTime: currentDateFormat,
             fullDayProfit: profit,
-            fullMonthProfit: lastDayProfit.fullMonthProfit,
-            fullYearProfit: lastDayProfit.fullYearProfit,
+            fullMonthProfit: profit,
+            fullYearProfit: profit,
+            // fullDayLoss:0 ,
+            // fullMonthLoss:lastDayProfit.fullMonthLoss,
+            // fullYearLoss:lastDayProfit.fullYearLoss
+          };
+          const createProfit = await profitLossModel.create(profitData);
+        }else if (currentMonth !== updatedMonth) {
+          const profitData = {
+            gameType: "cricket",
+            groupId: [grpId],
+            profit: profit,
+            currentTime: currentDateFormat,
+            fullDayProfit: profit,
+            fullMonthProfit: profit,
+            fullYearProfit: lastDayProfit.profit + parseInt(profit),
+            fullYearLoss:lastDayProfit.fullYearLoss
+          };
+          const createProfit = await profitLossModel.create(profitData);
+         } else if (currentDate !== lastUpdatedDate) {
+          const profitData = {
+            gameType: "cricket",
+            groupId: [grpId],
+            profit: profit,
+            currentTime: currentDateFormat,
+            fullDayProfit: profit,
+            fullMonthProfit: lastDayProfit.profit + parseInt(profit),
+            fullYearProfit: lastDayProfit.profit + parseInt(profit),
+            fullMonthLoss:lastDayProfit.fullMonthLoss,
+            fullYearLoss:lastDayProfit.fullYearLoss
           };
           const createProfit = await profitLossModel.create(profitData);
         } else {
@@ -376,20 +413,13 @@ async function updateBalls(grpId) {
           .findOne({ gameType: "cricket" })
           .sort({ createdAt: -1 })
           .exec();
-
+          const lastUpdatedDate = lastDayProfit.createdAt.getDate();
+          const updatedMonth = lastDayProfit.createdAt.getMonth();
+          const updatedYear = lastDayProfit.createdAt.getFullYear();
+          console.log(lastUpdatedDate,"===lastUpdatedDate===",updatedYear,"=====updatedYear====", updatedMonth,"==========updatedMonth");
         const currentDate = moment();
         const currentDateFormat = currentDate.format("DD-MM-YYYY");
-        // console.log("============lastDayProfit", lastDayProfit);
-        // console.log(
-        //   "========lastDayProfit.currentTime",
-        //   lastDayProfit.currentTime
-        // );
-        // console.log("==============currentDateFormat", currentDateFormat);
-        // console.log(
-        //   "===========check the equality",
-        //   currentDateFormat === lastDayProfit.currentTime
-        // );
-        // if (tournamentData) {
+       
         const entryFee = updateTable.entryFee;
         let totalEntryFee = entryFee * count;
         console.log(totalEntryFee, "__________totalEntryFee");
@@ -413,25 +443,52 @@ async function updateBalls(grpId) {
               groupId: [grpId],
               profit: 0,
               loss: loss,
-              currentTime: currentDateFormat,
-              fullDayProfit: profit,
-              fullMonthProfit: lastDayProfit.fullMonthProfit,
-              fullYearProfit: lastDayProfit.fullYearProfit,
+              currentTime: currentDateFormat
             };
             const createProfit = await profitLossModel.create(profitData);
-          }else if (currentDateFormat !== lastDayProfit.currentTime) { // Update profitLossModel
+          }else if (currentYear !== updatedYear) { // Update profitLossModel
             const profitData = {
               gameType: "cricket",
               groupId: [grpId],
               profit: 0,
               loss: loss,
               currentTime: currentDateFormat,
-              fullDayProfit: profit,
-              fullMonthProfit: lastDayProfit.fullMonthProfit,
-              fullYearProfit: lastDayProfit.fullYearProfit,
+              // fullDayProfit: 0 ,
+              // fullMonthProfit: lastDayProfit.fullMonthProfit,
+              // fullYearProfit: lastDayProfit.fullYearProfit,
+              fullDayLoss:loss,
+              fullMonthLoss:loss,
+              fullYearLoss:loss
             };
             const createProfit = await profitLossModel.create(profitData);
-          } else {
+          } else if (currentMonth !== updatedMonth) { // Update profitLossModel
+            const profitData = {
+              gameType: "cricket",
+              groupId: [grpId],
+              profit: 0,
+              loss: loss,
+              currentTime: currentDateFormat,
+              fullYearProfit: lastDayProfit.fullYearProfit,
+              fullDayLoss:loss,
+              fullMonthLoss:loss,
+              fullYearLoss:lastDayProfit.loss + parseInt(loss)
+            };
+            const createProfit = await profitLossModel.create(profitData)
+          }else if (currentDate !== lastUpdatedDate) { // Update profitLossModel
+            const profitData = {
+              gameType: "cricket",
+              groupId: [grpId],
+              profit: 0,
+              loss: loss,
+              currentTime: currentDateFormat,
+              fullDayLoss:loss,
+              fullMonthLoss:lastDayProfit.loss + parseInt(loss),
+              fullYearLoss:lastDayProfit.loss + parseInt(loss),
+              fullYearProfit: lastDayProfit.fullYearProfit,
+              fullMonthProfit: lastDayProfit.fullMonthProfit
+            };
+            const createProfit = await profitLossModel.create(profitData);
+          }else {
             await profitLossModel.updateOne(
               {
                 gameType: "cricket", // Assuming you want to filter by game type
@@ -496,22 +553,50 @@ async function updateBalls(grpId) {
               loss: 0,
               currentTime: currentDateFormat,
               fullDayProfit: profit,
-              fullMonthProfit: lastDayProfit.fullMonthProfit,
-              fullYearProfit: lastDayProfit.fullYearProfit,
+              fullMonthProfit: profit,
+              fullYearProfit: profit,
             };
             const createProfit = await profitLossModel.create(profitData);
-          }else if (currentDateFormat !== lastDayProfit.currentTime) {
+          }else if (currentYear !== updatedYear) {
             const profitData = {
               gameType: "cricket",
               groupId: [grpId],
               profit: profit,
               currentTime: currentDateFormat,
               fullDayProfit: profit,
-              fullMonthProfit: lastDayProfit.fullMonthProfit,
-              fullYearProfit: lastDayProfit.fullYearProfit,
+              fullMonthProfit: profit,
+              fullYearProfit: profit,
+              // fullDayLoss:0 ,
+              // fullMonthLoss:lastDayProfit.fullMonthLoss,
+              // fullYearLoss:lastDayProfit.fullYearLoss
             };
             const createProfit = await profitLossModel.create(profitData);
-          } else {
+          }else if (currentMonth !== updatedMonth) {
+            const profitData = {
+              gameType: "cricket",
+              groupId: [grpId],
+              profit: profit,
+              currentTime: currentDateFormat,
+              fullDayProfit: profit,
+              fullMonthProfit: profit,
+              fullYearProfit: lastDayProfit.profit + parseInt(profit),
+              fullYearLoss:lastDayProfit.fullYearLoss
+            };
+            const createProfit = await profitLossModel.create(profitData);
+           } else if (currentDate !== lastUpdatedDate) {
+            const profitData = {
+              gameType: "cricket",
+              groupId: [grpId],
+              profit: profit,
+              currentTime: currentDateFormat,
+              fullDayProfit: profit,
+              fullMonthProfit: lastDayProfit.profit + parseInt(profit),
+              fullYearProfit: lastDayProfit.profit + parseInt(profit),
+              fullMonthLoss:lastDayProfit.fullMonthLoss,
+              fullYearLoss:lastDayProfit.fullYearLoss
+            };
+            const createProfit = await profitLossModel.create(profitData);
+          }else {
             await profitLossModel.updateOne(
               {
                 gameType: "cricket",
