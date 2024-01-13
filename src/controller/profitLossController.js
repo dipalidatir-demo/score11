@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const profitLossModel = require("../model/profitLossModel")
-
+const moment = require("moment");
 
 const getProfitData = async function (req, res) {
   try {
@@ -56,4 +56,28 @@ const getLossData = async function (req, res) {
   }
 
 }
-module.exports = {getProfitData,getLossData};
+
+//___________________________get daily profit__________________________
+
+const getDailyProfit = async function(req,res){
+  try{
+    const currentDateFormat = req.query.date;
+    console.log(currentDateFormat, "==================querydata");
+     // Use moment to format the date
+     const formattedDate = moment(currentDateFormat, 'YYYY-MM-DD').format('DD-MM-YYYY');
+
+    // const currentDate = moment();
+    // const currentDateFormat = currentDate.format("DD-MM-YYYY");
+    const getDailyProfitAndLoss = await profitLossModel.findOne({currentTime:formattedDate});
+    console.log(getDailyProfitAndLoss,"=================getDailyProfitAndLoss");
+    if(!getDailyProfitAndLoss || getDailyProfitAndLoss == null){
+      console.log("not found");
+      return res.status(200).send({status:true,data:{fullDayProfit:0}})
+    }
+    return res.status(200).send({status:true, data:getDailyProfitAndLoss})
+  }catch(error){
+    console.log(error);
+    return res.status(500).send({status:false, message:error.message});
+  }
+}
+module.exports = {getProfitData,getLossData,getDailyProfit};

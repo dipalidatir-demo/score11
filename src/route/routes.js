@@ -161,6 +161,8 @@ Router.get("/getProfitData", profitLossController.getProfitData);
 
 Router.get("/getLossData", profitLossController.getLossData);
 
+Router.get("/getDailyProfitAndLoss", profitLossController.getDailyProfit);
+
 //************ checking your end point valid or not */
 
 Router.all("/**", function (req, res) {
