@@ -43,6 +43,10 @@ const tournamentSchema = new mongoose.Schema(
     maxTime: {
       type: Number,
     },
+    gameName:{
+      type:String,
+      default:"Cricket"
+    },
     Users: [],
     createdTime: {
       type: Date,

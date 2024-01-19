@@ -60,23 +60,30 @@ const adminLoggedin = async function (req, res) {
 
 const getAllTable = async function (req, res) {
   try {
-    const cricketData = await cricketModel.aggregate([
-      { $sort: { createdAt: -1, entryFee:1 } },
+    let cricketData = await cricketModel.aggregate([
+      { $sort: { createdAt: -1, entryFee: 1 } },
       { $limit: 25 },
     ]);
 
-    const snakeLadderData = await snakeLadderModel.aggregate([
-      { $sort: { createdAt: -1, entryFee:1 } },
+    // cricketData = cricketData.map(table => ({ ...table, gameType: "Cricket" }));
+
+    let snakeLadderData = await snakeLadderModel.aggregate([
+      { $sort: { createdAt: -1, entryFee: 1 } },
       { $limit: 25 },
     ]);
 
-    const ticTacToeData = await ticTacToeModel.aggregate([
-      { $sort: { createdAt: -1, entryFee:1 } },
+    // snakeLadderData = snakeLadderData.map(table => ({ ...table, gameType: "SnakeLadder" }));
+
+    let ticTacToeData = await ticTacToeModel.aggregate([
+      { $sort: { createdAt: -1, entryFee: 1 } },
       { $limit: 25 },
     ]);
+
+    // ticTacToeData = ticTacToeData.map(table => ({ ...table, gameType: "TicTacToe" }));
 
     const allTournaments = [...cricketData, ...snakeLadderData, ...ticTacToeData];
 
+    // console.log(allTournaments, "=======allTournaments");
     return res.status(200).send(allTournaments);
   } catch (error) {
     return res.status(500).send({ status: false, message: error.message });

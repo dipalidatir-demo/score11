@@ -73,6 +73,14 @@ const SnakeLadderGroupSchema = new mongoose.Schema(
     gameEndTime: {
       type: Date,
     },
+    totalPlayerInGrp:{
+      type:Number,
+      default:0
+    },
+    totalBotInGrp:{
+      type:Number,
+      default:0
+    },
   },
   { strict: false }
 );

@@ -12,12 +12,59 @@ const {
   createGroup,
   createGroupByAdmin
 } = require("../reusableCodes/reusablecode");
+const moment = require('moment');
 let currentDate = new Date();
 let totalBot = 9 ;
 //________________________________________create tournaments for admin panel________________
 
+// const tournamentsByAdmin = async function (req, res) {
+//    try {
+    // let {
+    //   entryFee,
+    //   prizeAmount,
+    //   players,
+    //   status,
+    //   maxTime,
+    //   maxPlayers,
+    //   endTime,
+    //   rank,
+    //   rank1,
+    //   rank2,
+    //   rank3,
+    //   rank4,
+    //   tableByAdmin,
+    //   date,
+    //   time
+    // } = req.body;
+//  console.log(req.body,"====================body data");
+//     endTime = Date.now() + parseInt(req.body.maxTime) * 60 * 1000;
+//     entryFee = parseInt(entryFee);
+//     maxPlayers = parseInt(maxPlayers);
+//     req.body.endTime = endTime;
+//     req.body.tableByAdmin = true;
+//     req.body.maxPlayers = maxPlayers;
+//     req.body.entryFee = entryFee;
+
+//     let tableByAdmin1I = await tournamentModel.create(req.body);
+//     let tableId1I = tableByAdmin1I._id;
+//     console.log(tableId1I,"_______________tableId1I");
+
+//     return res.status(201).send({
+//       status: true,
+//       message: "Success",
+//       data: tableByAdmin1I,
+//     });
+//   } catch (error) {
+//     return res.status(500).send({
+//       status: false,
+//       message: error.message,
+//     });
+//   }
+// };
+
+//_______________________using node crone__________________________
 const tournamentsByAdmin = async function (req, res) {
-   try {
+  try {
     let {
       entryFee,
       prizeAmount,
@@ -26,35 +73,63 @@ const tournamentsByAdmin = async function (req, res) {
       maxTime,
       maxPlayers,
       endTime,
-      rank,
-      rank1,
-      rank2,
-      rank3,
-      rank4,
       tableByAdmin,
+      date,
+      time
     } = req.body;
- console.log(req.body);
-    endTime = Date.now() + parseInt(req.body.maxTime) * 60 * 1000;
+
+    console.log(req.body, "============body data");
+
     entryFee = parseInt(entryFee);
     maxPlayers = parseInt(maxPlayers);
+    maxTime = parseInt(maxTime);
+    endTime = Date.now() + maxTime * 60 * 1000;
     req.body.endTime = endTime;
-    req.body.tableByAdmin = true;
-    req.body.maxPlayers = maxPlayers;
-    req.body.entryFee = entryFee;
 
-    let tableByAdmin1I = await tournamentModel.create(req.body);
-    let tableId1I = tableByAdmin1I._id;
-    console.log(tableId1I,"_______________tableId1I");
+    // Use moment for flexible date and time parsing
+    const tournamentStartTime = moment(`${date} ${time}`, 'YYYY-MM-DD HH:mm').toDate();
 
-    setTimeout(function () {
-      createGroupByAdmin(tableId1I);
-      console.log(tableByAdmin1I);
-    }, endTime);
+    // Calculate the delay in milliseconds until the tournament starts
+    const delay = tournamentStartTime - Date.now();
+    console.log(tournamentStartTime, "========tournamentStartTime====", delay);
+
+    if (delay < 0) {
+      return res.status(400).send({
+        status: false,
+        message: "Invalid date and time. Please provide a future date and time.",
+      });
+    }
+
+    // Flag to track whether tournament and group creation have occurred
+    // let tournamentAndGroupCreated = false;
+
+    // Schedule the tournament creation using node-cron
+    cron.schedule(moment(tournamentStartTime).format('mm HH DD MM *'), async () => {
+      try {
+        // Update request body with user-provided values
+        console.log(tournamentStartTime, "========tournamentStartTime====", delay);
+        req.body.tableByAdmin = true;
+        req.body.maxPlayers = maxPlayers;
+        req.body.entryFee = entryFee;
+
+        let tableByAdmin1 = await tournamentModel.create(req.body);
+        let tableId1 = tableByAdmin1._id;
+
+        console.log('Tournament created successfully!==', tableId1);
+          setTimeout(function () {
+            createGroupByAdmin(tableId1);
+                  console.log(tableByAdmin1,"===========create cricket group setTimeOut", new Date().getMinutes());
+                }, maxTime + 60 * 1000);
+        // }
+
+      } catch (error) {
+        console.error('Error creating tournament:', error.message);
+      }
+    });
 
     return res.status(201).send({
       status: true,
-      message: "Success",
-      data: tableByAdmin1I,
+      message: "Tournament creation scheduled",
     });
   } catch (error) {
     return res.status(500).send({

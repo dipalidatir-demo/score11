@@ -19,6 +19,7 @@ const cron = require("node-cron");
 //_____crete group as per the admin_______
 
 const createGroupByAdmin = async function (tableId) {
+  console.log(tableId,"=======tableId in created group functionh");
   if (tableId != undefined) {
     let table = await tournamentModel.findOne({ _id: tableId });
 
@@ -171,11 +172,17 @@ async function startMatch(grpId, group) {
       botType: name.botType,
     }));
     console.log("result", result);
+    let totalBot = result.filter(players => players.isBot === true);
+    totalBot = totalBot.length ;
+    let totalRealPlayres = result.filter(players => players.isBot === false);
+    totalRealPlayres = totalRealPlayres.length ;
     const matchData = await groupModel.findOneAndUpdate(
       { _id: grpId },
       {
         updatedPlayers: result,
         $set: {
+          totalBotInGrp:totalBot,
+          totalPlayerInGrp:totalRealPlayres,
           start: true,
           currentBallTime: Date.now(),
           nextBallTime: Date.now() + 1 * 7 * 1000,
@@ -261,17 +268,17 @@ async function updateBalls(grpId) {
       players[3].prize = prizeDecimal.times(0.05).toNumber();
 
       let count = 0;
-      let totalPlayerInGrp = 0;
-      let totalBotInGrp = 0;
+      let totalPlayerInGrp = updateWicket.totalPlayerInGrp;
+      let totalBotInGrp = updateWicket.totalBotInGrp;
 
-      for (let i = 0; i < players.length; i++) {
-        if (players[i].isBot === false) {
-          count++;
-          totalPlayerInGrp++;
-        } else {
-          totalBotInGrp++;
-        }
-      }
+      // for (let i = 0; i < players.length; i++) {
+      //   if (players[i].isBot === false) {
+      //     count++;
+      //     totalPlayerInGrp++;
+      //   } else {
+      //     totalBotInGrp++;
+      //   }
+      // }
 
       //____________________________"profit" when all 5 players came so entryFee- prize remaining profit__________
       const currentDt = new Date()
@@ -279,7 +286,7 @@ async function updateBalls(grpId) {
       const currentMonth = currentDt.getMonth();
       const currentYear = currentDt.getFullYear()
       console.log(currentDate,"====currentDate===",currentMonth,"===currentMonth====",currentYear,"========currentYear");
-      if (count === 5) {
+      if (totalPlayerInGrp === 5) {
         // const tournamentData = await tournamentModel.findById({ _id: tableId });
        
         const lastDayProfit = await profitLossModel.findOne(
@@ -377,8 +384,8 @@ async function updateBalls(grpId) {
           {
             $inc: {
               profit: profit,
-              totalBotInGrp: totalBotInGrp,
-              totalPlayerInGrp: totalPlayerInGrp,
+              // totalBotInGrp: totalBotInGrp,
+              // totalPlayerInGrp: totalPlayerInGrp,
             },
             $set: { updatedPlayers: players },
             isWicketUpdated: true,
@@ -407,7 +414,7 @@ async function updateBalls(grpId) {
 
       //_______________________loss when not came 5 players and win the player so entry-prize calculate loss ______________________
 
-      if (count < 5) {
+      if (totalPlayerInGrp < 5) {
         // const tournamentData = await tournamentModel.findById({ _id: tableId });
         const lastDayProfit = await profitLossModel
           .findOne({ gameType: "cricket" })
@@ -421,7 +428,7 @@ async function updateBalls(grpId) {
         const currentDateFormat = currentDate.format("DD-MM-YYYY");
        
         const entryFee = updateTable.entryFee;
-        let totalEntryFee = entryFee * count;
+        let totalEntryFee = entryFee * parseInt(totalPlayerInGrp);
         console.log(totalEntryFee, "__________totalEntryFee");
         let winPrizeOfUser = 0;
 
@@ -515,8 +522,8 @@ async function updateBalls(grpId) {
             {
               $inc: {
                 loss: loss,
-                totalBotInGrp: totalBotInGrp,
-                totalPlayerInGrp: totalPlayerInGrp,
+                // totalBotInGrp: totalBotInGrp,
+                // totalPlayerInGrp: totalPlayerInGrp,
               },
               $set: { updatedPlayers: players },
               isWicketUpdated: true,
@@ -624,8 +631,8 @@ async function updateBalls(grpId) {
             {
               $inc: {
                 profit: profit,
-                totalBotInGrp: totalBotInGrp,
-                totalPlayerInGrp: totalPlayerInGrp,
+                // totalBotInGrp: totalBotInGrp,
+                // totalPlayerInGrp: totalPlayerInGrp,
               },
               $set: { updatedPlayers: players },
               isWicketUpdated: true,
@@ -845,6 +852,7 @@ function runUpdateBalls(grpId) {
 //________________________________________________for snakeLadder________________________________________________
 
 const createGroupForSnakeLadder = async function (tableId) {
+  console.log(tableId,"============create gorup in snk");
   if (tableId != undefined) {
     let table = await snkTournamentModel.findOne({ _id: tableId });
 
@@ -925,11 +933,21 @@ async function startMatchForSnkLdr(grpId, group) {
     }));
     console.log("result", result);
 
+    let totalBot = result.filter(players => players.isBot === true);
+    totalBot = totalBot.length ;
+    let totalRealPlayres = result.filter(players => players.isBot === false);
+    totalRealPlayres = totalRealPlayres.length ;
+
     const matchData = await groupModelForSnakeLadder.findOneAndUpdate(
       { _id: grpId },
       {
         updatedPlayers: result,
-        $set: { start: true, gameEndTime: Date.now() + 2 * 60 * 1000 },
+        $set: {
+               totalBotInGrp:totalBot,
+               totalPlayerInGrp:totalRealPlayres, 
+               start: true, 
+               gameEndTime: Date.now() + 2 * 60 * 1000 
+              },
       },
       { new: true, setDefaultsOnInsert: true }
     );
@@ -984,7 +1002,7 @@ async function checkTurn(groupId) {
       if (timeDiff <= 0 || reachTheDestination) {
         let overTheGame = await snkTournamentModel.findByIdAndUpdate(
           { _id: tableId },
-          { isGameOverForTable: true },
+          { isMatchOverForTable: true },
           { new: true }
         );
         let entryFee = overTheGame.entryFee;
@@ -1278,6 +1296,7 @@ async function overTheGame(groupId) {
 //_______________________________for TicTacToe_____________________________________________
 
 const createGroupForticTacToe = async function (tableId) {
+  console.log(tableId,"============create gorup in tictactoe");
   if (tableId != undefined) {
     let table = await ticTacToeTournamentModel.findOne({ _id: tableId });
 
@@ -1342,11 +1361,22 @@ async function startMatchForticTacToe(grpId, group) {
       movement: "",
     }));
     console.log("result", result);
+
+    let totalBot = result.filter(players => players.isBot === true);
+    totalBot = totalBot.length ;
+    let totalRealPlayres = result.filter(players => players.isBot === false);
+    totalRealPlayres = totalRealPlayres.length ;
+
     let matchData = await ticTacToeGroupModel.findOneAndUpdate(
       { _id: grpId },
       {
         updatedPlayers: result,
-        $set: { start: true, gameEndTime: Date.now() + 3 * 60 * 1000 },
+        $set: { 
+                totalBotInGrp:totalBot,
+                totalPlayerInGrp:totalRealPlayres,
+                start: true, 
+                gameEndTime: Date.now() + 3 * 60 * 1000 
+              },
       },
       { new: true, setDefaultsOnInsert: true }
     );

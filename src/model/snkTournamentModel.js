@@ -54,6 +54,10 @@ const snkTournamentSchema = new mongoose.Schema(
     maxTime: {
       type: Number,
     },
+    gameName:{
+      type:String,
+      default:"SnakeLadder"
+    },
     Users: [],
     createdTime: {
       type: Date,
@@ -63,7 +67,7 @@ const snkTournamentSchema = new mongoose.Schema(
     endTime: {
       type: Date,
     },
-    isGameOverForTable: {
+    isMatchOverForTable: {
       type: Boolean,
       default: false,
     },

@@ -43,6 +43,10 @@ const ticTacToeTournamentSchema = new mongoose.Schema(
     maxTime: {
       type: Number,
     },
+    gameName:{
+      type:String,
+      default:"TicTacToe"
+    },
     Users: [],
     createdTime: {
       type: Date,
@@ -52,7 +56,7 @@ const ticTacToeTournamentSchema = new mongoose.Schema(
     endTime: {
       type: Date,
     },
-    isGameOverForTable: {
+    isMatchOverForTable: {
       type: Boolean,
       default: false,
     },
