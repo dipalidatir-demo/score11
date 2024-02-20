@@ -124,45 +124,45 @@ const getCricByGroupIdUsingSocket = async function (req, res) {
         new: true // Return the updated document
       }
     );
-    
-   console.log("cricket using socket====>",cricket);
+
+    console.log("cricket using socket====>", cricket);
     if (!cricket) {
-      return res
-        .status(200)
-        .send({ status: false, message: "this groupId not found" });
+      return res.status(200).send({ status: false, message: "this groupId not found" });
     }
 
-  if(cricket.isMatchOver === true){
-    let resForWinners = {
-      updatedPlayers: cricket.updatedPlayers,
-      currentBallTime: new Date(),
-      ballSpeed: cricket.ballSpeed,
-    };
-    
-    return res.status(200).json(resForWinners);   
-  }
-  if (cricket.nextBallTime - new Date() > 0) {
-    if (cricket.updatedPlayers.length !== 0) {
+    // Calculate currentBallTime
+    let currentBallTime = Math.max(0, cricket.nextBallTime - new Date());
+
+    if (cricket.isMatchOver === true) {
+      let resForWinners = {
+        updatedPlayers: cricket.updatedPlayers,
+        currentBallTime: currentBallTime,
+        ballSpeed: cricket.ballSpeed,
+      };
+      return res.status(200).json(resForWinners);
+    }
+
+    if (currentBallTime > 0) {
+      if (cricket.updatedPlayers.length !== 0) {
+        let cricket1 = {
+          updatedPlayers: cricket.updatedPlayers,
+          currentBallTime: currentBallTime,
+          ballSpeed: cricket.ballSpeed,
+        };
+        return res.status(200).json(cricket1);
+      }
+    } else {
       let cricket1 = {
         updatedPlayers: cricket.updatedPlayers,
-        currentBallTime: new Date(),
+        currentBallTime: 0,
         ballSpeed: cricket.ballSpeed,
       };
       return res.status(200).json(cricket1);
     }
-  } else {
-    let cricket1 = {
-      updatedPlayers: cricket.updatedPlayers,
-      currentBallTime: new Date(),
-      ballSpeed: cricket.ballSpeed,
-    };
-    return res.status(200).json(cricket1);
-  }
-  
-  
+
     return res.status(200).json(cricket);
   } catch (err) {
-    console.log(err)
+    console.log(err);
     return res.status(500).send({
       status: false,
       error: err.message,
