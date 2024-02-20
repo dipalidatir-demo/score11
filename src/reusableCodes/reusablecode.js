@@ -19,7 +19,7 @@ const cron = require("node-cron");
 //_____crete group as per the admin_______
 
 const createGroupByAdmin = async function (tableId) {
-  console.log(tableId,"=======tableId in created group functionh");
+  console.log(tableId, "=======tableId in created group functionh");
   if (tableId != undefined) {
     let table = await tournamentModel.findOne({ _id: tableId });
 
@@ -166,23 +166,24 @@ async function startMatch(grpId, group) {
       isBot: name.isBot,
       run: 0,
       hit: false,
+      isBallThrow:false,
       wicket: 0,
       prize: 0,
       isRunUpdated: name.isRunUpdated,
       botType: name.botType,
     }));
     console.log("result", result);
-    let totalBot = result.filter(players => players.isBot === true);
-    totalBot = totalBot.length ;
-    let totalRealPlayres = result.filter(players => players.isBot === false);
-    totalRealPlayres = totalRealPlayres.length ;
+    let totalBot = result.filter((players) => players.isBot === true);
+    totalBot = totalBot.length;
+    let totalRealPlayres = result.filter((players) => players.isBot === false);
+    totalRealPlayres = totalRealPlayres.length;
     const matchData = await groupModel.findOneAndUpdate(
       { _id: grpId },
       {
         updatedPlayers: result,
         $set: {
-          totalBotInGrp:totalBot,
-          totalPlayerInGrp:totalRealPlayres,
+          totalBotInGrp: totalBot,
+          totalPlayerInGrp: totalRealPlayres,
           start: true,
           currentBallTime: Date.now(),
           nextBallTime: Date.now() + 1 * 7 * 1000,
@@ -229,6 +230,7 @@ async function updateBalls(grpId) {
           player.hit = false;
           player.isRunUpdated = false;
         }
+        player.isBallThrow = false
         return player;
       });
 
@@ -281,24 +283,51 @@ async function updateBalls(grpId) {
       // }
 
       //____________________________"profit" when all 5 players came so entryFee- prize remaining profit__________
-      const currentDt = new Date()
-      const currentDate = currentDt.getDate()
+      const currentDt = new Date();
+      const currentDate = currentDt.getDate();
       const currentMonth = currentDt.getMonth();
-      const currentYear = currentDt.getFullYear()
-      console.log(currentDate,"====currentDate===",currentMonth,"===currentMonth====",currentYear,"========currentYear");
+      const currentYear = currentDt.getFullYear();
+      console.log(
+        currentDate,typeof(currentDate),
+        "====currentDate===",
+        currentMonth,typeof(currentMonth),
+        "===currentMonth====",
+        currentYear, typeof(currentYear),
+        "========currentYear"
+      );
       if (totalPlayerInGrp === 5) {
         // const tournamentData = await tournamentModel.findById({ _id: tableId });
-       
-        const lastDayProfit = await profitLossModel.findOne(
-          { gameType: "cricket" },
-          { sort: { createdAt: -1 } }
-        );
-        const lastUpdatedDate = lastDayProfit.createdAt.getDate();
-        const updatedMonth = lastDayProfit.createdAt.getMonth();
-        const updatedYear = lastDayProfit.createdAt.getFullYear();
-        console.log(lastUpdatedDate,"===lastUpdatedDate===",updatedYear,"=====updatedYear====", updatedMonth,"==========updatedMonth");
-        const currentDate = moment();
-        const currentDateFormat = currentDate.format("DD-MM-YYYY");
+        // const currentDateInMo = moment();
+        const currentDateFormat = moment().format("DD-MM-YYYY");
+
+        // const lastDayProfit = await profitLossModel.findOne(
+        //   // {currentTime: currentDateFormat}
+        //   // { gameType: "cricket" },
+        //   { sort: { createdAt: -1 } }
+        // );
+
+        const lastDayProfit = await profitLossModel
+          .findOne()
+          .sort({ createdAt: -1 })
+          .limit(1);
+
+        let lastUpdatedDate;
+        let updatedMonth;
+        let updatedYear;
+        if (lastDayProfit) {
+          lastUpdatedDate = lastDayProfit.createdAt.getDate();
+          updatedMonth = lastDayProfit.createdAt.getMonth();
+          updatedYear = lastDayProfit.createdAt.getFullYear();
+          console.log(
+            lastUpdatedDate,
+            "===lastUpdatedDate===",
+            updatedYear,
+            "=====updatedYear====",
+            updatedMonth,
+            "==========updatedMonth"
+          );
+        }
+
         // if (tournamentData) {
         const entryFee = updateTable.entryFee;
         const prizeAmount = updateTable.prizeAmount;
@@ -307,9 +336,9 @@ async function updateBalls(grpId) {
 
         profit = totalEntryFee - prizeAmount;
 
-        if(!lastDayProfit){
+        if (!lastDayProfit) {
           const profitData = {
-            gameType: "cricket",
+            gameType: [{ gameName: "cricket", grpId: grpId }],
             groupId: [grpId],
             profit: profit,
             loss: 0,
@@ -317,62 +346,89 @@ async function updateBalls(grpId) {
             fullDayProfit: profit,
             fullMonthProfit: profit,
             fullYearProfit: profit,
+            crickFullDayProfit: profit,
+            crickFullMonthProfit: profit,
+            crickFullYearProfit: profit,
           };
           const createProfit = await profitLossModel.create(profitData);
-        }else if (currentYear !== updatedYear) {
+        } else if (currentYear !== updatedYear) {
           const profitData = {
-            gameType: "cricket",
+            gameType: [{ gameName: "cricket", grpId: grpId }],
             groupId: [grpId],
             profit: profit,
             currentTime: currentDateFormat,
             fullDayProfit: profit,
             fullMonthProfit: profit,
             fullYearProfit: profit,
+            crickFullDayProfit: profit,
+            crickFullMonthProfit: profit,
+            crickFullYearProfit: profit,
             // fullDayLoss:0 ,
             // fullMonthLoss:lastDayProfit.fullMonthLoss,
             // fullYearLoss:lastDayProfit.fullYearLoss
           };
           const createProfit = await profitLossModel.create(profitData);
-        }else if (currentMonth !== updatedMonth) {
+        } else if (currentMonth !== updatedMonth) {
           const profitData = {
-            gameType: "cricket",
+            gameType: [{ gameName: "cricket", grpId: grpId }],
             groupId: [grpId],
             profit: profit,
             currentTime: currentDateFormat,
             fullDayProfit: profit,
             fullMonthProfit: profit,
-            fullYearProfit: lastDayProfit.profit + parseInt(profit),
-            fullYearLoss:lastDayProfit.fullYearLoss
+            fullYearProfit: lastDayProfit.fullYearProfit + parseInt(profit),
+            fullYearLoss: lastDayProfit.fullYearLoss,
+            crickFullDayProfit: profit,
+            crickFullMonthProfit: profit,
+            crickFullYearProfit:
+              lastDayProfit.crickFullYearProfit + parseInt(profit),
+            crickFullYearLoss: lastDayProfit.crickFullYearLoss,
+            snkFullYearProfit: lastDayProfit.snkFullYearProfit,
+            snkFullYearLoss: lastDayProfit.snkFullYearLoss,
           };
           const createProfit = await profitLossModel.create(profitData);
-         } else if (currentDate !== lastUpdatedDate) {
+        } else if (currentDate !== lastUpdatedDate) {
           const profitData = {
-            gameType: "cricket",
+            gameType: [{ gameName: "cricket", grpId: grpId }],
             groupId: [grpId],
             profit: profit,
             currentTime: currentDateFormat,
             fullDayProfit: profit,
-            fullMonthProfit: lastDayProfit.profit + parseInt(profit),
-            fullYearProfit: lastDayProfit.profit + parseInt(profit),
-            fullMonthLoss:lastDayProfit.fullMonthLoss,
-            fullYearLoss:lastDayProfit.fullYearLoss
+            fullMonthProfit: lastDayProfit.fullMonthProfit + parseInt(profit),
+            fullYearProfit: lastDayProfit.fullYearProfit + parseInt(profit),
+            fullMonthLoss: lastDayProfit.fullMonthLoss,
+            fullYearLoss: lastDayProfit.fullYearLoss,
+            crickFullDayProfit: profit,
+            crickFullMonthProfit:
+              lastDayProfit.crickFullMonthProfit + parseInt(profit),
+            crickFullYearProfit:
+              lastDayProfit.crickFullYearProfit + parseInt(profit),
+            crickFullMonthLoss: lastDayProfit.crickFullMonthLoss,
+            crickFullYearLoss: lastDayProfit.crickFullYearLoss,
+            snkFullMonthProfit: lastDayProfit.snkFullMonthProfit,
+            snkFullYearProfit: lastDayProfit.snkFullYearProfit,
+            snkFullMonthLoss: lastDayProfit.snkFullMonthLoss,
+            snkFullYearLoss: lastDayProfit.snkFullYearLoss,
           };
           const createProfit = await profitLossModel.create(profitData);
         } else {
           await profitLossModel.updateOne(
             {
-              gameType: "cricket",
               currentTime: currentDateFormat,
             },
             {
               $push: {
-                groupId: grpId,
+                gameType: { gameName: "cricket", grpId: grpId },
+                groupId:  grpId ,
               },
               $inc: {
                 profit: profit,
                 fullDayProfit: profit,
                 fullMonthProfit: profit,
                 fullYearProfit: profit,
+                crickFullDayProfit: profit,
+                crickFullMonthProfit: profit,
+                crickFullYearProfit: profit,
               },
             },
             { new: true }
@@ -417,16 +473,31 @@ async function updateBalls(grpId) {
       if (totalPlayerInGrp < 5) {
         // const tournamentData = await tournamentModel.findById({ _id: tableId });
         const lastDayProfit = await profitLossModel
-          .findOne({ gameType: "cricket" })
-          .sort({ createdAt: -1 })
-          .exec();
-          const lastUpdatedDate = lastDayProfit.createdAt.getDate();
-          const updatedMonth = lastDayProfit.createdAt.getMonth();
-          const updatedYear = lastDayProfit.createdAt.getFullYear();
-          console.log(lastUpdatedDate,"===lastUpdatedDate===",updatedYear,"=====updatedYear====", updatedMonth,"==========updatedMonth");
-        const currentDate = moment();
-        const currentDateFormat = currentDate.format("DD-MM-YYYY");
-       
+        .findOne()
+        .sort({ createdAt: -1 })
+        .limit(1);
+      
+      console.log(lastDayProfit && lastDayProfit.createdAt ,"================lastDayProfit document");
+        let lastUpdatedDate;
+        let updatedMonth;
+        let updatedYear;
+        if (lastDayProfit) {
+          lastUpdatedDate = lastDayProfit.createdAt.getDate();
+          updatedMonth = lastDayProfit.createdAt.getMonth();
+          updatedYear = lastDayProfit.createdAt.getFullYear();
+          console.log(
+            lastUpdatedDate, typeof(lastUpdatedDate),
+            "===lastUpdatedDate===",
+            updatedMonth,typeof(updatedMonth),
+            "==========updatedMonth",
+            updatedYear,typeof(updatedYear),
+            "=====updatedYear===="
+            
+          );
+        }
+        // const currentDate = moment();
+        const currentDateFormat = moment().format("DD-MM-YYYY");
+
         const entryFee = updateTable.entryFee;
         let totalEntryFee = entryFee * parseInt(totalPlayerInGrp);
         console.log(totalEntryFee, "__________totalEntryFee");
@@ -444,74 +515,106 @@ async function updateBalls(grpId) {
 
           console.log(loss, "____________loss");
 
-          if(!lastDayProfit){
+          if (!lastDayProfit) {
+            console.log("================ loss count 1", !lastDayProfit);
             const profitData = {
-              gameType: "cricket",
-              groupId: [grpId],
-              profit: 0,
-              loss: loss,
-              currentTime: currentDateFormat
-            };
-            const createProfit = await profitLossModel.create(profitData);
-          }else if (currentYear !== updatedYear) { // Update profitLossModel
-            const profitData = {
-              gameType: "cricket",
+              gameType: [{ gameName: "cricket", grpId: grpId }],
               groupId: [grpId],
               profit: 0,
               loss: loss,
               currentTime: currentDateFormat,
-              // fullDayProfit: 0 ,
-              // fullMonthProfit: lastDayProfit.fullMonthProfit,
-              // fullYearProfit: lastDayProfit.fullYearProfit,
-              fullDayLoss:loss,
-              fullMonthLoss:loss,
-              fullYearLoss:loss
+              fullDayLoss: loss,
+              fullMonthLoss: loss,
+              fullYearLoss: loss,
+              crickFullDayLoss: loss,
+              crickFullMonthLoss: loss,
+              crickFullYearLoss: loss,
             };
             const createProfit = await profitLossModel.create(profitData);
-          } else if (currentMonth !== updatedMonth) { // Update profitLossModel
+          } else if (currentYear !== updatedYear) {
+            console.log("================ loss count 2",  currentYear !== updatedYear);
             const profitData = {
-              gameType: "cricket",
-              groupId: [grpId],
-              profit: 0,
+              gameType: [{ gameName: "cricket", grpId: grpId }],
+              groupId:[grpId],
               loss: loss,
               currentTime: currentDateFormat,
+              fullDayLoss: loss,
+              fullMonthLoss: loss,
+              fullYearLoss: loss,
+              crickFullDayLoss: loss,
+              crickFullMonthLoss: loss,
+              crickFullYearLoss: loss,
+              // fullDayLoss:0 ,
+              // fullMonthLoss:lastDayProfit.fullMonthLoss,
+              // fullYearLoss:lastDayProfit.fullYearLoss
+            };
+            const createProfit = await profitLossModel.create(profitData);
+          } else if (currentMonth !== updatedMonth) {
+            console.log("================ loss count 3", currentMonth !== updatedMonth);
+            const profitData = {
+              gameType: [{ gameName: "cricket", grpId: grpId }],
+              groupId: [grpId],
+              loss: loss,
+              currentTime: currentDateFormat,
+              fullDayLoss: loss,
+              fullMonthLoss: loss,
+              fullYearLoss: lastDayProfit.fullYearLoss + parseFloat(loss),
               fullYearProfit: lastDayProfit.fullYearProfit,
-              fullDayLoss:loss,
-              fullMonthLoss:loss,
-              fullYearLoss:lastDayProfit.loss + parseInt(loss)
-            };
-            const createProfit = await profitLossModel.create(profitData)
-          }else if (currentDate !== lastUpdatedDate) { // Update profitLossModel
-            const profitData = {
-              gameType: "cricket",
-              groupId: [grpId],
-              profit: 0,
-              loss: loss,
-              currentTime: currentDateFormat,
-              fullDayLoss:loss,
-              fullMonthLoss:lastDayProfit.loss + parseInt(loss),
-              fullYearLoss:lastDayProfit.loss + parseInt(loss),
-              fullYearProfit: lastDayProfit.fullYearProfit,
-              fullMonthProfit: lastDayProfit.fullMonthProfit
+              crickFullDayLoss: loss,
+              crickFullMonthLoss: loss,
+              crickFullYearLoss:lastDayProfit.crickFullYearLoss + parseFloat(loss),
+              crickFullYearProfit: lastDayProfit.crickFullYearProfit,
+              snkFullYearProfit: lastDayProfit.snkFullYearProfit,
+              snkFullYearLoss: lastDayProfit.snkFullYearLoss,
             };
             const createProfit = await profitLossModel.create(profitData);
-          }else {
+          } else if (currentDate !== lastUpdatedDate) {
+            console.log("================ loss count 4", currentDate !== lastUpdatedDate);
+            const profitData = {
+              
+              gameType: [{ gameName: "cricket", grpId: grpId }],
+              groupId: [grpId],
+              loss: loss,
+              currentTime: currentDateFormat,
+              fullDayLoss: loss,
+              fullMonthLoss: lastDayProfit.fullMonthLoss + parseFloat(loss),
+              fullYearLoss: lastDayProfit.fullYearLoss + parseFloat(loss),
+              fullMonthProfit: lastDayProfit.fullMonthProfit,
+              fullYearProfit: lastDayProfit.fullYearProfit,
+              crickFullDayLoss: loss,
+              crickFullMonthLoss:
+                lastDayProfit.crickFullMonthLoss + parseFloat(loss),
+              crickFullYearLoss:
+                lastDayProfit.crickFullYearLoss + parseFloat(loss),
+              crickFullMonthProfit: lastDayProfit.crickFullMonthProfit,
+              crickFullYearProfit: lastDayProfit.crickFullYearProfit,
+              snkFullMonthProfit: lastDayProfit.snkFullMonthProfit,
+              snkFullYearProfit: lastDayProfit.snkFullYearProfit,
+              snkFullMonthLoss: lastDayProfit.snkFullMonthLoss,
+              snkFullYearLoss: lastDayProfit.snkFullYearLoss,
+            };
+            const createProfit = await profitLossModel.create(profitData);
+          } else {
+            console.log("================ loss count 5");
             await profitLossModel.updateOne(
               {
-                gameType: "cricket", // Assuming you want to filter by game type
+                currentTime: currentDateFormat,
               },
               {
                 $push: {
-                  groupId: grpId, // Assuming grpId is a single value
+                  gameType: { gameName: "cricket", grpId: grpId },
+                  groupId:  grpId ,
                 },
                 $inc: {
                   loss: loss,
-                  fullDayLoss: fullDayLoss,
-                  fullMonthLoss: fullMonthLoss,
-                  fullYearLoss: fullYearLoss,
+                  fullDayLoss: loss,
+                  fullMonthLoss: loss,
+                  fullYearLoss: loss,
+                  crickFullDayLoss: loss,
+                  crickFullMonthLoss: loss,
+                  crickFullYearLoss: loss,
                 },
               },
-              // { upsert: true }
               { new: true }
             );
           }
@@ -552,9 +655,10 @@ async function updateBalls(grpId) {
         } else {
           profit = totalEntryFee - winPrizeOfUser;
           console.log(profit, ":::::::::::::::::profit");
-          if(!lastDayProfit){
+          if (!lastDayProfit) {
+            console.log("================ profit count 1",!lastDayProfit);
             const profitData = {
-              gameType: "cricket",
+              gameType: [{ gameName: "cricket", grpId: grpId }],
               groupId: [grpId],
               profit: profit,
               loss: 0,
@@ -562,62 +666,94 @@ async function updateBalls(grpId) {
               fullDayProfit: profit,
               fullMonthProfit: profit,
               fullYearProfit: profit,
+              crickFullDayProfit: profit,
+              crickFullMonthProfit: profit,
+              crickFullYearProfit: profit,
             };
             const createProfit = await profitLossModel.create(profitData);
-          }else if (currentYear !== updatedYear) {
+          } else if (currentYear !== updatedYear) {
+            console.log("================ profit count 2", currentYear !== updatedYear);
             const profitData = {
-              gameType: "cricket",
+              gameType: [{ gameName: "cricket", grpId: grpId }],
               groupId: [grpId],
               profit: profit,
               currentTime: currentDateFormat,
               fullDayProfit: profit,
               fullMonthProfit: profit,
               fullYearProfit: profit,
+              crickFullDayProfit: profit,
+              crickFullMonthProfit: profit,
+              crickFullYearProfit: profit,
               // fullDayLoss:0 ,
               // fullMonthLoss:lastDayProfit.fullMonthLoss,
               // fullYearLoss:lastDayProfit.fullYearLoss
             };
             const createProfit = await profitLossModel.create(profitData);
-          }else if (currentMonth !== updatedMonth) {
+          } else if (currentMonth !== updatedMonth) {
+            console.log("================ profit count 3", currentMonth !== updatedMonth);
             const profitData = {
-              gameType: "cricket",
+              gameType: [{ gameName: "cricket", grpId: grpId }],
               groupId: [grpId],
               profit: profit,
               currentTime: currentDateFormat,
               fullDayProfit: profit,
               fullMonthProfit: profit,
-              fullYearProfit: lastDayProfit.profit + parseInt(profit),
-              fullYearLoss:lastDayProfit.fullYearLoss
+              fullYearProfit: lastDayProfit.fullYearProfit + parseFloat(profit),
+              fullYearLoss: lastDayProfit.fullYearLoss,
+              crickFullDayProfit: profit,
+              crickFullMonthProfit: profit,
+              crickFullYearProfit:
+                lastDayProfit.crickFullYearProfit + parseFloat(profit),
+              crickFullYearLoss: lastDayProfit.crickFullYearLoss,
+              snkFullYearProfit: lastDayProfit.snkFullYearProfit,
+              snkFullYearLoss: lastDayProfit.snkFullYearLoss,
             };
             const createProfit = await profitLossModel.create(profitData);
-           } else if (currentDate !== lastUpdatedDate) {
+          } else if (currentDate !== lastUpdatedDate) {
+            console.log(currentDate,typeof(currentDate),"====currentDate=====lastUpdatedDate", lastUpdatedDate,typeof(lastUpdatedDate));
+            console.log("================ profit count 4", currentDate !== lastUpdatedDate);
             const profitData = {
-              gameType: "cricket",
+              gameType: [{ gameName: "cricket", grpId: grpId }],
               groupId: [grpId],
               profit: profit,
               currentTime: currentDateFormat,
               fullDayProfit: profit,
-              fullMonthProfit: lastDayProfit.profit + parseInt(profit),
-              fullYearProfit: lastDayProfit.profit + parseInt(profit),
-              fullMonthLoss:lastDayProfit.fullMonthLoss,
-              fullYearLoss:lastDayProfit.fullYearLoss
+              fullMonthProfit: lastDayProfit.fullMonthProfit + parseFloat(profit),
+              fullYearProfit: lastDayProfit.fullYearProfit + parseFloat(profit),
+              fullMonthLoss: lastDayProfit.fullMonthLoss,
+              fullYearLoss: lastDayProfit.fullYearLoss,
+              crickFullDayProfit: profit,
+              crickFullMonthProfit:
+                lastDayProfit.crickFullMonthProfit + parseFloat(profit),
+              crickFullYearProfit:
+                lastDayProfit.crickFullYearProfit + parseFloat(profit),
+              crickFullMonthLoss: lastDayProfit.crickFullMonthLoss,
+              crickFullYearLoss: lastDayProfit.crickFullYearLoss,
+              snkFullMonthProfit: lastDayProfit.snkFullMonthProfit,
+              snkFullYearProfit: lastDayProfit.snkFullYearProfit,
+              snkFullMonthLoss: lastDayProfit.snkFullMonthLoss,
+              snkFullYearLoss: lastDayProfit.snkFullYearLoss,
             };
             const createProfit = await profitLossModel.create(profitData);
-          }else {
+          } else {
+            console.log("================ profit count 5");
             await profitLossModel.updateOne(
               {
-                gameType: "cricket",
                 currentTime: currentDateFormat,
               },
               {
                 $push: {
-                  groupId: grpId,
+                  gameType: { gameName: "cricket", grpId: grpId },
+                  groupId:  grpId ,
                 },
                 $inc: {
                   profit: profit,
                   fullDayProfit: profit,
                   fullMonthProfit: profit,
                   fullYearProfit: profit,
+                  crickFullDayProfit: profit,
+                  crickFullMonthProfit: profit,
+                  crickFullYearProfit: profit,
                 },
               },
               { new: true }
@@ -852,7 +988,7 @@ function runUpdateBalls(grpId) {
 //________________________________________________for snakeLadder________________________________________________
 
 const createGroupForSnakeLadder = async function (tableId) {
-  console.log(tableId,"============create gorup in snk");
+  console.log(tableId, "============create gorup in snk");
   if (tableId != undefined) {
     let table = await snkTournamentModel.findOne({ _id: tableId });
 
@@ -872,7 +1008,7 @@ const createGroupForSnakeLadder = async function (tableId) {
         let totalBot;
         if (requiredBot === 1) {
           totalBot = 1;
-        }else {
+        } else {
           totalBot = 0;
         }
         const updateTournament = await tournamentModel.findOneAndUpdate(
@@ -933,21 +1069,21 @@ async function startMatchForSnkLdr(grpId, group) {
     }));
     console.log("result", result);
 
-    let totalBot = result.filter(players => players.isBot === true);
-    totalBot = totalBot.length ;
-    let totalRealPlayres = result.filter(players => players.isBot === false);
-    totalRealPlayres = totalRealPlayres.length ;
+    let totalBot = result.filter((players) => players.isBot === true);
+    totalBot = totalBot.length;
+    let totalRealPlayres = result.filter((players) => players.isBot === false);
+    totalRealPlayres = totalRealPlayres.length;
 
     const matchData = await groupModelForSnakeLadder.findOneAndUpdate(
       { _id: grpId },
       {
         updatedPlayers: result,
         $set: {
-               totalBotInGrp:totalBot,
-               totalPlayerInGrp:totalRealPlayres, 
-               start: true, 
-               gameEndTime: Date.now() + 2 * 60 * 1000 
-              },
+          totalBotInGrp: totalBot,
+          totalPlayerInGrp: totalRealPlayres,
+          start: true,
+          gameEndTime: Date.now() + 2 * 60 * 1000,
+        },
       },
       { new: true, setDefaultsOnInsert: true }
     );
@@ -1005,6 +1141,18 @@ async function checkTurn(groupId) {
           { isMatchOverForTable: true },
           { new: true }
         );
+        const currentDt = new Date();
+      const currentDate = currentDt.getDate();
+      const currentMonth = currentDt.getMonth();
+      const currentYear = currentDt.getFullYear();
+      console.log(
+        currentDate,typeof(currentDate),
+        "====currentDate===",
+        currentMonth,typeof(currentMonth),
+        "===currentMonth====",
+        currentYear, typeof(currentYear),
+        "========currentYear"
+      );
         let entryFee = overTheGame.entryFee;
         //----------- Find the player with the highest points (the potential winner)
         let potentialWinner = updatedPlayers.reduce(
@@ -1018,8 +1166,35 @@ async function checkTurn(groupId) {
         let isTie = updatedPlayers.every(
           (player) => player.points === potentialWinner.points
         );
+        const lastDayProfit = await profitLossModel
+          .findOne()
+          .sort({ createdAt: -1 })
+          .limit(1);
+        let lastUpdatedDate;
+        let updatedMonth;
+        let updatedYear;
+        let profit = 0;
+        if (lastDayProfit) {
+          lastUpdatedDate = lastDayProfit.createdAt.getDate();
+          updatedMonth = lastDayProfit.createdAt.getMonth();
+          updatedYear = lastDayProfit.createdAt.getFullYear();
+          console.log(
+            lastUpdatedDate,
+            "===lastUpdatedDate===",
+            updatedYear,
+            "=====updatedYear====",
+            updatedMonth,
+            "==========updatedMonth"
+          );
+        }
+        // const currentDate = moment();
+        const currentDateFormat = moment().format("DD-MM-YYYY");
+        let playerCountForSnk = updatedPlayers.filter(
+          (player) => !player.isBot
+        ).length;
 
         if (isTie) {
+          console.log("=======calculate profit or loss if game is tie====");
           // Both players are winners with a prize of 0.5
           const prizeDecimal = new Decimal(entryFee).times(0.5);
           for (const player of updatedPlayers) {
@@ -1050,10 +1225,121 @@ async function checkTurn(groupId) {
                 { new: true }
               );
             }
+            if (playerCountForSnk === 2) {
+              const totalEntryFee = entryFee * 2;
+              profit = totalEntryFee - prizeDecimal;
+              console.log(profit,"======if tie and player is 2");
+            } else {
+              const totalEntryFee = entryFee * 1;
+              profit = totalEntryFee - prizeDecimal;
+              console.log(profit,"======if tie and player is 1 and onother is bot");
+            }
+            if (!lastDayProfit) {
+              const profitData = {
+                gameType: [{ gameName: "snakeLadder", grpId: groupId }],
+                groupId: [groupId],
+                profit: profit,
+                loss: 0,
+                currentTime: currentDateFormat,
+                fullDayProfit: profit,
+                fullMonthProfit: profit,
+                fullYearProfit: profit,
+                snkFullDayProfit: profit,
+                snkFullMonthProfit: profit,
+                snkFullYearProfit: profit,
+              };
+              const createProfit = await profitLossModel.create(profitData);
+            } else if (currentYear !== updatedYear) {
+              const profitData = {
+                gameType: [{ gameName: "snakeLadder", grpId: groupId }],
+                groupId: [groupId],
+                profit: profit,
+                loss: 0,
+                currentTime: currentDateFormat,
+                fullDayProfit: profit,
+                fullMonthProfit: profit,
+                fullYearProfit: profit,
+                snkFullDayProfit: profit,
+                snkFullMonthProfit: profit,
+                snkFullYearProfit: profit,
+                // fullDayLoss:0 ,
+                // fullMonthLoss:lastDayProfit.fullMonthLoss,
+                // fullYearLoss:lastDayProfit.fullYearLoss
+              };
+              const createProfit = await profitLossModel.create(profitData);
+            } else if (currentMonth !== updatedMonth) {
+              const profitData = {
+                gameType: [{ gameName: "snakeLadder", grpId: groupId }],
+                groupId:  [groupId],
+                profit: profit,
+                currentTime: currentDateFormat,
+                fullDayProfit: profit,
+                fullMonthProfit: profit,
+                fullYearProfit: lastDayProfit.fullYearProfit + parseFloat(profit),
+                fullYearLoss: lastDayProfit.fullYearLoss,
+                snkFullDayProfit: profit,
+                snkFullMonthProfit: profit,
+                snkFullYearProfit:
+                  lastDayProfit.snkFullYearProfit + parseFloat(profit),
+                snkFullYearLoss: lastDayProfit.snkFullYearLoss,
+                crickFullYearProfit:
+                  lastDayProfit.crickFullYearProfit + parseInt(profit),
+                crickFullYearLoss: lastDayProfit.crickFullYearLoss,
+              };
+              const createProfit = await profitLossModel.create(profitData);
+            } else if (currentDate !== lastUpdatedDate) {
+              const profitData = {
+                gameType: [{ gameName: "snakeLadder", grpId: groupId }],
+                groupId:  [groupId],
+                profit: profit,
+                currentTime: currentDateFormat,
+                fullDayProfit: profit,
+                fullMonthProfit:
+                  lastDayProfit.fullMonthProfit + parseFloat(profit),
+                fullYearProfit: lastDayProfit.fullYearProfit + parseFloat(profit),
+                fullMonthLoss: lastDayProfit.fullMonthLoss,
+                fullYearLoss: lastDayProfit.fullYearLoss,
+                snkFullDayProfit: profit,
+                snkFullMonthProfit:
+                  lastDayProfit.snkFullMonthProfit + parseFloat(profit),
+                snkFullYearProfit:
+                  lastDayProfit.snkFullYearProfit + parseFloat(profit),
+                snkFullMonthLoss: lastDayProfit.snkFullMonthLoss,
+                snkFullYearLoss: lastDayProfit.snkFullYearLoss,
+                crickFullMonthProfit: lastDayProfit.crickFullMonthProfit,
+                crickFullYearProfit: lastDayProfit.crickFullYearProfit,
+                crickFullMonthLoss: lastDayProfit.crickFullMonthLoss,
+                crickFullYearLoss: lastDayProfit.crickFullYearLoss,
+              };
+              const createProfit = await profitLossModel.create(profitData);
+            } else {
+              await profitLossModel.updateOne(
+                {
+                  currentTime: currentDateFormat,
+                },
+                {
+                  $push: {
+                    gameType: { gameName: "snakeLadder", grpId: groupId },
+                    groupId: groupId ,
+                  },
+                  $inc: {
+                    profit: profit,
+                    fullDayProfit: profit,
+                    fullMonthProfit: profit,
+                    fullYearProfit: profit,
+                    snkFullDayProfit: profit,
+                    snkFullMonthProfit: profit,
+                    snkFullYearProfit: profit,
+                  },
+                },
+                { new: true }
+              );
+            }
           }
         } else {
           // Calculate the prize for the potential winner and the runner-up
           // potentialWinner.prize = entryFee * 1.5;
+          console.log("====calculate profit and loss if game is not tie=====");
           const potentialWinnerPrizeDecimal = new Decimal(entryFee).times(1.5);
           potentialWinner.prize = potentialWinnerPrizeDecimal.toNumber();
           let runner = updatedPlayers.find(
@@ -1101,6 +1387,223 @@ async function checkTurn(groupId) {
             },
             { new: true }
           );
+
+          if (playerCountForSnk === 2 || potentialWinner.isBot) {
+
+            if(potentialWinner.isBot){
+              profit = entryFee;
+              console.log(profit,"======if game is not tie and winner is bot");
+            }
+            if(playerCountForSnk === 2){
+              const totalEntryFee = entryFee * 2;
+              profit = totalEntryFee - potentialWinnerPrizeDecimal.toNumber();
+              console.log(profit,"======if game is not tie and player is 2");
+            }
+           
+            if (!lastDayProfit) {
+              const profitData = {
+                gameType: [{ gameName: "snakeLadder", grpId: groupId }],
+                groupId:  [groupId],
+                profit: profit,
+                loss: 0,
+                currentTime: currentDateFormat,
+                fullDayProfit: profit,
+                fullMonthProfit: profit,
+                fullYearProfit: profit,
+                snkFullDayProfit: profit,
+                snkFullMonthProfit: profit,
+                snkFullYearProfit: profit,
+              };
+              const createProfit = await profitLossModel.create(profitData);
+            } else if (currentYear !== updatedYear) {
+              const profitData = {
+                gameType: [{ gameName: "snakeLadder", grpId: groupId }],
+                groupId:  [groupId],
+                profit: profit,
+                loss: 0,
+                currentTime: currentDateFormat,
+                fullDayProfit: profit,
+                fullMonthProfit: profit,
+                fullYearProfit: profit,
+                snkFullDayProfit: profit,
+                snkFullMonthProfit: profit,
+                snkFullYearProfit: profit,
+                // fullDayLoss:0 ,
+                // fullMonthLoss:lastDayProfit.fullMonthLoss,
+                // fullYearLoss:lastDayProfit.fullYearLoss
+              };
+              const createProfit = await profitLossModel.create(profitData);
+            } else if (currentMonth !== updatedMonth) {
+              const profitData = {
+                gameType: [{ gameName: "snakeLadder", grpId: groupId }],
+                groupId:  [groupId],
+                profit: profit,
+                currentTime: currentDateFormat,
+                fullDayProfit: profit,
+                fullMonthProfit: profit,
+                fullYearProfit: lastDayProfit.fullYearProfit + parseFloat(profit),
+                fullYearLoss: lastDayProfit.fullYearLoss,
+                snkFullDayProfit: profit,
+                snkFullMonthProfit: profit,
+                snkFullYearProfit:
+                  lastDayProfit.snkFullYearProfit + parseFloat(profit),
+                snkFullYearLoss: lastDayProfit.snkFullYearLoss,
+                crickFullYearProfit:
+                  lastDayProfit.crickFullYearProfit + parseFloat(profit),
+                crickFullYearLoss: lastDayProfit.crickFullYearLoss,
+              };
+              const createProfit = await profitLossModel.create(profitData);
+            } else if (currentDate !== lastUpdatedDate) {
+              const profitData = {
+                gameType: [{ gameName: "snakeLadder", grpId: groupId }],
+                groupId:  [groupId],
+                profit: profit,
+                currentTime: currentDateFormat,
+                fullDayProfit: profit,
+                fullMonthProfit:
+                  lastDayProfit.fullMonthProfit + parseFloat(profit),
+                fullYearProfit: lastDayProfit.fullYearProfit + parseFloat(profit),
+                fullMonthLoss: lastDayProfit.fullMonthLoss,
+                fullYearLoss: lastDayProfit.fullYearLoss,
+                snkFullDayProfit: profit,
+                snkFullMonthProfit:
+                  lastDayProfit.snkFullMonthProfit + parseFloat(profit),
+                snkFullYearProfit:
+                  lastDayProfit.snkFullYearProfit + parseFloat(profit),
+                snkFullMonthLoss: lastDayProfit.snkFullMonthLoss,
+                snkFullYearLoss: lastDayProfit.snkFullYearLoss,
+                crickFullMonthProfit: lastDayProfit.crickFullMonthProfit,
+                crickFullYearProfit: lastDayProfit.crickFullYearProfit,
+                crickFullMonthLoss: lastDayProfit.crickFullMonthLoss,
+                crickFullYearLoss: lastDayProfit.crickFullYearLoss,
+              };
+              const createProfit = await profitLossModel.create(profitData);
+            } else {
+              await profitLossModel.updateOne(
+                {
+                  currentTime: currentDateFormat,
+                },
+                {
+                  $push: {
+                    gameType: { gameName: "snakeLadder", grpId: groupId },
+                    groupId: groupId,
+                  },
+                  $inc: {
+                    profit: profit,
+                    fullDayProfit: profit,
+                    fullMonthProfit: profit,
+                    fullYearProfit: profit,
+                    snkFullDayProfit: profit,
+                    snkFullMonthProfit: profit,
+                    snkFullYearProfit: profit,
+                  },
+                },
+                { new: true }
+              );
+            }
+          } else {
+            // if()
+            const totalEntryFee = entryFee * 1;
+            let loss = potentialWinnerPrizeDecimal.toNumber() - totalEntryFee;
+
+            if (!lastDayProfit) {
+              const profitData = {
+                gameType: [{ gameName: "snakeLadder", grpId: groupId }],
+                groupId:  [groupId],
+                profit: 0,
+                loss: loss,
+                currentTime: currentDateFormat,
+                fullDayLoss: loss,
+                fullMonthLoss: loss,
+                fullYearLoss: loss,
+                snkFullDayLoss: loss,
+                snkFullMonthLoss: loss,
+                snkFullYearLoss: loss,
+              };
+              const createProfit = await profitLossModel.create(profitData);
+            } else if (currentYear !== updatedYear) {
+              const profitData = {
+                gameType: [{ gameName: "snakeLadder", grpId: groupId }],
+                groupId:  [groupId],
+                profit: 0,
+                loss: loss,
+                currentTime: currentDateFormat,
+                fullDayLoss: loss,
+                fullMonthLoss: loss,
+                fullYearLoss: loss,
+                snkFullDayLoss: loss,
+                snkFullMonthLoss: loss,
+                snkFullYearLoss: loss,
+                // fullDayLoss:0 ,
+                // fullMonthLoss:lastDayProfit.fullMonthLoss,
+                // fullYearLoss:lastDayProfit.fullYearLoss
+              };
+              const createProfit = await profitLossModel.create(profitData);
+            } else if (currentMonth !== updatedMonth) {
+              const profitData = {
+                gameType: [{ gameName: "snakeLadder", grpId: groupId }],
+                groupId:  [groupId],
+                loss: loss,
+                currentTime: currentDateFormat,
+                fullDayLoss: loss,
+                fullMonthLoss: loss,
+                fullYearLoss: lastDayProfit.fullYearLoss + parseFloat(loss),
+                fullYearProfit: lastDayProfit.fullYearProfit,
+                snkFullDayLoss: loss,
+                snkFullMonthLoss: loss,
+                crickFullYearLoss: lastDayProfit.crickFullYearLoss,
+                crickFullYearProfit: lastDayProfit.crickFullYearProfit,
+                snkFullYearProfit: lastDayProfit.snkFullYearProfit,
+                snkFullYearLoss: lastDayProfit.snkFullYearLoss + parseFloat(loss),
+              };
+              const createProfit = await profitLossModel.create(profitData);
+            } else if (currentDate !== lastUpdatedDate) {
+              const profitData = {
+                gameType: [{ gameName: "snakeLadder", grpId: groupId }],
+                groupId:  [groupId],
+                loss: loss,
+                currentTime: currentDateFormat,
+                fullDayLoss: loss,
+                fullMonthLoss: lastDayProfit.fullMonthLoss + parseFloat(loss),
+                fullYearLoss: lastDayProfit.fullYearLoss + parseFloat(loss),
+                fullMonthProfit: lastDayProfit.fullMonthProfit,
+                fullYearProfit: lastDayProfit.fullYearProfit,
+                snkFullDayLoss: loss,
+                snkFullMonthProfit:
+                  lastDayProfit.snkFullMonthProfit + parseFloat(loss),
+                snkFullYearLoss: lastDayProfit.snkFullYearLoss + parseFloat(loss),
+                snkFullMonthProfit: lastDayProfit.snkFullMonthProfit,
+                snkFullYearProfit: lastDayProfit.snkFullYearProfit,
+                crickFullMonthLoss: lastDayProfit.crickFullMonthLoss,
+                crickFullYearLoss: lastDayProfit.crickFullYearLoss,
+                crickFullMonthProfit: lastDayProfit.crickFullMonthProfit,
+                crickFullYearProfit: lastDayProfit.crickFullYearProfit,
+              };
+              const createProfit = await profitLossModel.create(profitData);
+            } else {
+              await profitLossModel.updateOne(
+                {
+                  currentTime: currentDateFormat,
+                },
+                {
+                  $push: {
+                    gameType: { gameName: "snakeLadder", grpId: groupId },
+                    groupId: groupId ,
+                  },
+                  $inc: {
+                    loss: loss,
+                    fullDayLoss: loss,
+                    fullMonthLoss: loss,
+                    fullYearLoss: loss,
+                    snkFullDayLoss: loss,
+                    snkFullMonthLoss: loss,
+                    snkFullYearLoss: loss,
+                  },
+                },
+                { new: true }
+              );
+            }
+          }
         }
 
         // Update the players array with the updated winner(s) and runner-up
@@ -1126,11 +1629,11 @@ async function checkTurn(groupId) {
           console.log({ status: false, error: "Game not found" });
         }
         if (overGame.isGameOver === true) {
-          console.log("Reached minimum ball count!");
+          console.log("Reached minimum point!");
           return true;
         }
       }
-
+      //_____________________finished winnerlogic ______________________________
       let botPlayer = updatedPlayers.find(
         (player) => player.isBot && player.turn
       );
@@ -1296,7 +1799,7 @@ async function overTheGame(groupId) {
 //_______________________________for TicTacToe_____________________________________________
 
 const createGroupForticTacToe = async function (tableId) {
-  console.log(tableId,"============create gorup in tictactoe");
+  console.log(tableId, "============create gorup in tictactoe");
   if (tableId != undefined) {
     let table = await ticTacToeTournamentModel.findOne({ _id: tableId });
 
@@ -1362,21 +1865,21 @@ async function startMatchForticTacToe(grpId, group) {
     }));
     console.log("result", result);
 
-    let totalBot = result.filter(players => players.isBot === true);
-    totalBot = totalBot.length ;
-    let totalRealPlayres = result.filter(players => players.isBot === false);
-    totalRealPlayres = totalRealPlayres.length ;
+    let totalBot = result.filter((players) => players.isBot === true);
+    totalBot = totalBot.length;
+    let totalRealPlayres = result.filter((players) => players.isBot === false);
+    totalRealPlayres = totalRealPlayres.length;
 
     let matchData = await ticTacToeGroupModel.findOneAndUpdate(
       { _id: grpId },
       {
         updatedPlayers: result,
-        $set: { 
-                totalBotInGrp:totalBot,
-                totalPlayerInGrp:totalRealPlayres,
-                start: true, 
-                gameEndTime: Date.now() + 3 * 60 * 1000 
-              },
+        $set: {
+          totalBotInGrp: totalBot,
+          totalPlayerInGrp: totalRealPlayres,
+          start: true,
+          gameEndTime: Date.now() + 3 * 60 * 1000,
+        },
       },
       { new: true, setDefaultsOnInsert: true }
     );

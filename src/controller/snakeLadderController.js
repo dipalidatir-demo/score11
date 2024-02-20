@@ -11,10 +11,10 @@ const {
 const { log } = require("console");
 const { promises } = require("dns");
 const { resolve } = require("path");
-const totalBotForSnk = 0 ;
+const totalBotForSnk = 0;
 let currentDate = new Date();
-const moment = require('moment');
-const cron = require('node-cron');
+const moment = require("moment");
+const cron = require("node-cron");
 
 //____________________________________create snakeladder tournaments by admin___________
 
@@ -77,7 +77,7 @@ const snkTablesCreatedByAdmin = async function (req, res) {
       endTime,
       tableByAdmin,
       date,
-      time
+      time,
     } = req.body;
 
     console.log(req.body, "============body data");
@@ -89,7 +89,10 @@ const snkTablesCreatedByAdmin = async function (req, res) {
     req.body.endTime = endTime;
 
     // Use moment for flexible date and time parsing
-    const tournamentStartTime = moment(`${date} ${time}`, 'YYYY-MM-DD HH:mm').toDate();
+    const tournamentStartTime = moment(
+      `${date} ${time}`,
+      "YYYY-MM-DD HH:mm"
+    ).toDate();
 
     // Calculate the delay in milliseconds until the tournament starts
     const delay = tournamentStartTime - Date.now();
@@ -99,36 +102,48 @@ const snkTablesCreatedByAdmin = async function (req, res) {
       console.log("error in delay====");
       return res.status(400).send({
         status: false,
-        message: "Invalid date and time. Please provide a future date and time.",
+        message:
+          "Invalid date and time. Please provide a future date and time.",
       });
     }
 
     // Schedule the tournament creation using node-cron
-    cron.schedule(moment(tournamentStartTime).format('mm HH DD MM *'), async () => {
-      try {
-        // Update request body with user-provided values
-        console.log(tournamentStartTime, "========tournamentStartTime====", delay);
-        req.body.tableByAdmin = true;
-        req.body.maxPlayers = maxPlayers;
-        req.body.entryFee = entryFee;
+    cron.schedule(
+      moment(tournamentStartTime).format("mm HH DD MM *"),
+      async () => {
+        try {
+          // Update request body with user-provided values
+          console.log(
+            tournamentStartTime,
+            "========tournamentStartTime====",
+            delay
+          );
+          req.body.tableByAdmin = true;
+          req.body.maxPlayers = maxPlayers;
+          req.body.entryFee = entryFee;
 
-        let tableByAdmin1 = await snkTournamentModel.create(req.body);
-        let tableId1 = tableByAdmin1._id;
+          let tableByAdmin1 = await snkTournamentModel.create(req.body);
+          let tableId1 = tableByAdmin1._id;
 
-        console.log('Tournament created successfully!==', tableId1);
-if(tableId1){
-          // Schedule the createGroupByAdmin function after maxTime
-          console.log("calling the setTimeout function");
-          setTimeout(function () {
-            console.log();
-            createGroupForSnakeLadder(tableId1);
-            console.log(tableByAdmin1, "==========table for snk after setTimeOut===", new Date().getMinutes());
-          }, maxTime + 60 * 1000);
+          console.log("Tournament created successfully!==", tableId1);
+          if (tableId1) {
+            // Schedule the createGroupByAdmin function after maxTime
+            console.log("calling the setTimeout function");
+            setTimeout(function () {
+              console.log();
+              createGroupForSnakeLadder(tableId1);
+              console.log(
+                tableByAdmin1,
+                "==========table for snk after setTimeOut===",
+                new Date().getMinutes()
+              );
+            }, maxTime + 60 * 1000);
+          }
+        } catch (error) {
+          console.error("Error creating tournament:", error.message);
         }
-      } catch (error) {
-        console.error('Error creating tournament:', error.message);
       }
-    });
+    );
 
     return res.status(201).send({
       status: true,
@@ -409,7 +424,7 @@ const updateSnakLdrTournaments = async function (req, res) {
     //   const botCount = await botModel.find().count();
     //   totalBot = botCount ;
     // }
-    
+
     let ExistPlayers = existTable.players;
     let entryFee = existTable.entryFee;
     let maxPlayers = existTable.maxPlayers;
@@ -426,12 +441,11 @@ const updateSnakLdrTournaments = async function (req, res) {
       return res.status(200).send({ status: false, message: " Full " });
     }
 
-    if(existTable.playerWithBot === 0){
+    if (existTable.playerWithBot === 0) {
       setTimeout(() => {
-        existTable.playerWithBot = totalBotForSnk ;
+        existTable.playerWithBot = totalBotForSnk;
         existTable.save();
-        
-      }, 1*10*1000);
+      }, 1 * 10 * 1000);
     }
 
     //________________________________find user,s Name _____________________________________
@@ -1426,7 +1440,7 @@ const getPlayersOfSnkLadder = async function (req, res) {
     let players = await snkTournamentModel
       .find({ endTime: { $gt: new Date() } })
       .sort({ maxTime: 1 })
-      .select({ _id: 1, players: 1, playerWithBot:1 });
+      .select({ _id: 1, players: 1, playerWithBot: 1 });
 
     if (players.length === 0) {
       return res.status(200).send({
@@ -1437,7 +1451,11 @@ const getPlayersOfSnkLadder = async function (req, res) {
 
     players.forEach((item) => {
       item.players = item.playerWithBot;
-      console.log(item.players, "==========data.players in ma=======", item.playerWithBot);
+      console.log(
+        item.players,
+        "==========data.players in ma=======",
+        item.playerWithBot
+      );
     });
 
     return res.status(200).send({

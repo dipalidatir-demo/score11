@@ -99,10 +99,7 @@ const tournamentsByAdmin = async function (req, res) {
         message: "Invalid date and time. Please provide a future date and time.",
       });
     }
-
-    // Flag to track whether tournament and group creation have occurred
-    // let tournamentAndGroupCreated = false;
-
+    
     // Schedule the tournament creation using node-cron
     cron.schedule(moment(tournamentStartTime).format('mm HH DD MM *'), async () => {
       try {

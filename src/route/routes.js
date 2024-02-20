@@ -73,6 +73,8 @@ Router.get("/getAllCricketData", cricketController.getAllCric);
 
 Router.get("/getCricGrp", cricketController.getCricByGroupId);
 
+Router.get("/getCricketDataUsingSocket", cricketController.getCricByGroupIdUsingSocket);
+
 Router.get("/getAllGroupsOfCric", cricketController.getAllGroups);
 
 Router.get("/winner", cricketController.winTheGame);
@@ -162,6 +164,8 @@ Router.get("/getProfitData", profitLossController.getProfitData);
 Router.get("/getLossData", profitLossController.getLossData);
 
 Router.get("/getDailyProfitAndLoss", profitLossController.getDailyProfit);
+
+Router.get("/getprofitLossChart", profitLossController.profitLossChart);
 
 //************ checking your end point valid or not */
 

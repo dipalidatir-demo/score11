@@ -41,6 +41,10 @@ const groupSchema = new mongoose.Schema(
           type: Boolean,
           default: false,
         },
+        isBallThrow:{
+          type:Boolean,
+          default:false,
+        }
       },
     ],
     ball: {

@@ -2,11 +2,7 @@ const mongoose = require("mongoose");
 
 
 const profitLossSchema = new mongoose.Schema({
-    gameType: {
-    type: String,
-    enum: ["cricket", "snakeLadder", "ticTacToe", "airHockey"],
-    default: "cricket",
-    },
+    gameType: [],
     groupId: [
       {
         type: mongoose.Schema.Types.ObjectId, // Assuming group IDs are ObjectIds
@@ -48,6 +44,78 @@ const profitLossSchema = new mongoose.Schema({
       currentTime:{
         type:String,
         // default: new Date()
+      },
+      crickFullDayProfit:{
+        type: Number,
+        default: 0,
+      },
+      crickFullMonthProfit:{
+        type: Number,
+        default: 0,
+      },
+      crickFullYearProfit:{
+        type: Number,
+        default: 0,
+      },
+      crickFullDayLoss:{
+        type: Number,
+        default: 0,
+      },
+      crickFullMonthLoss:{
+        type: Number,
+        default: 0,
+      },
+      crickFullYearLoss:{
+        type: Number,
+        default: 0,
+      },
+      snkFullDayProfit:{
+        type: Number,
+        default: 0,
+      },
+      snkFullMonthProfit:{
+        type: Number,
+        default: 0,
+      },
+      snkFullYearProfit:{
+        type: Number,
+        default: 0,
+      },
+      snkFullDayLoss:{
+        type: Number,
+        default: 0,
+      },
+      snkFullMonthLoss:{
+        type: Number,
+        default: 0,
+      },
+      snkFullYearLoss:{
+        type: Number,
+        default: 0,
+      },
+      tictactoeFullDayProfit:{
+        type: Number,
+        default: 0,
+      },
+      tictactoeFullMonthProfit:{
+        type: Number,
+        default: 0,
+      },
+      tictactoeFullYearProfit:{
+        type: Number,
+        default: 0,
+      },
+      tictactoeFullDayLoss:{
+        type: Number,
+        default: 0,
+      },
+      tictactoeFullMonthLoss:{
+        type: Number,
+        default: 0,
+      },
+      tictactoeFullYearLoss:{
+        type: Number,
+        default: 0,
       },
       yaxis:{
         type: Array,

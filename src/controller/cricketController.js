@@ -101,6 +101,74 @@ const getCricByGroupId = async function (req, res) {
   }
 };
 
+// _______________________get cricket group by id data for socket____________________
+
+const getCricByGroupIdUsingSocket = async function (req, res) {
+  try {
+    let groupId = req.query.groupId;
+    const UserId = req.query.UserId;
+    
+    let cricket = await groupModel.findOneAndUpdate(
+      { _id: groupId, "updatedPlayers.UserId": UserId }, 
+      { $set: { "updatedPlayers.$.isBallThrow": true } },
+      { 
+        projection: {
+          'updatedPlayers.UserId': 1,
+          'updatedPlayers.run': 1,
+          'updatedPlayers.wicket': 1,
+          'updatedPlayers.isBallThrow': 1,
+          'ballSpeed': 1,
+          'isMatchOver': 1,
+          'nextBallTime': 1
+        },
+        new: true // Return the updated document
+      }
+    );
+    
+   console.log("cricket using socket====>",cricket);
+    if (!cricket) {
+      return res
+        .status(200)
+        .send({ status: false, message: "this groupId not found" });
+    }
+
+  if(cricket.isMatchOver === true){
+    let resForWinners = {
+      updatedPlayers: cricket.updatedPlayers,
+      currentBallTime: new Date(),
+      ballSpeed: cricket.ballSpeed,
+    };
+    
+    return res.status(200).json(resForWinners);   
+  }
+  if (cricket.nextBallTime - new Date() > 0) {
+    if (cricket.updatedPlayers.length !== 0) {
+      let cricket1 = {
+        updatedPlayers: cricket.updatedPlayers,
+        currentBallTime: new Date(),
+        ballSpeed: cricket.ballSpeed,
+      };
+      return res.status(200).json(cricket1);
+    }
+  } else {
+    let cricket1 = {
+      updatedPlayers: cricket.updatedPlayers,
+      currentBallTime: new Date(),
+      ballSpeed: cricket.ballSpeed,
+    };
+    return res.status(200).json(cricket1);
+  }
+  
+  
+    return res.status(200).json(cricket);
+  } catch (err) {
+    console.log(err)
+    return res.status(500).send({
+      status: false,
+      error: err.message,
+    });
+  }
+};
 
 
 //____________________________update table__________________________
@@ -369,5 +437,6 @@ module.exports = {
   getAllCric,
   getCricByGroupId,
   winTheGame,
-  getAllGroups
+  getAllGroups,
+  getCricByGroupIdUsingSocket
 };
