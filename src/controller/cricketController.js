@@ -103,11 +103,78 @@ const getCricByGroupId = async function (req, res) {
 
 // _______________________get cricket group by id data for socket____________________
 
-const getCricByGroupIdUsingSocket = async function (req, res) {
-  try {
-    let groupId = req.query.groupId;
-    const UserId = req.query.UserId;
+// const getCricByGroupIdUsingSocket = async function (req, res) {
+//   try {
+//     let groupId = req.query.groupId;
+//     const UserId = req.query.UserId;
     
+//     let cricket = await groupModel.findOneAndUpdate(
+//       { _id: groupId, "updatedPlayers.UserId": UserId }, 
+//       { $set: { "updatedPlayers.$.isBallThrow": true } },
+//       { 
+//         projection: {
+//           'updatedPlayers.UserId': 1,
+//           'updatedPlayers.run': 1,
+//           'updatedPlayers.wicket': 1,
+//           'updatedPlayers.isBallThrow': 1,
+//           'ballSpeed': 1,
+//           'isMatchOver': 1,
+//           'nextBallTime': 1
+//         },
+//         new: true // Return the updated document
+//       }
+//     );
+
+//     console.log("cricket using socket====>", cricket);
+//     if (!cricket) {
+//       return res.status(200).send({ status: false, message: "this groupId not found" });
+//     }
+
+//     // Calculate currentBallTime
+//     let currentBallTime = Math.max(0, cricket.nextBallTime - new Date());
+
+//     if (cricket.isMatchOver === true) {
+//       let resForWinners = {
+//         updatedPlayers: cricket.updatedPlayers,
+//         currentBallTime: currentBallTime,
+//         ballSpeed: cricket.ballSpeed,
+//       };
+//       return res.status(200).json(resForWinners);
+//     }
+
+//     if (currentBallTime > 0) {
+//       if (cricket.updatedPlayers.length !== 0) {
+//         let cricket1 = {
+//           updatedPlayers: cricket.updatedPlayers,
+//           currentBallTime: currentBallTime,
+//           ballSpeed: cricket.ballSpeed,
+//         };
+//         return res.status(200).json(cricket1);
+//       }
+//     } else {
+//       let cricket1 = {
+//         updatedPlayers: cricket.updatedPlayers,
+//         currentBallTime: 0,
+//         ballSpeed: cricket.ballSpeed,
+//       };
+//       return res.status(200).json(cricket1);
+//     }
+
+//     return res.status(200).json(cricket);
+//   } catch (err) {
+//     console.log(err);
+//     return res.status(500).send({
+//       status: false,
+//       error: err.message,
+//     });
+//   }
+// };
+
+const getCricByGroupIdUsingSocket = async function (socket, req, res) {
+  try {
+    let groupId = req.groupId;
+    const UserId = req.UserId;
+    console.log(groupId,"===========",UserId);
     let cricket = await groupModel.findOneAndUpdate(
       { _id: groupId, "updatedPlayers.UserId": UserId }, 
       { $set: { "updatedPlayers.$.isBallThrow": true } },
@@ -127,7 +194,8 @@ const getCricByGroupIdUsingSocket = async function (req, res) {
 
     console.log("cricket using socket====>", cricket);
     if (!cricket) {
-      return res.status(200).send({ status: false, message: "this groupId not found" });
+      socket.emit('cricketData', { status: false, message: "this groupId not found" });
+      return;
     }
 
     // Calculate currentBallTime
@@ -139,7 +207,8 @@ const getCricByGroupIdUsingSocket = async function (req, res) {
         currentBallTime: currentBallTime,
         ballSpeed: cricket.ballSpeed,
       };
-      return res.status(200).json(resForWinners);
+      socket.emit('cricketData', resForWinners);
+      return;
     }
 
     if (currentBallTime > 0) {
@@ -149,7 +218,8 @@ const getCricByGroupIdUsingSocket = async function (req, res) {
           currentBallTime: currentBallTime,
           ballSpeed: cricket.ballSpeed,
         };
-        return res.status(200).json(cricket1);
+        socket.emit('cricketData', cricket1);
+        return;
       }
     } else {
       let cricket1 = {
@@ -157,16 +227,14 @@ const getCricByGroupIdUsingSocket = async function (req, res) {
         currentBallTime: 0,
         ballSpeed: cricket.ballSpeed,
       };
-      return res.status(200).json(cricket1);
+      socket.emit('cricketData', cricket1);
+      return;
     }
 
-    return res.status(200).json(cricket);
+    socket.emit('cricketData', cricket);
   } catch (err) {
     console.log(err);
-    return res.status(500).send({
-      status: false,
-      error: err.message,
-    });
+    socket.emit('cricketDataError', { status: false, error: err.message });
   }
 };
 

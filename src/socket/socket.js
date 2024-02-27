@@ -7,6 +7,8 @@ const groupModelForSnakeLadder = require("../model/groupModelForSnakeLadder");
 const cricketModel = require("../model/tournamentModel");
 const snakeLadderModel = require("../model/snkTournamentModel");
 const ticTacToeModel = require("../model/ticTacToeTournamentModel");
+const cricketController = require("../controller/cricketController");
+
 module.exports = (httpServer) => {
   const io = socketIO(httpServer, {
     cors: {
@@ -38,6 +40,13 @@ module.exports = (httpServer) => {
       socket.on("fetchTournamentsData", () => {
         emitUpdatedTournamentsData(socket);
       });
+
+      socket.on("getCricByGroupIdInSocket", (req) => {
+        console.log("getCricByGroupIdUsingSocket data=====>", req);
+        cricketController.getCricByGroupIdUsingSocket(socket, req);
+      });
+      
+      
 
     // Emit updated user data to the client when a change occurs
     const emitUpdatedUserData = async (socket) => {
