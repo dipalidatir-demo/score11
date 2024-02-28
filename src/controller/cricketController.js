@@ -174,7 +174,13 @@ const getCricByGroupIdUsingSocket = async function (socket, req, res) {
   try {
     let groupId = req.groupId;
     const UserId = req.UserId;
-    console.log(groupId,"===========",UserId);
+
+    console.log("groupId====>",groupId,"======UserId=====>",UserId);
+
+    if(!groupId || !UserId){
+      return res.status(400).send({status:false, message:"Both UserId and groupId are required"});
+    }
+
     let cricket = await groupModel.findOneAndUpdate(
       { _id: groupId, "updatedPlayers.UserId": UserId }, 
       { $set: { "updatedPlayers.$.isBallThrow": true } },
