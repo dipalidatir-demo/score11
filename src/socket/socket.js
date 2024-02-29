@@ -41,9 +41,10 @@ module.exports = (httpServer) => {
         emitUpdatedTournamentsData(socket);
       });
 
+      //Listen for "getCricByGroupIdInSocket" event
       socket.on("getCricByGroupIdInSocket", (req) => {
         console.log("getCricByGroupIdUsingSocket data=====>", req);
-        cricketController.getCricByGroupIdUsingSocket(socket, req);
+        getCricByGroupIdUsingSocket(socket, req);
       });
       
       
@@ -160,11 +161,89 @@ const emitUpdatedTournamentsData = async (socket) => {
     });
   }
 };
+
+//Emit Update cricket gorup with optimise response
+const getCricByGroupIdUsingSocket = async (socket, req, res) => {
+  try {
+    console.log("received req data from the client===>",req);
+    let groupId = req.groupId;
+    const UserId = req.UserId;
+
+    console.log("groupId====>",groupId,"======UserId=====>",UserId);
+
+    if(!groupId || !UserId){
+      return res.status(400).send({status:false, message:"Both UserId and groupId are required"});
+    }
+
+    let cricket = await cricGroupModel.findOneAndUpdate(
+      { _id: groupId, "updatedPlayers.UserId": UserId }, 
+      { $set: { "updatedPlayers.$.isBallThrow": true } },
+      { 
+        projection: {
+          'updatedPlayers.UserId': 1,
+          'updatedPlayers.run': 1,
+          'updatedPlayers.wicket': 1,
+          'updatedPlayers.isBallThrow': 1,
+          'ballSpeed': 1,
+          'isMatchOver': 1,
+          'nextBallTime': 1
+        },
+        new: true // Return the updated document
+      }
+    );
+
+    console.log("cricket using socket====>", cricket);
+    if (!cricket) {
+      socket.emit('cricketData', { status: false, message: "this groupId not found" });
+      return;
+    }
+
+    // Calculate currentBallTime
+    let currentBallTime = Math.max(0, cricket.nextBallTime - new Date());
+
+    if (cricket.isMatchOver === true) {
+      let resForWinners = {
+        updatedPlayers: cricket.updatedPlayers,
+        currentBallTime: currentBallTime,
+        ballSpeed: cricket.ballSpeed,
+      };
+      socket.emit('cricketData', resForWinners);
+      return;
+    }
+
+    if (currentBallTime > 0) {
+      if (cricket.updatedPlayers.length !== 0) {
+        let cricket1 = {
+          updatedPlayers: cricket.updatedPlayers,
+          currentBallTime: currentBallTime,
+          ballSpeed: cricket.ballSpeed,
+        };
+        socket.emit('cricketData', cricket1);
+        return;
+      }
+    } else {
+      let cricket1 = {
+        updatedPlayers: cricket.updatedPlayers,
+        currentBallTime: 0,
+        ballSpeed: cricket.ballSpeed,
+      };
+      socket.emit('cricketData', cricket1);
+      return;
+    }
+
+    socket.emit('cricketData', cricket);
+  } catch (err) {
+    console.log(err);
+    socket.emit('cricketDataError', { status: false, error: err.message });
+  }
+};
+
     // Emit updated data when a user connects
     emitUpdatedUserData(socket);
     emitUpdatedCricGroupData(socket);
     emitUpdatedSnkGroupData(socket);
     emitUpdatedTournamentsData(socket);
+    // getCricByGroupIdUsingSocket(socket, req, res)
 
     socket.on("disconnect", () => {
       console.log("Socket.io disconnected:", socket.id);

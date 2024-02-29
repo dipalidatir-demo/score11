@@ -73,7 +73,7 @@ Router.get("/getAllCricketData", cricketController.getAllCric);
 
 Router.get("/getCricGrp", cricketController.getCricByGroupId);
 
-Router.get("/getCricketDataUsingSocket", cricketController.getCricByGroupIdUsingSocket);
+// Router.get("/getCricketDataUsingSocket", cricketController.getCricByGroupIdUsingSocket);
 
 Router.get("/getAllGroupsOfCric", cricketController.getAllGroups);
 

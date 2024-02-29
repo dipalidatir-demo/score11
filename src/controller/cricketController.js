@@ -170,79 +170,79 @@ const getCricByGroupId = async function (req, res) {
 //   }
 // };
 
-const getCricByGroupIdUsingSocket = async function (socket, req, res) {
-  try {
-    let groupId = req.groupId;
-    const UserId = req.UserId;
+// const getCricByGroupIdUsingSocket = async function (socket, req, res) {
+//   try {
+//     let groupId = req.groupId;
+//     const UserId = req.UserId;
 
-    console.log("groupId====>",groupId,"======UserId=====>",UserId);
+//     console.log("groupId====>",groupId,"======UserId=====>",UserId);
 
-    if(!groupId || !UserId){
-      return res.status(400).send({status:false, message:"Both UserId and groupId are required"});
-    }
+//     if(!groupId || !UserId){
+//       return res.status(400).send({status:false, message:"Both UserId and groupId are required"});
+//     }
 
-    let cricket = await groupModel.findOneAndUpdate(
-      { _id: groupId, "updatedPlayers.UserId": UserId }, 
-      { $set: { "updatedPlayers.$.isBallThrow": true } },
-      { 
-        projection: {
-          'updatedPlayers.UserId': 1,
-          'updatedPlayers.run': 1,
-          'updatedPlayers.wicket': 1,
-          'updatedPlayers.isBallThrow': 1,
-          'ballSpeed': 1,
-          'isMatchOver': 1,
-          'nextBallTime': 1
-        },
-        new: true // Return the updated document
-      }
-    );
+//     let cricket = await groupModel.findOneAndUpdate(
+//       { _id: groupId, "updatedPlayers.UserId": UserId }, 
+//       { $set: { "updatedPlayers.$.isBallThrow": true } },
+//       { 
+//         projection: {
+//           'updatedPlayers.UserId': 1,
+//           'updatedPlayers.run': 1,
+//           'updatedPlayers.wicket': 1,
+//           'updatedPlayers.isBallThrow': 1,
+//           'ballSpeed': 1,
+//           'isMatchOver': 1,
+//           'nextBallTime': 1
+//         },
+//         new: true // Return the updated document
+//       }
+//     );
 
-    console.log("cricket using socket====>", cricket);
-    if (!cricket) {
-      socket.emit('cricketData', { status: false, message: "this groupId not found" });
-      return;
-    }
+//     console.log("cricket using socket====>", cricket);
+//     if (!cricket) {
+//       socket.emit('cricketData', { status: false, message: "this groupId not found" });
+//       return;
+//     }
 
-    // Calculate currentBallTime
-    let currentBallTime = Math.max(0, cricket.nextBallTime - new Date());
+//     // Calculate currentBallTime
+//     let currentBallTime = Math.max(0, cricket.nextBallTime - new Date());
 
-    if (cricket.isMatchOver === true) {
-      let resForWinners = {
-        updatedPlayers: cricket.updatedPlayers,
-        currentBallTime: currentBallTime,
-        ballSpeed: cricket.ballSpeed,
-      };
-      socket.emit('cricketData', resForWinners);
-      return;
-    }
+//     if (cricket.isMatchOver === true) {
+//       let resForWinners = {
+//         updatedPlayers: cricket.updatedPlayers,
+//         currentBallTime: currentBallTime,
+//         ballSpeed: cricket.ballSpeed,
+//       };
+//       socket.emit('cricketData', resForWinners);
+//       return;
+//     }
 
-    if (currentBallTime > 0) {
-      if (cricket.updatedPlayers.length !== 0) {
-        let cricket1 = {
-          updatedPlayers: cricket.updatedPlayers,
-          currentBallTime: currentBallTime,
-          ballSpeed: cricket.ballSpeed,
-        };
-        socket.emit('cricketData', cricket1);
-        return;
-      }
-    } else {
-      let cricket1 = {
-        updatedPlayers: cricket.updatedPlayers,
-        currentBallTime: 0,
-        ballSpeed: cricket.ballSpeed,
-      };
-      socket.emit('cricketData', cricket1);
-      return;
-    }
+//     if (currentBallTime > 0) {
+//       if (cricket.updatedPlayers.length !== 0) {
+//         let cricket1 = {
+//           updatedPlayers: cricket.updatedPlayers,
+//           currentBallTime: currentBallTime,
+//           ballSpeed: cricket.ballSpeed,
+//         };
+//         socket.emit('cricketData', cricket1);
+//         return;
+//       }
+//     } else {
+//       let cricket1 = {
+//         updatedPlayers: cricket.updatedPlayers,
+//         currentBallTime: 0,
+//         ballSpeed: cricket.ballSpeed,
+//       };
+//       socket.emit('cricketData', cricket1);
+//       return;
+//     }
 
-    socket.emit('cricketData', cricket);
-  } catch (err) {
-    console.log(err);
-    socket.emit('cricketDataError', { status: false, error: err.message });
-  }
-};
+//     socket.emit('cricketData', cricket);
+//   } catch (err) {
+//     console.log(err);
+//     socket.emit('cricketDataError', { status: false, error: err.message });
+//   }
+// };
 
 
 //____________________________update table__________________________
@@ -512,5 +512,5 @@ module.exports = {
   getCricByGroupId,
   winTheGame,
   getAllGroups,
-  getCricByGroupIdUsingSocket
+  // getCricByGroupIdUsingSocket
 };
