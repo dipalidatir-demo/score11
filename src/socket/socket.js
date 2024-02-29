@@ -44,7 +44,9 @@ module.exports = (httpServer) => {
       socket.on("getCricByGroupIdInSocket", (req) => {
         console.log("getCricByGroupIdUsingSocket data=====>", req);
         req.UserId = parseInt(req.UserId); // Parse UserId to integer
+        console.log(UserId,"++++++UserId");
         req.groupId = parseInt(req.groupId); // Parse groupId to integer
+        console.log(groupId,"++++++groupId");
         cricketController.getCricByGroupIdUsingSocket(socket, req);
     });
     
