@@ -47,7 +47,49 @@ module.exports = (httpServer) => {
         getCricByGroupIdUsingSocket(socket, req);
       });
       
-      
+      // //listen for groupData
+      // socket.on("getCricGroupDataInSocket", (req) => {
+      //   console.log("getCricGroupDataUsingSocket data=====>", req);
+      //   getCricGroupDataUsingSocket(socket,req);
+      // })
+
+      //------------ Listen for "getCricGroupDataInSocket" event----------------------------------
+    socket.on("getCricGroupDataInSocket", async (req) => {
+      try {
+        const groupId = req.groupId;
+        if (!groupId) {
+          return socket.emit('cricketDataError', { status: false, message: "groupId is required" });
+        }
+
+        // Fetch initial data for the group
+        const cricket = await cricGroupModel.findOne({ _id: groupId });
+        if (!cricket) {
+          return socket.emit('cricketDataError', { status: false, message: "Group not found" });
+        }
+
+        // Emit initial data to the client
+        socket.emit('cricketData', cricket);
+
+        // Create a change stream for the group collection
+        const changeStream = cricGroupModel.watch({ _id: groupId });
+
+        // Listen for change events
+        changeStream.on('change', async (change) => {
+          if (change.operationType === 'update') {
+            // Fetch updated data for the group
+            const updatedCricket = await cricGroupModel.findOne({ _id: groupId });
+            if (updatedCricket) {
+              // Emit updated data to the client
+              socket.emit('cricketData', updatedCricket);
+            }
+          }
+          // socket.emit('cricketData', cricket);
+        });
+      } catch (err) {
+        console.error(err);
+        socket.emit('cricketDataError', { status: false, error: err.message });
+      }
+    });
 
     // Emit updated user data to the client when a change occurs
     const emitUpdatedUserData = async (socket) => {
@@ -237,6 +279,56 @@ const getCricByGroupIdUsingSocket = async (socket, req, res) => {
     socket.emit('cricketDataError', { status: false, error: err.message });
   }
 };
+
+//________________send data for particular groupId____________
+// const getCricGroupDataUsingSocket = async (socket, req) => {
+//   try {
+//     console.log("received req data from the client===>", req);
+//     let groupId = req.groupId;
+
+//     console.log("groupId====>", groupId);
+
+//     if (!groupId) {
+//       return socket.emit('cricketDataError', { status: false, message: "groupId is required" });
+//     }
+
+//     let cricket = await cricGroupModel.findOne({ _id: groupId }).select({
+//       'updatedPlayers.UserId': 1,
+//       'updatedPlayers.run': 1,
+//       'updatedPlayers.wicket': 1,
+//       'updatedPlayers.isBallThrow': 1,
+//       'ballSpeed': 1,
+//       'isMatchOver': 1,
+//       'nextBallTime': 1
+//     });
+
+//     console.log("cricket using socket====>", cricket);
+//     if (!cricket) {
+//       return socket.emit('cricketData', { status: false, message: "this groupId not found" });
+//     }
+
+//     let currentBallTime = Math.max(0, cricket.nextBallTime - new Date());
+
+//     if (cricket.isMatchOver === true) {
+//       let resForWinners = {
+//         status:true,
+//         updatedPlayers: cricket.updatedPlayers,
+//         currentBallTime: currentBallTime,
+//         ballSpeed: cricket.ballSpeed,
+//       };
+//       socket.emit('cricketData', resForWinners);
+//       return;
+//     }
+
+//     socket.emit('cricketData', cricket);
+
+//   } catch (err) {
+//     console.log(err);
+//     socket.emit('cricketDataError', { status: false, error: err.message });
+//   }
+// };
+
+
 
     // Emit updated data when a user connects
     emitUpdatedUserData(socket);
