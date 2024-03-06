@@ -638,8 +638,9 @@ const getGroups = async function (req, res) {
     }
 
     console.log(user, ">>>>>>>>>>>>>");
-    users = users.map((items) => items.userName);
+    users = users.map((items) => items.userName.replace("mailto:", ""));
     let usersNameInStr = users.join(" ");
+    console.log("usersNameInStr=======>",usersNameInStr);
 
     return res.status(200).send({
       status: true,
