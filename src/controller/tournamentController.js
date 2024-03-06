@@ -637,16 +637,19 @@ const getGroups = async function (req, res) {
       });
     }
 
-    console.log(user, ">>>>>>>>>>>>>");
-    users = users.map((items) => items.userName.replace("mailto:", ""));
-    let usersNameInStr = users.join(" ");
-    console.log("usersNameInStr=======>",usersNameInStr);
+    console.log("users=====>",users, ">>>>>>>>>>>>>");
+  const  usersName = users.map((items) => items.userName.replace("mailto:", ""));
+   const userId = users.map((items) => items.UserId);
+   const usersIdInStr = userId.join();
+    let usersNameInStr = usersName.join(" ");
+    console.log("usersNameInStr=======>",usersNameInStr,"=============>",usersIdInStr);
 
     return res.status(200).send({
       status: true,
       message: "Success",
       groupId,
       usersNameInStr,
+      usersIdInStr
     });
   } catch (err) {
     return res.status(500).send({
