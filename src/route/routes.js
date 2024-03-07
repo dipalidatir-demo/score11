@@ -73,6 +73,8 @@ Router.get("/getAllCricketData", cricketController.getAllCric);
 
 Router.get("/getCricGrp", cricketController.getCricByGroupId);
 
+Router.get("/getGameEndTimeAsPerGrpId", cricketController.getGameEndTime);
+
 // Router.get("/getCricketDataUsingSocket", cricketController.getCricByGroupIdUsingSocket);
 
 Router.get("/getAllGroupsOfCric", cricketController.getAllGroups);
@@ -98,6 +100,8 @@ Router.get("/players", tournamentController.getPlayers);
 Router.get("/getAllGroupAsPerTableId", tournamentController.allGroupAsPerTableId);
 
 Router.get("/getTotalPlayerAndBot", tournamentController.getTotalPlayerAndBot);
+
+Router.get("/getNextBallTimeAsPerTableId",tournamentController.getNextBallTimeAsPerTableId);
 
 //__________________Hocky___________________
 

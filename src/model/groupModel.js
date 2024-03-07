@@ -25,6 +25,7 @@ const groupSchema = new mongoose.Schema(
           type: Number,
           default: 0,
         },
+        runWithWicket:[],
         hit: {
           type: Boolean,
           default: false,
@@ -62,6 +63,10 @@ const groupSchema = new mongoose.Schema(
     nextBallTime: {
       type: Date,
       default: Date.now() + 1 * 7 * 1000
+    },
+    gameEndTime:{
+      type: Date,
+      default: () => Date.now() + 52 * 1000
     },
     ballSpeed: {
       type: Number,

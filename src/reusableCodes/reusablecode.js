@@ -114,7 +114,7 @@ const createGroup = async function (tableId) {
           { $set: { totalBotInTable: totalBot, totalPlayersInTable: players } },
           { new: true }
         );
-        console.log(updateTournament, "======================UpdateTournament");
+        // console.log(updateTournament, "======================UpdateTournament");
         // Fetch dummy users from the botModel where the type is "normal"
         const dummyUsers = await botModel.find({
           botType: { $in: ["normal", "hard"] },
@@ -169,10 +169,11 @@ async function startMatch(grpId, group) {
       isBallThrow:false,
       wicket: 0,
       prize: 0,
+      runWithWicket:[],
       isRunUpdated: name.isRunUpdated,
       botType: name.botType,
     }));
-    console.log("result", result);
+    // console.log("result", result);
     let totalBot = result.filter((players) => players.isBot === true);
     totalBot = totalBot.length;
     let totalRealPlayres = result.filter((players) => players.isBot === false);
@@ -191,7 +192,7 @@ async function startMatch(grpId, group) {
       },
       { new: true, setDefaultsOnInsert: true }
     );
-    console.log("this is updated data >>>>>>>>>>", matchData);
+    // console.log("this is updated data >>>>>>>>>>", matchData);
     setTimeout(function () {
       runUpdateBalls(grpId);
     }, 7000);
@@ -224,6 +225,7 @@ async function updateBalls(grpId) {
           //___________If the player did not hit the ball, set the wicket to true
           player.wicket += 1;
           player.isRunUpdated = false;
+          player.runWithWicket.push("W");
         }
         if (player.hit && ballCountForWicket > 0) {
           //______________If the player did not hit the ball, set the wicket to true
@@ -919,9 +921,9 @@ async function updateBalls(grpId) {
       // Access updated data and count runs, assuming 'updatedPlayers' is an array
       const updatedPlayers = runUpdatedForBot.updatedPlayers;
       // Perform any calculations or operations on 'updatedPlayers' here
-      console.log(updatedPlayers, "::::::::::::::::::::::::::::updatedPlayers");
+      // console.log(updatedPlayers, "::::::::::::::::::::::::::::updatedPlayers");
 
-      console.log(runUpdatedForBot, "runUpdatedForBot:::::::::::::::::::");
+      // console.log(runUpdatedForBot, "runUpdatedForBot:::::::::::::::::::");
     }
 
     if (ballCountForWicket <= min - 1) {

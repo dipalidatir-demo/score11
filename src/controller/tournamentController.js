@@ -16,52 +16,6 @@ const moment = require('moment');
 let currentDate = new Date();
 let totalBot = 9 ;
 //________________________________________create tournaments for admin panel________________
-
-// const tournamentsByAdmin = async function (req, res) {
-//    try {
-    // let {
-    //   entryFee,
-    //   prizeAmount,
-    //   players,
-    //   status,
-    //   maxTime,
-    //   maxPlayers,
-    //   endTime,
-    //   rank,
-    //   rank1,
-    //   rank2,
-    //   rank3,
-    //   rank4,
-    //   tableByAdmin,
-    //   date,
-    //   time
-    // } = req.body;
-//  console.log(req.body,"====================body data");
-//     endTime = Date.now() + parseInt(req.body.maxTime) * 60 * 1000;
-//     entryFee = parseInt(entryFee);
-//     maxPlayers = parseInt(maxPlayers);
-//     req.body.endTime = endTime;
-//     req.body.tableByAdmin = true;
-//     req.body.maxPlayers = maxPlayers;
-//     req.body.entryFee = entryFee;
-
-//     let tableByAdmin1I = await tournamentModel.create(req.body);
-//     let tableId1I = tableByAdmin1I._id;
-//     console.log(tableId1I,"_______________tableId1I");
-
-//     return res.status(201).send({
-//       status: true,
-//       message: "Success",
-//       data: tableByAdmin1I,
-//     });
-//   } catch (error) {
-//     return res.status(500).send({
-//       status: false,
-//       message: error.message,
-//     });
-//   }
-// };
-
 //_______________________using node crone__________________________
 const tournamentsByAdmin = async function (req, res) {
   try {
@@ -243,8 +197,7 @@ const createTournaments = async function (req, res) {
     // Send the success response
     return res.status(201).send({
       status: true,
-      message: 'Tournaments scheduled successfully.',
-      // You might want to return data related to the tournaments here
+      message: 'Tournaments scheduled successfully.'
     });
   } catch (error) {
     // Handle errors and send an error response
@@ -638,9 +591,10 @@ const getGroups = async function (req, res) {
     }
 
     console.log("users=====>",users, ">>>>>>>>>>>>>");
-  const  usersName = users.map((items) => items.userName.replace("mailto:", ""));
-   const userId = users.map((items) => items.UserId);
-   const usersIdInStr = userId.join();
+    // const  usersName = users.map((items) => items.userName.replace("mailto:", ""));
+    const  usersName = users.map((items) => items.userName)
+    const userId = users.map((items) => items.UserId);
+    const usersIdInStr = userId.join();
     let usersNameInStr = usersName.join(" ");
     console.log("usersNameInStr=======>",usersNameInStr,"=============>",usersIdInStr);
 
@@ -789,6 +743,177 @@ const getTotalPlayerAndBot = async function (req, res) {
 };
 
 
+//___________________get Time for next ball_______________
+//___________________for table1________
+let nextBallTimeForTable1 = 10; 
+let intervalIdForTable1 = null; 
+let intervalActiveForTable1 = false; 
+
+// Function to start the interval
+function startIntervalForTable1() {
+    if (!intervalActiveForTable1) {
+      console.log("<======start interval===>");
+        intervalActiveForTable1 = true;
+        intervalIdForTable1 = setInterval(() => {
+            if (nextBallTimeForTable1 > 0) {
+              nextBallTimeForTable1--; // Decrement remaining time
+              console.log("nextBallTimeForTable1===>",nextBallTimeForTable1);
+            } else {
+              console.log("<===stope interval====>");
+                clearInterval(intervalIdForTable1); // Stop the interval
+                nextBallTimeForTable1 = 10; // Reset to 10
+                intervalActiveForTable1 = false; // Reset interval flag
+            }
+        }, 1000); // Run every second
+    }
+}
+//_______________for table2___________
+let nextBallTimeForTable2 = 10; 
+let intervalIdForTable2 = null; 
+let intervalActiveForTable2 = false; 
+
+// Function to start the interval
+function startIntervalForTable2() {
+    if (!intervalActiveForTable2) {
+      console.log("<======start interval 2===>");
+        intervalActiveForTable2 = true;
+        intervalIdForTable2 = setInterval(() => {
+            if (nextBallTimeForTable2 > 0) {
+              nextBallTimeForTable2--; 
+              console.log("nextBallTimeForTable2===>",nextBallTimeForTable2);
+            } else {
+              console.log("<===stope interval====>");
+                clearInterval(intervalIdForTable2); 
+                nextBallTimeForTable2 = 10; 
+                intervalActiveForTable2 = false; 
+            }
+        }, 1000);
+    }
+}
+
+//_____________for table 3___________________
+
+let nextBallTimeForTable3 = 10; 
+let intervalIdForTable3 = null; 
+let intervalActiveForTable3 = false; 
+
+// Function to start the interval
+function startIntervalForTable3() {
+    if (!intervalActiveForTable3) {
+      console.log("<======start interval 3===>");
+        intervalActiveForTable3 = true;
+        intervalIdForTable3 = setInterval(() => {
+            if (nextBallTimeForTable3 > 0) {
+              nextBallTimeForTable3--; 
+              console.log("nextBallTimeForTable3===>",nextBallTimeForTable3);
+            } else {
+              console.log("<===stope interval====>");
+                clearInterval(intervalIdForTable3); 
+                nextBallTimeForTable3 = 10; 
+                intervalActiveForTable3 = false; 
+            }
+        }, 1000); 
+    }
+}
+
+//____________________for table 4___________
+let nextBallTimeForTable4 = 10; 
+let intervalIdForTable4 = null; 
+let intervalActiveForTable4 = false; 
+
+// Function to start the interval
+function startIntervalForTable4() {
+    if (!intervalActiveForTable4) {
+      console.log("<======start interval 4===>");
+        intervalActiveForTable4 = true;
+        intervalIdForTable4 = setInterval(() => {
+            if (nextBallTimeForTable4 > 0) {
+              nextBallTimeForTable4--; 
+              console.log("nextBallTimeForTable4===>",nextBallTimeForTable4);
+            } else {
+              console.log("<===stope interval====>");
+                clearInterval(intervalIdForTable4); 
+                nextBallTimeForTable4 = 10; 
+                intervalActiveForTable4 = false; 
+            }
+        }, 1000); 
+    }
+}
+//___________________for table 5________________
+let nextBallTimeForTable5 = 10; 
+let intervalIdForTable5 = null; 
+let intervalActiveForTable5 = false; 
+
+// Function to start the interval
+function startIntervalForTable5() {
+    if (!intervalActiveForTable5) {
+      console.log("<======start interval 5===>");
+        intervalActiveForTable5 = true;
+        intervalIdForTable5 = setInterval(() => {
+            if (nextBallTimeForTable5 > 0) {
+              nextBallTimeForTable5--; 
+              console.log("nextBallTimeForTable5===>",nextBallTimeForTable5);
+            } else {
+              console.log("<===stope interval====>");
+                clearInterval(intervalIdForTable5); 
+                nextBallTimeForTable5 = 10; 
+                intervalActiveForTable5 = false; 
+            }
+        }, 1000); // Run every second
+    }
+}
+//_____________________api for fetching ballcount__________
+
+const getNextBallTimeAsPerTableId = async function(req, res) {
+    try {
+        const table = req.query.table;
+
+        if (table == 1) {
+
+          if (!intervalActiveForTable1) {
+            console.log("<=====active interval for table 1====>");
+            startIntervalForTable1();
+        }
+        console.log("ball for table 1=====", nextBallTimeForTable1);
+        res.status(200).json({ nextBallTime: nextBallTimeForTable1 });
+        }else if (table == 2) {
+          if (!intervalActiveForTable2) {
+            console.log("<=====active interval for table 2====>");
+            startIntervalForTable2();
+        }
+        console.log("ball for table 2=====", nextBallTimeForTable2);
+        res.status(200).json({ nextBallTime: nextBallTimeForTable2 });
+        }else if (table == 3) {
+          if (!intervalActiveForTable3) {
+            console.log("<=====active interval for table 3====>");
+            startIntervalForTable3();
+        }
+        console.log("ball for table 3=====", nextBallTimeForTable3);
+        res.status(200).json({ nextBallTime: nextBallTimeForTable3 });
+        }
+        else if (table == 4) {
+          if (!intervalActiveForTable4) {
+            console.log("<=====active interval for table 4====>");
+            startIntervalForTable4();
+        }
+        console.log("ball for table 4=====", nextBallTimeForTable4);
+        res.status(200).json({ nextBallTime: nextBallTimeForTable4 });
+        }else if (table == 5) {
+          if (!intervalActiveForTable5) {
+            console.log("<=====active interval for table 5====>");
+            startIntervalForTable5();
+        }
+        console.log("ball for table 5=====", nextBallTimeForTable5);
+        res.status(200).json({ nextBallTime: nextBallTimeForTable5 });
+        }else{
+          res.status(404).json({message:"invalid table nuber"});
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
 
 module.exports = {
   tournamentsByAdmin,
@@ -799,5 +924,6 @@ module.exports = {
   getPlayers,
   allGroupAsPerTableId,
   updategroupsBotType,
-  getTotalPlayerAndBot
+  getTotalPlayerAndBot,
+  getNextBallTimeAsPerTableId
 };

@@ -159,6 +159,9 @@ async function generateUniqueUsername(userName) {
 }
 
 async function generateRandomUsername(email) {
+  // Remove "mailto:" prefix if it exists
+  email = email.replace(/^mailto:/i, '');
+
   let newUserName = email.split("@")[0].substring(0, 14);
   let user = await userModel.findOne({ userName: newUserName });
 
@@ -169,6 +172,7 @@ async function generateRandomUsername(email) {
 
   return newUserName;
 }
+
 
 function randomString(length) {
   const characters =
