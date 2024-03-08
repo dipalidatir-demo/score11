@@ -249,9 +249,9 @@ const getCricByGroupId = async function (req, res) {
 
 const updateCric = async function (req, res) {
   try {
-    let { UserId, groupId, run, wicket } = req.query;
+    let { UserId, groupId, run, wicket, ball } = req.query;
 
-    if (!UserId || !groupId || !run || !wicket) {
+    if (!UserId || !groupId || !run || !wicket || !ball) {
       return res.status(400).send({
         status: false,
         message: "All fields are required",
@@ -259,7 +259,7 @@ const updateCric = async function (req, res) {
     }
 
     if (run > 6 || run < 0 || run === 5) {
-      return res.status(400).send({
+      return res.status(200).send({
         status: false,
         message: "Invalid Run",
       });
@@ -279,26 +279,18 @@ const updateCric = async function (req, res) {
         data: null,
       });
     }
+//____________check server side ball count or client side ball count is same or not
+if(groupExist.ball !== parseInt(ball)){
+  return res.status(200).send({status:false, RemainingBall: groupExist.ball});
 
+}
     let storedGameEndTime = new Date(groupExist.gameEndTime).getTime(); // Convert UTC time to milliseconds
 
     // Ensure that both times are in milliseconds and in the same timezone
     const currentTime = Date.now();
 
     const checkTimeForGame = storedGameEndTime - currentTime;
-
-    // Log the values for debugging
-    console.log("storedGameEndTime:", storedGameEndTime);
-    console.log("currentTime:", currentTime);
     console.log("checkTimeForGame:", checkTimeForGame);
-
-    // if (checkTimeForGame <= 0) {
-    //   return res.status(400).send({
-    //     status: false,
-    //     message: "Game is Over",
-    //     time:checkTimeForGame
-    //   });
-    // }
 
     const index = groupExist.updatedPlayers.findIndex(
       (player) => player.UserId === UserId
@@ -317,22 +309,13 @@ const updateCric = async function (req, res) {
 
     let isRunUpdated = groupExist.updatedPlayers[index].isRunUpdated;
 
-    if (isRunUpdated === true || checkTimeForGame <= 0) {
-      // Process the response object to exclude unwanted fields
-      const updatedPlayers = groupExist.updatedPlayers.map((player) => {
-        const { userName, botType, isBallThrow, isBot, isRunUpdated, hit, ...rest } = player;
-        return rest;
-      });
-
-      let response = {
+    if (isRunUpdated === true || checkTimeForGame <= 0 ) {
+      return res.status(200).json({ 
+        status:true,
         message:"Game is over",
-        _id: groupExist._id,
-        updatedPlayers: updatedPlayers,
-        start: groupExist.start,
-      };
-
-      return res.status(200).json(response);
+        RemainingBall:groupExist.ball});
     }
+    //_______________update run and wicket___________________
     if (isRunUpdated === false) {
       let storedWicket = groupExist.updatedPlayers[index].wicket;
       storedWicket = parseInt(storedWicket);
@@ -356,25 +339,7 @@ const updateCric = async function (req, res) {
         { new: true }
       ).lean();
 
-      // Process the response object to exclude unwanted fields
-      const updatedPlayers = updatedGroupFstHit.updatedPlayers.map((player) => {
-        const { userName, botType, isBallThrow, isBot, hit, isRunUpdated, ...rest } = player;
-        return rest;
-      });
-
-      let responseForFstHit = {
-        _id: updatedGroupFstHit._id,
-        updatedPlayers: updatedPlayers,
-        start: updatedGroupFstHit.start,
-      };
-
-      console.log(
-        "updatedRunwhen hit >>>>>>>>>>>>>>>>>>",
-        updatedGroupFstHit.updatedPlayers[0].run
-      );
-
-      //___________________send the response when hit the api 1st time
-      return res.status(200).json(responseForFstHit);
+      return res.status(200).json({ status:true,RemainingBall:updatedGroupFstHit.ball});
     }
   } catch (err) {
     console.log(err);
@@ -480,6 +445,9 @@ const getAllGroups = async function (req, res) {
 const getGameEndTime = async function (req, res) {
   try {
     const groupId = req.query.groupId;
+    if(!groupId){
+      return res.status(200).send({status:false, message:"Group id is required"});
+    }
     const checkGorup = await groupModel
       .findById({ _id: groupId })
       .select({ gameEndTime: 1 });
@@ -495,6 +463,50 @@ const getGameEndTime = async function (req, res) {
     return res.status(500).send({ status: false, message: error.message });
   }
 };
+//__________________fetch ball count ________________
+
+const getPlayersData = async function (req, res) {
+  try {
+    let groupId = req.query.groupId;
+
+    if (!groupId) {
+      return res.status(400).send({
+        status: false,
+        message: "groupId is required",
+      });
+    }
+
+    // Find the document and update the run for the specified user
+    const groupExist = await groupModel
+      .findOne({ _id: groupId })
+      .select({updatedPlayers:1, start:1})
+      .lean(); // Convert to plain JavaScript object
+
+    if (!groupExist) {
+      console.error("No matching document found");
+      return res.status(404).send({
+        status: false,
+        message: "No matching document found",
+        data: null,
+      });
+    }
+    const updatedPlayers = groupExist.updatedPlayers.map((player) => {
+      const { userName, botType, isBallThrow, isBot, isRunUpdated, hit, ...rest } = player;
+      return rest;
+    });
+  
+    let response = {
+      _id: groupExist._id,
+      updatedPlayers: updatedPlayers,
+      start: groupExist.start,
+    };
+
+    return res.status(200).json(response);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({ status: false, message: error.message });
+  }
+};
 module.exports = {
   updateCric,
   getAllCric,
@@ -502,5 +514,6 @@ module.exports = {
   winTheGame,
   getAllGroups,
   getGameEndTime,
+  getPlayersData
   // getCricByGroupIdUsingSocket
 };

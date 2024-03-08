@@ -187,7 +187,7 @@ async function startMatch(grpId, group) {
           totalPlayerInGrp: totalRealPlayres,
           start: true,
           currentBallTime: Date.now(),
-          nextBallTime: Date.now() + 1 * 7 * 1000,
+          nextBallTime: Date.now() + 1 * 10 * 1000,
         },
       },
       { new: true, setDefaultsOnInsert: true }
@@ -195,7 +195,7 @@ async function startMatch(grpId, group) {
     // console.log("this is updated data >>>>>>>>>>", matchData);
     setTimeout(function () {
       runUpdateBalls(grpId);
-    }, 7000);
+    }, 10000);
   }
 }
 
@@ -859,7 +859,7 @@ async function updateBalls(grpId) {
         { _id: grpId },
         {
           $inc: { ball: -1 },
-          nextBallTime: Date.now() + 1 * 7 * 1000,
+          nextBallTime: Date.now() + 1 * 10 * 1000,
           currentBallTime: Date.now(),
           ballSpeed:
             Math.floor(Math.random() * (maxSpeed - minSpeed + 1)) + minSpeed,
@@ -934,35 +934,6 @@ async function updateBalls(grpId) {
   return false;
 }
 
-// function runUpdateBalls(grpId) {
-//   console.log("call the runUpdateBalls function >>>>>>>>>>>", grpId);
-
-//   if (grpId !== undefined) {
-//     let continueRunning = true;
-//     let executionCount = 0;
-
-//     // Define the cron expression to run every 7 seconds
-//     const cronExpression = "*/7 * * * * *";
-
-//     // Schedule the updateBallsRecursive function using cron
-//     const cronJob = cron.schedule(cronExpression, async () => {
-//       if (continueRunning) {
-//         const isMaxCountReached = await updateBalls(grpId);
-//         if (!isMaxCountReached && executionCount < 8) {
-//           executionCount++;
-//           cronJob.start();
-//         } else {
-//           cronJob.stop();
-//           console.log("Cron job stopped. 1");
-//         }
-//       } else {
-//         cronJob.stop();
-//         console.log("Cron job stopped.2");
-//       }
-//     });
-//     cronJob.start();
-//   }
-// }
 //_________________________________________update run___________________
 
 function runUpdateBalls(grpId) {
@@ -977,9 +948,9 @@ function runUpdateBalls(grpId) {
         if (!isMaxCountReached && executionCount < 8) {
           executionCount++;
           setTimeout(async () => {
-            //________________update nextBallTime, currentBallTime and  ballSpeed in every 7 seconds
+            //________________update nextBallTime, currentBallTime and  ballSpeed in every 10 seconds
             updateBallsRecursive();
-          }, 7000); //7sec
+          }, 10000); //10sec
         }
       }
     }

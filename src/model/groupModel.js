@@ -66,7 +66,7 @@ const groupSchema = new mongoose.Schema(
     },
     gameEndTime:{
       type: Date,
-      default: () => Date.now() + 52 * 1000
+      default: () => Date.now() + 60 * 1000
     },
     ballSpeed: {
       type: Number,

@@ -75,6 +75,8 @@ Router.get("/getCricGrp", cricketController.getCricByGroupId);
 
 Router.get("/getGameEndTimeAsPerGrpId", cricketController.getGameEndTime);
 
+Router.get("/getPlayersData", cricketController.getPlayersData);
+
 // Router.get("/getCricketDataUsingSocket", cricketController.getCricByGroupIdUsingSocket);
 
 Router.get("/getAllGroupsOfCric", cricketController.getAllGroups);
