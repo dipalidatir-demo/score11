@@ -67,7 +67,7 @@ Router.get("/getAllBotData", botController.getAllBot);
 
 //_____________________ Cricket________________________
 
-Router.put("/updateCricket", cricketController.updateCric);
+Router.get("/updateCricket", cricketController.updateCric);
 
 Router.get("/getAllCricketData", cricketController.getAllCric);
 
