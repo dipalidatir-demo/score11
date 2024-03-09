@@ -62,7 +62,7 @@ const groupSchema = new mongoose.Schema(
     },
     nextBallTime: {
       type: Date,
-      default: Date.now() + 1 * 7 * 1000
+      default: Date.now() + 1 * 10 * 1000
     },
     gameEndTime:{
       type: Date,

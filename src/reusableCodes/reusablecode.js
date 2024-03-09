@@ -188,6 +188,7 @@ async function startMatch(grpId, group) {
           start: true,
           currentBallTime: Date.now(),
           nextBallTime: Date.now() + 1 * 10 * 1000,
+          gameEndTime: Date.now() + 1 * 60 *1000,
         },
       },
       { new: true, setDefaultsOnInsert: true }

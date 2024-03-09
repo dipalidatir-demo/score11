@@ -284,13 +284,13 @@ if(groupExist.ball !== parseInt(ball)){
   return res.status(200).send({status:false, RemainingBall: groupExist.ball});
 
 }
-    let storedGameEndTime = new Date(groupExist.gameEndTime).getTime(); // Convert UTC time to milliseconds
+    // let storedGameEndTime = new Date(groupExist.gameEndTime).getTime(); // Convert UTC time to milliseconds
 
-    // Ensure that both times are in milliseconds and in the same timezone
-    const currentTime = Date.now();
+    // // Ensure that both times are in milliseconds and in the same timezone
+    // const currentTime = Date.now();
 
-    const checkTimeForGame = storedGameEndTime - currentTime;
-    console.log("checkTimeForGame:", checkTimeForGame);
+    // const checkTimeForGame = storedGameEndTime - currentTime;
+    // console.log("checkTimeForGame:", checkTimeForGame);
 
     const index = groupExist.updatedPlayers.findIndex(
       (player) => player.UserId === UserId
@@ -309,7 +309,7 @@ if(groupExist.ball !== parseInt(ball)){
 
     let isRunUpdated = groupExist.updatedPlayers[index].isRunUpdated;
 
-    if (isRunUpdated === true || checkTimeForGame <= 0 ) {
+    if (isRunUpdated === true || groupExist.isMatchOver ) {
       return res.status(200).json({ 
         status:true,
         message:"Game is over",
