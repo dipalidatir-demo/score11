@@ -193,28 +193,74 @@ async function startMatch(grpId, group) {
       },
       { new: true, setDefaultsOnInsert: true }
     );
-     console.log("this is updated data start game >>>>>>>>>>", matchData.start);
+    const updateRunForBot = matchData.updatedPlayers.map((botPlayers) => {
+      function updateRun(runArray) {
+          const runWithWicket = [];
+          let runForBot = 0 ;
+  
+          // Generate five random runs
+          for (let i = 0; i < 5; i++) {
+              let randomValue = runArray[Math.floor(Math.random() * runArray.length)];
+  
+              // If there's a previous run, add it to the current run
+              if (runWithWicket.length > 0) {
+                  randomValue += runWithWicket[runWithWicket.length - 1];
+              }
+  
+              runWithWicket.push(randomValue);
+          }
+          runForBot = runWithWicket[runWithWicket.length-1];
+          // Generate a random wicket index within the runs
+          const wicketIndex = Math.floor(Math.random() * 5);
+          
+          // Generate a random wicket value
+          const randomWicket = Math.random() > 0.5 ? "w" : Math.floor(Math.random() * 11);
+  
+          // Insert the wicket at the random index within the runs
+          runWithWicket.splice(wicketIndex, 0, randomWicket);
+          return {runWithWicket,runForBot};
+      }
+  
+      if (botPlayers.isBot === true) {
+          let runsArray;
+          if (botPlayers.botType === "easy") {
+              runsArray = [1, 2];
+          } else if (botPlayers.botType === "hard") {
+              runsArray = [4, 6];
+          } else {
+              runsArray = [1, 2, 3, 4, 6];
+          }
+  
+          const runturnValue = updateRun(runsArray);
+          botPlayers.runWithWicket = runturnValue.runWithWicket;
+  
+          // Calculate runs and wickets
+          botPlayers.run = runturnValue.runForBot;
+          botPlayers.wicket += runturnValue.runWithWicket.filter(val => val === "w").length;
+      }
+      return botPlayers;
+  });
+  
+  let runUpdatedForBot = await groupModel
+      .findByIdAndUpdate(
+          { _id: grpId },
+          { $set: { updatedPlayers: updateRunForBot } },
+          { new: true }
+      )
+      .exec();
+  
+  
+  
+  
+     console.log("this is updated data start game and updating botsrun>>>>>>>>>>", runUpdatedForBot.start);
     setTimeout(function () {
       runUpdateBalls(grpId);
     }, 10000);
   }
 }
-
-let fullDayProfit = 0;
-let fullMonthProfit = 0;
-let fullYearProfit = 0;
-let fullDayLoss = 0;
-let fullMonthLoss = 0;
-let fullYearLoss = 0;
-
-let lastUpdatedDate;
-let lastUpdatedMonth;
-let lastUpdatedYear;
-
+//__________________________________updateBalls function___________________________________
 async function updateBalls(grpId) {
   let min = 0;
-  const minSpeed = 12;
-  const maxSpeed = 18;
 
   if (grpId != undefined) {
     let updateWicket = await groupModel.findByIdAndUpdate({ _id: grpId });
@@ -275,15 +321,6 @@ async function updateBalls(grpId) {
       let count = 0;
       let totalPlayerInGrp = updateWicket.totalPlayerInGrp;
       let totalBotInGrp = updateWicket.totalBotInGrp;
-
-      // for (let i = 0; i < players.length; i++) {
-      //   if (players[i].isBot === false) {
-      //     count++;
-      //     totalPlayerInGrp++;
-      //   } else {
-      //     totalBotInGrp++;
-      //   }
-      // }
 
       //____________________________"profit" when all 5 players came so entryFee- prize remaining profit__________
       const currentDt = new Date();
@@ -862,8 +899,6 @@ async function updateBalls(grpId) {
           $inc: { ball: -1 },
           nextBallTime: Date.now() + 1 * 10 * 1000,
           currentBallTime: Date.now(),
-          ballSpeed:
-            Math.floor(Math.random() * (maxSpeed - minSpeed + 1)) + minSpeed,
           isUpdate: false,
         },
         { new: true }
@@ -877,54 +912,6 @@ async function updateBalls(grpId) {
       //   updateBall.gameEndTime - Date.now(),
       //   "++++++++++++++++++gameEndTime"
       // );
-
-      const updateRunForBot = updateBall.updatedPlayers.map((botPlayers) => {
-        if (botPlayers.isBot === true) {
-          // Determine if the bot player should be out
-          if (
-            botPlayers.botType !== "hard" &&
-            botPlayers.run > 1 &&
-            Math.random() > 0.5
-          ) {
-            botPlayers.wicket += 1;
-          } else {
-            if (botPlayers.botType === "easy") {
-              const easyRuns = [1, 2];
-              const randomValueEasy =
-                easyRuns[Math.floor(Math.random() * easyRuns.length)];
-              botPlayers.run += randomValueEasy;
-            } else if (botPlayers.botType === "hard") {
-              const hardRuns = [4, 6];
-              const randomValuehard =
-                hardRuns[Math.floor(Math.random() * hardRuns.length)];
-              botPlayers.run += randomValuehard;
-            } else {
-              const possibleValues = [1, 2, 3, 4, 6];
-              const randomIndex = Math.floor(
-                Math.random() * possibleValues.length
-              );
-              const randomValue = possibleValues[randomIndex];
-              botPlayers.run += randomValue;
-            }
-          }
-        }
-        return botPlayers;
-      });
-
-      let runUpdatedForBot = await groupModel
-        .findByIdAndUpdate(
-          { _id: grpId },
-          { $set: { updatedPlayers: updateRunForBot } },
-          { new: true }
-        )
-        .exec();
-
-      // Access updated data and count runs, assuming 'updatedPlayers' is an array
-      const updatedPlayers = runUpdatedForBot.updatedPlayers;
-      // Perform any calculations or operations on 'updatedPlayers' here
-      // console.log(updatedPlayers, "::::::::::::::::::::::::::::updatedPlayers");
-
-      // console.log(runUpdatedForBot, "runUpdatedForBot:::::::::::::::::::");
     }
 
     if (ballCountForWicket <= min - 1) {
