@@ -281,6 +281,7 @@ const updateCric = async function (req, res) {
     }
 //____________check server side ball count or client side ball count is same or not
 if(groupExist.ball !== parseInt(ball)){
+  console.log(" RemainingBall status false==========>",groupExist.ball,"=======client ball========>",ball);
   return res.status(200).send({status:false, RemainingBall: groupExist.ball});
 
 }
@@ -310,9 +311,10 @@ if(groupExist.ball !== parseInt(ball)){
     let isRunUpdated = groupExist.updatedPlayers[index].isRunUpdated;
 
     if (isRunUpdated === true || groupExist.isMatchOver ) {
+      console.log(" RemainingBall status true==========>",groupExist.ball);
       return res.status(200).json({ 
         status:true,
-        message:"Game is over",
+        // message:"Game is over",
         RemainingBall:groupExist.ball});
     }
     //_______________update run and wicket___________________
@@ -338,7 +340,7 @@ if(groupExist.ball !== parseInt(ball)){
         { $set: { "updatedPlayers.$": groupExist.updatedPlayers } },
         { new: true }
       ).lean();
-
+      console.log(" RemainingBall status true==========>",updatedGroupFstHit.ball);
       return res.status(200).json({ status:true,RemainingBall:updatedGroupFstHit.ball});
     }
   } catch (err) {
@@ -450,14 +452,15 @@ const getGameEndTime = async function (req, res) {
     }
     const checkGorup = await groupModel
       .findById({ _id: groupId })
-      .select({ gameEndTime: 1 });
+      .select({ nextBallTime: 1, ball:1 });
 
     if (!checkGorup) {
       return res
         .status(200)
         .send({ status: false, message: "Group not found" });
     }
-    return res.status(200).send({ status: true, time: checkGorup.gameEndTime });
+   
+    return res.status(200).send({ status: true, currentTime: new Date(), nextBallTime: checkGorup.nextBallTime, RemainingBall:checkGorup.ball });
   } catch (error) {
     console.log(error);
     return res.status(500).send({ status: false, message: error.message });

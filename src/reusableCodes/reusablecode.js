@@ -144,7 +144,7 @@ const createGroup = async function (tableId) {
           });
           let grpId = createGrp._id;
           let group = createGrp.group;
-          console.log(createGrp);
+          // console.log(createGrp);
           // setTimeout(function () {
           startMatch(grpId, group);
           // }, 120000);
@@ -158,7 +158,7 @@ const createGroup = async function (tableId) {
 
 async function startMatch(grpId, group) {
   console.log("grpid>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", grpId);
-  console.log("groups>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", group);
+  // console.log("groups>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", group);
   if (grpId !== undefined) {
     const result = group.map((name) => ({
       UserId: name.UserId,
@@ -188,12 +188,12 @@ async function startMatch(grpId, group) {
           start: true,
           currentBallTime: Date.now(),
           nextBallTime: Date.now() + 1 * 10 * 1000,
-          gameEndTime: Date.now() + 1 * 60 *1000,
+          // gameEndTime: Date.now() + 1 * 60 * 1000,
         },
       },
       { new: true, setDefaultsOnInsert: true }
     );
-    // console.log("this is updated data >>>>>>>>>>", matchData);
+     console.log("this is updated data start game >>>>>>>>>>", matchData.start);
     setTimeout(function () {
       runUpdateBalls(grpId);
     }, 10000);
@@ -259,7 +259,7 @@ async function updateBalls(grpId) {
           return a.wicket - b.wicket; //___sort by wickets in ascending order for players with the same runs
         }
       });
-      console.log(players, "declareWinners_______________");
+      // console.log(players, "declareWinners_______________");
 
       //_________________winner prize as per prize amount
 
@@ -290,14 +290,14 @@ async function updateBalls(grpId) {
       const currentDate = currentDt.getDate();
       const currentMonth = currentDt.getMonth();
       const currentYear = currentDt.getFullYear();
-      console.log(
-        currentDate,typeof(currentDate),
-        "====currentDate===",
-        currentMonth,typeof(currentMonth),
-        "===currentMonth====",
-        currentYear, typeof(currentYear),
-        "========currentYear"
-      );
+      // console.log(
+      //   currentDate,typeof(currentDate),
+      //   "====currentDate===",
+      //   currentMonth,typeof(currentMonth),
+      //   "===currentMonth====",
+      //   currentYear, typeof(currentYear),
+      //   "========currentYear"
+      // );
       if (totalPlayerInGrp === 5) {
         // const tournamentData = await tournamentModel.findById({ _id: tableId });
         // const currentDateInMo = moment();
@@ -321,14 +321,14 @@ async function updateBalls(grpId) {
           lastUpdatedDate = lastDayProfit.createdAt.getDate();
           updatedMonth = lastDayProfit.createdAt.getMonth();
           updatedYear = lastDayProfit.createdAt.getFullYear();
-          console.log(
-            lastUpdatedDate,
-            "===lastUpdatedDate===",
-            updatedYear,
-            "=====updatedYear====",
-            updatedMonth,
-            "==========updatedMonth"
-          );
+          // console.log(
+          //   lastUpdatedDate,
+          //   "===lastUpdatedDate===",
+          //   updatedYear,
+          //   "=====updatedYear====",
+          //   updatedMonth,
+          //   "==========updatedMonth"
+          // );
         }
 
         // if (tournamentData) {
@@ -509,7 +509,7 @@ async function updateBalls(grpId) {
         for (let i = 0; i < updateWicket.updatedPlayers.length; i++) {
           if (updateWicket.updatedPlayers[i].isBot === false) {
             winPrizeOfUser += updateWicket.updatedPlayers[i].prize;
-            console.log(winPrizeOfUser, "_________________winPrizeOfUser");
+            // console.log(winPrizeOfUser, "_________________winPrizeOfUser");
           }
         }
 
@@ -639,9 +639,9 @@ async function updateBalls(grpId) {
             { new: true }
           );
 
-          console.log(updatedGroup, "______________updatedGroup");
+          // console.log(updatedGroup, "______________updatedGroup");
 
-          console.log("Updated loss in Database:", updatedGroup.loss);
+          // console.log("Updated loss in Database:", updatedGroup.loss);
           let updateTableLoss = await tournamentModel.findByIdAndUpdate(
             { _id: tableId },
             {
@@ -651,15 +651,15 @@ async function updateBalls(grpId) {
             },
             { new: true }
           );
-          console.log(
-            updateTableLoss.totalLoss,
-            "================totalLoss of cricket table"
-          );
+          // console.log(
+          //   updateTableLoss.totalLoss,
+          //   "================totalLoss of cricket table"
+          // );
         } else {
           profit = totalEntryFee - winPrizeOfUser;
-          console.log(profit, ":::::::::::::::::profit");
+          // console.log(profit, ":::::::::::::::::profit");
           if (!lastDayProfit) {
-            console.log("================ profit count 1",!lastDayProfit);
+            // console.log("================ profit count 1",!lastDayProfit);
             const profitData = {
               gameType: [{ gameName: "cricket", grpId: grpId }],
               groupId: [grpId],
@@ -675,7 +675,7 @@ async function updateBalls(grpId) {
             };
             const createProfit = await profitLossModel.create(profitData);
           } else if (currentYear !== updatedYear) {
-            console.log("================ profit count 2", currentYear !== updatedYear);
+            // console.log("================ profit count 2", currentYear !== updatedYear);
             const profitData = {
               gameType: [{ gameName: "cricket", grpId: grpId }],
               groupId: [grpId],
@@ -693,7 +693,7 @@ async function updateBalls(grpId) {
             };
             const createProfit = await profitLossModel.create(profitData);
           } else if (currentMonth !== updatedMonth) {
-            console.log("================ profit count 3", currentMonth !== updatedMonth);
+            // console.log("================ profit count 3", currentMonth !== updatedMonth);
             const profitData = {
               gameType: [{ gameName: "cricket", grpId: grpId }],
               groupId: [grpId],
@@ -713,8 +713,8 @@ async function updateBalls(grpId) {
             };
             const createProfit = await profitLossModel.create(profitData);
           } else if (currentDate !== lastUpdatedDate) {
-            console.log(currentDate,typeof(currentDate),"====currentDate=====lastUpdatedDate", lastUpdatedDate,typeof(lastUpdatedDate));
-            console.log("================ profit count 4", currentDate !== lastUpdatedDate);
+            // console.log(currentDate,typeof(currentDate),"====currentDate=====lastUpdatedDate", lastUpdatedDate,typeof(lastUpdatedDate));
+            // console.log("================ profit count 4", currentDate !== lastUpdatedDate);
             const profitData = {
               gameType: [{ gameName: "cricket", grpId: grpId }],
               groupId: [grpId],
@@ -781,7 +781,7 @@ async function updateBalls(grpId) {
             { new: true }
           );
 
-          console.log(updatedGroup, "___________update profit");
+          // console.log(updatedGroup, "___________update profit");
 
           let updateTableProfit = await tournamentModel.findByIdAndUpdate(
             { _id: tableId },
@@ -793,10 +793,10 @@ async function updateBalls(grpId) {
             { new: true }
           );
 
-          console.log(
-            updateTableProfit.totalProfit,
-            "================totalProfit of cricket table"
-          );
+          // console.log(
+          //   updateTableProfit.totalProfit,
+          //   "================totalProfit of cricket table"
+          // );
         }
         // }
       }
@@ -873,10 +873,10 @@ async function updateBalls(grpId) {
 
       console.log(ballCount, "ballCount================");
       console.log(updateBall.nextBallTime, "nextBallTime================");
-      console.log(
-        updateBall.nextBallTime - updateBall.currentBallTime,
-        "++++++++++++++++++"
-      );
+      // console.log(
+      //   updateBall.gameEndTime - Date.now(),
+      //   "++++++++++++++++++gameEndTime"
+      // );
 
       const updateRunForBot = updateBall.updatedPlayers.map((botPlayers) => {
         if (botPlayers.isBot === true) {
