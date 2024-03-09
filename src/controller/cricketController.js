@@ -282,16 +282,9 @@ const updateCric = async function (req, res) {
 //____________check server side ball count or client side ball count is same or not
 if(groupExist.ball !== parseInt(ball)){
   console.log(" RemainingBall status false==========>",groupExist.ball,"=======client ball========>",ball);
-  return res.status(200).send({status:false, RemainingBall: groupExist.ball});
+  return res.status(200).send({status:false, currentTime: new Date(), nextBallTime: groupExist.nextBallTime, RemainingBall:groupExist.ball});
 
 }
-    // let storedGameEndTime = new Date(groupExist.gameEndTime).getTime(); // Convert UTC time to milliseconds
-
-    // // Ensure that both times are in milliseconds and in the same timezone
-    // const currentTime = Date.now();
-
-    // const checkTimeForGame = storedGameEndTime - currentTime;
-    // console.log("checkTimeForGame:", checkTimeForGame);
 
     const index = groupExist.updatedPlayers.findIndex(
       (player) => player.UserId === UserId
@@ -314,7 +307,8 @@ if(groupExist.ball !== parseInt(ball)){
       console.log(" RemainingBall status true==========>",groupExist.ball);
       return res.status(200).json({ 
         status:true,
-        // message:"Game is over",
+        currentTime: new Date(), 
+        nextBallTime: groupExist.nextBallTime, 
         RemainingBall:groupExist.ball});
     }
     //_______________update run and wicket___________________
@@ -341,7 +335,7 @@ if(groupExist.ball !== parseInt(ball)){
         { new: true }
       ).lean();
       console.log(" RemainingBall status true==========>",updatedGroupFstHit.ball);
-      return res.status(200).json({ status:true,RemainingBall:updatedGroupFstHit.ball});
+      return res.status(200).json({ status:true, currentTime: new Date(), nextBallTime: updatedGroupFstHit.nextBallTime, RemainingBall:updatedGroupFstHit.ball});
     }
   } catch (err) {
     console.log(err);
