@@ -195,31 +195,29 @@ async function startMatch(grpId, group) {
     );
     const updateRunForBot = matchData.updatedPlayers.map((botPlayers) => {
       function updateRun(runArray) {
-          const runWithWicket = [];
-          let runForBot = 0 ;
-  
-          // Generate five random runs
-          for (let i = 0; i < 5; i++) {
-              let randomValue = runArray[Math.floor(Math.random() * runArray.length)];
-  
-              // If there's a previous run, add it to the current run
-              if (runWithWicket.length > 0) {
-                  randomValue += runWithWicket[runWithWicket.length - 1];
-              }
-  
-              runWithWicket.push(randomValue);
-          }
-          runForBot = runWithWicket[runWithWicket.length-1];
-          // Generate a random wicket index within the runs
-          const wicketIndex = Math.floor(Math.random() * 5);
-          
-          // Generate a random wicket value
-          const randomWicket = Math.random() > 0.5 ? "w" : Math.floor(Math.random() * 11);
-  
-          // Insert the wicket at the random index within the runs
-          runWithWicket.splice(wicketIndex, 0, randomWicket);
-          return {runWithWicket,runForBot};
-      }
+        const runWithWicket = [];
+        let runForBot = 0;
+    
+        // Generate five random runs
+        for (let i = 0; i < 5; i++) {
+            let randomValue = runArray[Math.floor(Math.random() * runArray.length)];
+    
+            runWithWicket.push(randomValue);
+            runForBot += randomValue
+        }
+    
+        // Generate a random wicket index within the runs
+        const wicketIndex = Math.floor(Math.random() * 5);
+        
+        // Generate a random wicket value
+        const randomWicket = Math.random() > 0.5 ? "w" : Math.floor(Math.random() * 11);
+    
+        // Insert the wicket at the random index within the runs
+        runWithWicket.splice(wicketIndex, 0, randomWicket);
+    
+        return { runWithWicket, runForBot };
+    }
+    
   
       if (botPlayers.isBot === true) {
           let runsArray;

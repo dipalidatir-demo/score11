@@ -268,23 +268,22 @@ const updateCric = async function (req, res) {
     // Find the document and update the run for the specified user
     const groupExist = await groupModel
       .findOne({ _id: groupId })
-      .select({ group: 0 })
-      .lean(); // Convert to plain JavaScript object
+      .select({ group: 0 });
 
     if (!groupExist) {
-      console.error("No matching document found");
+      console.error("No matching document found for groupId:", groupId);
       return res.status(404).send({
         status: false,
         message: "No matching document found",
         data: null,
       });
     }
-//____________check server side ball count or client side ball count is same or not
-if(groupExist.ball !== parseInt(ball)){
-  console.log(" RemainingBall status false==========>",groupExist.ball,"=======client ball========>",ball);
-  return res.status(200).send({status:false, currentTime: new Date(), nextBallTime: groupExist.nextBallTime, RemainingBall:groupExist.ball});
 
-}
+    //____________check server side ball count or client side ball count is same or not
+    if (groupExist.ball !== parseInt(ball)) {
+      console.log("RemainingBall status false==========>", groupExist.ball, "=======client ball========>", ball);
+      return res.status(200).send({ status: false, currentTime: new Date(), nextBallTime: groupExist.nextBallTime, RemainingBall: groupExist.ball });
+    }
 
     const index = groupExist.updatedPlayers.findIndex(
       (player) => player.UserId === UserId
@@ -303,14 +302,16 @@ if(groupExist.ball !== parseInt(ball)){
 
     let isRunUpdated = groupExist.updatedPlayers[index].isRunUpdated;
 
-    if (isRunUpdated === true || groupExist.isMatchOver ) {
-      console.log(" RemainingBall status true==========>",groupExist.ball);
-      return res.status(200).json({ 
-        status:true,
-        currentTime: new Date(), 
-        nextBallTime: groupExist.nextBallTime, 
-        RemainingBall:groupExist.ball});
+    if (isRunUpdated === true || groupExist.isMatchOver) {
+      console.log("RemainingBall status true==========>", groupExist.ball);
+      return res.status(200).json({
+        status: true,
+        currentTime: new Date(),
+        nextBallTime: groupExist.nextBallTime,
+        RemainingBall: groupExist.ball
+      });
     }
+
     //_______________update run and wicket___________________
     if (isRunUpdated === false) {
       let storedWicket = groupExist.updatedPlayers[index].wicket;
@@ -318,24 +319,24 @@ if(groupExist.ball !== parseInt(ball)){
       groupExist.updatedPlayers[index].hit = true;
       groupExist.updatedPlayers[index].isRunUpdated = true;
       groupExist.updatedPlayers[index].run += parseInt(run);
-      
-      if(groupExist.updatedPlayers[index].runWithWicket.length <= 6){
+
+      if (groupExist.updatedPlayers[index].runWithWicket.length <= 6) {
         if (storedWicket < parseInt(wicket)) {
           groupExist.updatedPlayers[index].runWithWicket.push("W");
         } else {
           groupExist.updatedPlayers[index].runWithWicket.push(run);
         }
-      } 
-      console.log("runwith wicket============>",groupExist.updatedPlayers[index].runWithWicket);
+      }
+      console.log("runwith wicket============>", groupExist.updatedPlayers[index].runWithWicket);
       groupExist.updatedPlayers[index].wicket = parseInt(wicket);
 
       let updatedGroupFstHit = await groupModel.findOneAndUpdate(
         { _id: groupId, updatedPlayers: { $elemMatch: { UserId: UserId } } },
         { $set: { "updatedPlayers.$": groupExist.updatedPlayers } },
         { new: true }
-      ).lean();
-      console.log(" RemainingBall status true==========>",updatedGroupFstHit.ball);
-      return res.status(200).json({ status:true, currentTime: new Date(), nextBallTime: updatedGroupFstHit.nextBallTime, RemainingBall:updatedGroupFstHit.ball});
+      );
+      console.log("RemainingBall status true==========>", updatedGroupFstHit.ball);
+      return res.status(200).json({ status: true, currentTime: new Date(), nextBallTime: updatedGroupFstHit.nextBallTime, RemainingBall: updatedGroupFstHit.ball });
     }
   } catch (err) {
     console.log(err);
@@ -476,7 +477,7 @@ const getPlayersData = async function (req, res) {
     // Find the document and update the run for the specified user
     const groupExist = await groupModel
       .findOne({ _id: groupId })
-      .select({updatedPlayers:1, start:1})
+      .select({updatedPlayers:1, start:1, ball:1})
       .lean(); // Convert to plain JavaScript object
 
     if (!groupExist) {
@@ -496,8 +497,9 @@ const getPlayersData = async function (req, res) {
       _id: groupExist._id,
       updatedPlayers: updatedPlayers,
       start: groupExist.start,
+      RemainingBall:groupExist.ball
     };
-
+console.log("response====>", response);
     return res.status(200).json(response);
   } catch (error) {
     console.log(error);
