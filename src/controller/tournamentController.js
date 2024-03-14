@@ -582,7 +582,7 @@ const getGroups = async function (req, res) {
     }
 
     const table = await groupModel
-      .findOne({ tableId: tableId, "updatedPlayers.UserId": UserId })
+      .findOne({ tableId: tableId, "group.UserId": UserId })
       .select({ group: 1, updatedPlayers: 1 })
       .lean();
     // console.log("groupAsper tableid====", table);
