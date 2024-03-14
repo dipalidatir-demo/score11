@@ -145,9 +145,9 @@ const createGroup = async function (tableId) {
           let grpId = createGrp._id;
           let group = createGrp.group;
           // console.log(createGrp);
-           setTimeout(function () {
+          //  setTimeout(function () {
           startMatch(grpId, group);
-           }, 10000);
+          //  }, 10000);
           // console.log("settime out for 10 sec=======>",new Date());
 
           // runUpdateBalls(grpId);
@@ -189,7 +189,7 @@ async function startMatch(grpId, group) {
           totalPlayerInGrp: totalRealPlayres,
           start: true,
           currentBallTime: Date.now(),
-          nextBallTime: Date.now() + 1 * 10 * 1000,
+          nextBallTime: Date.now() + 1 * 17 * 1000,
           // gameEndTime: Date.now() + 1 * 60 * 1000,
         },
       },
@@ -255,7 +255,7 @@ async function startMatch(grpId, group) {
      console.log("this is updated data start game and updating botsrun>>>>>>>>>>", runUpdatedForBot.start);
     setTimeout(function () {
       runUpdateBalls(grpId);
-    }, 10000);
+    }, 17000);
   }
 }
 //__________________________________updateBalls function___________________________________
