@@ -447,14 +447,20 @@ const getGameEndTime = async function (req, res) {
     }
     const checkGorup = await groupModel
       .findById({ _id: groupId })
-      .select({ nextBallTime: 1, ball:1 });
+      .select({ nextBallTime: 1, ball:1, start:1});
 
     if (!checkGorup) {
       return res
         .status(200)
         .send({ status: false, message: "Group not found" });
     }
-   
+    if (!checkGorup.start) {
+      // console.log("time for nextball is start is false===>",checkGorup.nextBallTime - Date.now());
+      console.log("start or not ====>",checkGorup.start);
+      const remainingTime = Math.max(0, checkGorup.nextBallTime - Date.now());
+      return res.status(200).json({ status: true, matchStartTime: remainingTime });
+    }
+
     return res.status(200).send({ status: true, currentTime: new Date(), nextBallTime: checkGorup.nextBallTime, RemainingBall:checkGorup.ball });
   } catch (error) {
     console.log(error);

@@ -145,9 +145,10 @@ const createGroup = async function (tableId) {
           let grpId = createGrp._id;
           let group = createGrp.group;
           // console.log(createGrp);
-          // setTimeout(function () {
+           setTimeout(function () {
           startMatch(grpId, group);
-          // }, 120000);
+           }, 10000);
+          // console.log("settime out for 10 sec=======>",new Date());
 
           // runUpdateBalls(grpId);
         }
@@ -158,6 +159,7 @@ const createGroup = async function (tableId) {
 
 async function startMatch(grpId, group) {
   console.log("grpid>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", grpId);
+  console.log("time to call=====>",new Date());
   // console.log("groups>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", group);
   if (grpId !== undefined) {
     const result = group.map((name) => ({
