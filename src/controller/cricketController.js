@@ -458,7 +458,13 @@ const getGameEndTime = async function (req, res) {
       // console.log("time for nextball is start is false===>",checkGorup.nextBallTime - Date.now());
       console.log("start or not ====>",checkGorup.start);
       const remainingTime = Math.max(0, checkGorup.nextBallTime - Date.now());
-      return res.status(200).json({ status: true, matchStartTime: remainingTime });
+      if(remainingTime == 0){
+        return res.status(200).send({ status: true, currentTime: new Date(), nextBallTime: checkGorup.nextBallTime, RemainingBall:checkGorup.ball });
+
+      }else{
+
+        return res.status(200).json({ status: true, matchStartTime: remainingTime });
+      }
     }
 
     return res.status(200).send({ status: true, currentTime: new Date(), nextBallTime: checkGorup.nextBallTime, RemainingBall:checkGorup.ball });
