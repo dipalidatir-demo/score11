@@ -1010,7 +1010,7 @@ const createGroupForSnakeLadder = async function (tableId) {
 
 async function startMatchForSnkLdr(grpId, group) {
   console.log("grpid>>>>>>>>>>>", grpId);
-  console.log("groups>>>>>>>>>>>>>>>>>", group);
+  // console.log("groups>>>>>>>>>>>>>>>>>", group);
 
   if (grpId !== undefined) {
     const result = group.map((name) => ({
@@ -1023,7 +1023,7 @@ async function startMatchForSnkLdr(grpId, group) {
       currentPoints: 0,
       movement: "",
     }));
-    console.log("result", result);
+    // console.log("result", result);
 
     let totalBot = result.filter((players) => players.isBot === true);
     totalBot = totalBot.length;
@@ -1069,12 +1069,113 @@ async function startMatchForSnkLdr(grpId, group) {
         );
         resolve(); // Resolve the promise to continue with the rest of the code
         overTheGame(grpId);
-      }, 6000);
+      }, 15000);
     });
   }
 }
 
 //________________________________till not used code _____________________________
+
+//_____________bot's point update_______________
+async function updateBotPoints(botPlayer,snakeLadder){
+  let botPlayerId = botPlayer.UserId;
+  let updatedPlayers = snakeLadder.updatedPlayers ;
+  const currentUserIndex = snakeLadder.updatedPlayers.findIndex(
+    (player) => player.UserId === botPlayerId
+  );
+  const nextUserIndex = (currentUserIndex + 1) % updatedPlayers.length;
+  const nextUserId = snakeLadder.updatedPlayers[nextUserIndex].UserId;
+  const possibleValues = [1, 2, 3, 4, 5, 6];
+
+  const randomIndex = Math.floor(Math.random() * possibleValues.length);
+  const randomValue = possibleValues[randomIndex];
+
+  // Calculate current position
+  let currentPosition = botPlayer.points + randomValue;
+
+  // Check for snakes, ladders, and tunnels
+  const snakeLadderAndTunnel = {
+    2: 21, //--------------ladder .
+    8: 29, //--------------ladder.
+    14: 7, //--------------snake
+    19: 38, //--------------ladder.
+    25: 46, //--------------ladder.
+    36: 3, //--------------snake
+    41: 83, //--------------ladder.
+    48: 12, //--------------snake
+    49: 71, //--------------ladder.
+    58: 22, //--------------snake
+    72: 47, //--------------snake
+    74: 93, //--------------ladder.
+    95: 13, //--------------snake
+    97: 78, //--------------snake
+  };
+
+  if (currentPosition > 99) {
+    currentPosition = snakeLadder.updatedPlayers[currentUserIndex].points;
+  }
+
+  if (currentPosition in snakeLadderAndTunnel) {
+    // Update position based on snakes, ladders, and tunnels
+    snakeLadder.updatedPlayers[currentUserIndex].points =
+      snakeLadderAndTunnel[currentPosition];
+    snakeLadder.updatedPlayers[currentUserIndex].movement =
+      currentPosition === 2 ||
+      currentPosition === 8 ||
+      currentPosition === 19 ||
+      currentPosition === 25 ||
+      currentPosition === 41 ||
+      currentPosition === 49 ||
+      currentPosition === 74
+        ? "Ladder"
+        : "Snake"; // Use currentPosition here
+  } else {
+    snakeLadder.updatedPlayers[currentUserIndex].points = currentPosition; // Use currentPosition here
+    snakeLadder.updatedPlayers[currentUserIndex].movement = "";
+  }
+
+  snakeLadder.updatedPlayers[currentUserIndex].dicePoints = randomValue;
+  snakeLadder.updatedPlayers[nextUserIndex].dicePoints = 0;
+  snakeLadder.updatedPlayers[currentUserIndex].currentPoints =
+    currentPosition;
+  snakeLadder.updatedPlayers[currentUserIndex].turn = false;
+
+  // snakeLadder.currentUserId = nextUserId;
+  // snakeLadder.updatedPlayers[nextUserIndex].turn = true;
+  // snakeLadder.lastHitTime = new Date();
+  console.log(
+    snakeLadder.nextTurnTime.getSeconds(),
+    "sec before db call============="
+  );
+
+  snakeLadder.nextTurnTime = new Date(Date.now() + 12 * 1000);
+  snakeLadder.currentUserId = nextUserId;
+  snakeLadder.updatedPlayers[nextUserIndex].turn = true;
+  snakeLadder.lastHitTime = new Date();
+  console.log(
+    "after setTimeout in put >>>>>",
+    new Date().getSeconds(),
+    "++++++++++++",
+    snakeLadder
+  );
+
+  let updatedData = await groupModelForSnakeLadder.findOneAndUpdate(
+    { _id: snakeLadder._id },
+    {
+      $set: snakeLadder,
+    },
+    { new: true }
+  );
+  console.log(
+    updatedData.nextTurnTime.getSeconds(),
+    "sec after db call========"
+  );
+   return updatedData ;
+  // const nextTurnHandler = () => {
+  // snakeLadder.save();
+  // };
+  // setTimeout(nextTurnHandler, 3000);
+}
 
 async function checkTurn(groupId) {
   if (groupId != undefined) {
@@ -1594,110 +1695,17 @@ async function checkTurn(groupId) {
         (player) => player.isBot && player.turn
       );
       if (botPlayer) {
-        let botPlayerId = botPlayer.UserId;
-        const currentUserIndex = updatedPlayers.findIndex(
-          (player) => player.UserId === botPlayerId
-        );
-        const nextUserIndex = (currentUserIndex + 1) % updatedPlayers.length;
-        const nextUserId = updatedPlayers[nextUserIndex].UserId;
-        const possibleValues = [1, 2, 3, 4, 5, 6];
-
-        const randomIndex = Math.floor(Math.random() * possibleValues.length);
-        const randomValue = possibleValues[randomIndex];
-
-        // Calculate current position
-        let currentPosition = botPlayer.points + randomValue;
-
-        // Check for snakes, ladders, and tunnels
-        const snakeLadderAndTunnel = {
-          2: 21, //--------------ladder .
-          8: 29, //--------------ladder.
-          14: 7, //--------------snake
-          19: 38, //--------------ladder.
-          25: 46, //--------------ladder.
-          36: 3, //--------------snake
-          41: 83, //--------------ladder.
-          48: 12, //--------------snake
-          49: 71, //--------------ladder.
-          58: 22, //--------------snake
-          72: 47, //--------------snake
-          74: 93, //--------------ladder.
-          95: 13, //--------------snake
-          97: 78, //--------------snake
-        };
-
-        if (currentPosition > 99) {
-          currentPosition = snakeLadder.updatedPlayers[currentUserIndex].points;
+     console.log("<=====calling the funtion if the player is bot====>");
+        updateBotPoints(botPlayer,snakeLadder);
         }
-
-        if (currentPosition in snakeLadderAndTunnel) {
-          // Update position based on snakes, ladders, and tunnels
-          snakeLadder.updatedPlayers[currentUserIndex].points =
-            snakeLadderAndTunnel[currentPosition];
-          snakeLadder.updatedPlayers[currentUserIndex].movement =
-            currentPosition === 2 ||
-            currentPosition === 8 ||
-            currentPosition === 19 ||
-            currentPosition === 25 ||
-            currentPosition === 41 ||
-            currentPosition === 49 ||
-            currentPosition === 74
-              ? "Ladder"
-              : "Snake"; // Use currentPosition here
-        } else {
-          snakeLadder.updatedPlayers[currentUserIndex].points = currentPosition; // Use currentPosition here
-          snakeLadder.updatedPlayers[currentUserIndex].movement = "";
-        }
-
-        snakeLadder.updatedPlayers[currentUserIndex].dicePoints = randomValue;
-        snakeLadder.updatedPlayers[nextUserIndex].dicePoints = 0;
-        snakeLadder.updatedPlayers[currentUserIndex].currentPoints =
-          currentPosition;
-        snakeLadder.updatedPlayers[currentUserIndex].turn = false;
-
-        // snakeLadder.currentUserId = nextUserId;
-        // snakeLadder.updatedPlayers[nextUserIndex].turn = true;
-        // snakeLadder.lastHitTime = new Date();
-        console.log(
-          snakeLadder.nextTurnTime.getSeconds(),
-          "sec before db call============="
-        );
-
-        snakeLadder.nextTurnTime = new Date(Date.now() + 11 * 1000);
-        snakeLadder.currentUserId = nextUserId;
-        snakeLadder.updatedPlayers[nextUserIndex].turn = true;
-        snakeLadder.lastHitTime = new Date();
-        console.log(
-          "after setTimeout in put >>>>>",
-          new Date().getSeconds(),
-          "++++++++++++",
-          snakeLadder
-        );
-
-        let updatedData = await groupModelForSnakeLadder.findOneAndUpdate(
-          { _id: groupId },
-          {
-            $set: snakeLadder,
-          },
-          { new: true }
-        );
-        console.log(
-          updatedData.nextTurnTime.getSeconds(),
-          "sec after db call========"
-        );
-
-        // const nextTurnHandler = () => {
-        // snakeLadder.save();
-        // };
-        // setTimeout(nextTurnHandler, 3000);
-      }
+       
 
       //_____________________________________________passing turn______________________________________
 
       const timeSinceLastHit =
         Math.abs(snakeLadder.lastHitTime.getTime() - new Date().getTime()) /
         1000;
-      if (timeSinceLastHit >= 8) {
+      if (timeSinceLastHit >= 12) { //pass the turn if the lasthitTime is morethan 12 sec
         //____________________________________________Switch turn to next user
 
         const currentUserIndex = updatedPlayers.findIndex(
@@ -1712,16 +1720,26 @@ async function checkTurn(groupId) {
         snakeLadder.updatedPlayers[nextUserIndex].dicePoints = 0;
         snakeLadder.updatedPlayers[nextUserIndex].turn = true;
         snakeLadder.updatedPlayers[currentUserIndex].turn = false;
-        snakeLadder.nextTurnTime = new Date(Date.now() + 11 * 1000);
+        snakeLadder.nextTurnTime = new Date(Date.now() + 12 * 1000);
         snakeLadder.lastHitTime = new Date();
+        const checkBot = updatedPlayers[nextUserIndex].isBot
+        let botPlayer = updatedPlayers.find(
+          (player) => player.isBot && player.UserId === nextUserId
+        );
+        if(checkBot){
+          console.log("<====calling the funtion if the player is time is passed ====>");
+         updateBotPoints(botPlayer,snakeLadder);
+        }else{
+          let updateTurn = await groupModelForSnakeLadder.findByIdAndUpdate(
+            { _id: groupId },
+            { $set: snakeLadder },
+            { new: true }
+          );
+        }
 
         //___________________________________Save updated snakeLadder to database
 
-        let updateTurn = await groupModelForSnakeLadder.findByIdAndUpdate(
-          { _id: groupId },
-          { $set: snakeLadder },
-          { new: true }
-        );
+        
       }
     } catch (error) {
       console.log("Error in checkTurn function:", error);
@@ -1741,7 +1759,7 @@ async function overTheGame(groupId) {
           if (!isMaxCountReached) {
             setTimeout(async () => {
               updateMatchRecursive();
-            }, 2000); // 2 seconds
+            }, 12000); // 2 seconds
           }
         }
       }
@@ -1868,4 +1886,5 @@ module.exports = {
   createGroupForSnakeLadder,
   createGroupForticTacToe,
   createGroupByAdmin,
+  updateBotPoints
 };
