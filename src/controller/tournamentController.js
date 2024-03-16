@@ -267,7 +267,7 @@ const getAllTables = async function (req, res) {
       let matchStatus = [];
 
       for (let id = 0; id < tableId.length; id++) {
-        let status = await groupModel.findOne({ tableId: tableId[id] });
+        let status = await groupModel.findOne({ tableId: tableId[id] }).select({tableId:1, start:1, isMatchOver:1});
         if (status) {
           //check match is running or finshed.
           if (status.isMatchOver === false) {

@@ -203,24 +203,19 @@ async function startMatch(grpId, group) {
         // Generate five random runs
         for (let i = 0; i < 5; i++) {
             let randomValue = runArray[Math.floor(Math.random() * runArray.length)];
-    
             runWithWicket.push(randomValue);
-            runForBot += randomValue
+            runForBot += randomValue;
         }
     
         // Generate a random wicket index within the runs
-        const wicketIndex = Math.floor(Math.random() * 5);
-        
-        // Generate a random wicket value
-        const randomWicket = Math.random() > 0.5 ? "w" : Math.floor(Math.random() * 11);
+        const wicketIndex = Math.floor(Math.random() * (runWithWicket.length + 1)); // Adjusted to include the last index
     
-        // Insert the wicket at the random index within the runs
-        runWithWicket.splice(wicketIndex, 0, randomWicket);
+        // Insert "w" for wicket at the random index within the runs
+        runWithWicket.splice(wicketIndex, 0, "w");
     
         return { runWithWicket, runForBot };
     }
     
-  
       if (botPlayers.isBot === true) {
           let runsArray;
           if (botPlayers.botType === "easy") {
