@@ -80,6 +80,11 @@ const tournamentSchema = new mongoose.Schema(
       type:Number,
       default:0
     },
+    createdTime: {
+      type: Date,
+      default: Date.now,
+      expires: "30m",
+    },
   },
   { timestamps: true }
 );

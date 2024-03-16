@@ -62,7 +62,7 @@ const snkTournamentSchema = new mongoose.Schema(
     createdTime: {
       type: Date,
       default: Date.now,
-      // expires: "30m",
+      expires: "30m",
     },
     endTime: {
       type: Date,

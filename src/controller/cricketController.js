@@ -267,7 +267,7 @@ const updateCric = async function (req, res) {
 
     // Find the document and update the run for the specified user
     const groupExist = await groupModel
-      .findOne({ _id: groupId })
+      .findOne({ _id: groupId, "updatedPlayers.UserId":UserId })
       .select({ group: 0 });
 
     if (!groupExist) {
