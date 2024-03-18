@@ -1148,7 +1148,7 @@ async function updateBotPoints(botPlayer,snakeLadder){
     "sec before db call============="
   );
 
-  snakeLadder.nextTurnTime = new Date(Date.now() + 12 * 1000);
+  snakeLadder.nextTurnTime = new Date(Date.now() + 16 * 1000); //set  turn 16 sec for real user 
   snakeLadder.currentUserId = nextUserId;
   snakeLadder.updatedPlayers[nextUserIndex].turn = true;
   snakeLadder.lastHitTime = new Date();
@@ -1705,7 +1705,9 @@ async function checkTurn(groupId) {
       const timeSinceLastHit =
         Math.abs(snakeLadder.lastHitTime.getTime() - new Date().getTime()) /
         1000;
-      if (timeSinceLastHit >= 12) { //pass the turn if the lasthitTime is morethan 12 sec
+        const timeSinceNextTurnTime = snakeLadder.nextTurnTime.getTime() - new Date().getTime() /
+        1000;
+      if (timeSinceLastHit >= 12 && timeSinceNextTurnTime <= 0) { //pass the turn if the lasthitTime is morethan 12 sec
         //____________________________________________Switch turn to next user
 
         const currentUserIndex = updatedPlayers.findIndex(
