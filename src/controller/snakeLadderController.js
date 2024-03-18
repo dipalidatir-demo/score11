@@ -721,12 +721,20 @@ const getSnkByGroupId = async function (req, res) {
     //_________________________winner declare_____________
 
     if (snakeLadder.isGameOver) {
+      const DataAftrGameOver = snakeLadder.updatedPlayers.map(
+        ({ UserId, points,dicePoints, prize }) => ({
+          UserId,
+          points,
+          dicePoints,
+          prize
+        })
+      );
       let result = {
         message:"game is over",
         currentTurn:snakeLadder.currentUserId,
         currentTime: new Date(),
         nextTurnTime: snakeLadder.nextTurnTime,
-        updatedPlayers: updatedPlayersForRes,
+        updatedPlayers: DataAftrGameOver,
         isGameOver: snakeLadder.isGameOver,
         gameEndTime: snakeLadder.gameEndTime,
       };
