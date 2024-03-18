@@ -721,7 +721,10 @@ const getSnkByGroupId = async function (req, res) {
 
     if (snakeLadder.isGameOver) {
       let result = {
-        currentTurn: "game is over",
+        message:"game is over",
+        currentTurn:snakeLadder.currentUserId,
+        currentTime: new Date(),
+        nextTurnTime: snakeLadder.nextTurnTime,
         updatedPlayers: updatedPlayersForRes,
         isGameOver: snakeLadder.isGameOver,
         gameEndTime: snakeLadder.gameEndTime,

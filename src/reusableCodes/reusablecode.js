@@ -1029,7 +1029,7 @@ async function startMatchForSnkLdr(grpId, group) {
     totalBot = totalBot.length;
     let totalRealPlayres = result.filter((players) => players.isBot === false);
     totalRealPlayres = totalRealPlayres.length;
-
+    const twoMinutesFifteenSeconds = 2 * 60 * 1000 + 15 * 1000;
     const matchData = await groupModelForSnakeLadder.findOneAndUpdate(
       { _id: grpId },
       {
@@ -1038,7 +1038,7 @@ async function startMatchForSnkLdr(grpId, group) {
           totalBotInGrp: totalBot,
           totalPlayerInGrp: totalRealPlayres,
           start: true,
-          gameEndTime: Date.now() + 2 * 60 * 1000,
+          gameEndTime: Date.now() + twoMinutesFifteenSeconds,
         },
       },
       { new: true, setDefaultsOnInsert: true }
@@ -1050,27 +1050,36 @@ async function startMatchForSnkLdr(grpId, group) {
       matchData.isGameStart
     );
 
-    await new Promise((resolve) => {
-      setTimeout(async function () {
-        let updatedPlayers = matchData.updatedPlayers;
-        let currentPlayerIndex = Math.floor(
+    await new Promise(async (resolve) => {
+      let updatedPlayers = matchData.updatedPlayers;
+      const isBot = updatedPlayers.find(player => player.isBot);
+      let currentPlayerIndex ;
+      if(isBot){
+        console.log("<========if bot is present=====>",isBot.UserId);
+        currentPlayerIndex = updatedPlayers.findIndex(players => players.UserId !== isBot.UserId);
+        console.log("currentPlayerIndex====>",currentPlayerIndex);
+      }else{
+        console.log("<========if bot is not present=====>");
+        currentPlayerIndex = Math.floor(
           Math.random() * updatedPlayers.length
-        );
-        matchData.updatedPlayers[currentPlayerIndex].turn = true;
-        matchData.lastHitTime = new Date();
-        matchData.isGameStart = 1;
-        matchData.currentUserId = updatedPlayers[currentPlayerIndex].UserId;
-
-        const updatedGroupFst = await matchData.save();
-        console.log(
+      );
+      } 
+      matchData.updatedPlayers[currentPlayerIndex].turn = true;
+      matchData.lastHitTime = new Date();
+      matchData.isGameStart = 1;
+      matchData.currentUserId = updatedPlayers[currentPlayerIndex].UserId;
+      matchData.nextTurnTime = new Date(Date.now() + 15 * 1000);
+  
+      const updatedGroupFst = await matchData.save();
+      console.log(
           new Date().getSeconds(),
           "--after 6 sec of starting the game--",
           updatedGroupFst.isGameStart
-        );
-        resolve(); // Resolve the promise to continue with the rest of the code
-        overTheGame(grpId);
-      }, 15000);
-    });
+      );
+      resolve(); // Resolve the promise to continue with the rest of the code
+      overTheGame(grpId);
+  });
+  
   }
 }
 
