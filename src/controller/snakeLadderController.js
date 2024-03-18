@@ -606,7 +606,7 @@ const getGroupsByUser = async function (req, res) {
   try {
     let tableId = req.query.tableId;
     let UserId = req.query.UserId;
-
+    console.log("input data=====>",tableId,"====>",UserId);
     if (Object.keys(req.query).length <= 1) {
       return res.status(200).send({
         status: false,
@@ -623,10 +623,10 @@ const getGroupsByUser = async function (req, res) {
     }
     let userName = userExist.userName;
 
-    const table = await groupModelForSnakeLadder.find({ tableId: tableId,"group.UserId": UserId })
+    const table = await groupModelForSnakeLadder.findOne({ tableId: tableId,"group.UserId": UserId })
     .select({ group: 1, updatedPlayers: 1 })
     .lean();
-    console.log("table>>>>>>>>>>>>>>", table.group);
+    // console.log("table>>>>>>>>>>>>>>", table);
 
     if (!table) {
       return res.status(200).send({
@@ -665,10 +665,12 @@ const getGroupsByUser = async function (req, res) {
     const userId = table.group.map((items) => items.UserId);
     const usersIdInStr = userId.join(" ");
     let usersNameInStr = usersName.join(" ");
+    const botData = table.updatedPlayers.find(player => player.isBot)
     return res.status(200).send({
       status: true,
       message: "Success",
-      groupId,
+      groupId:table._id,
+      botData:botData.UserId,
       usersNameInStr,
       usersIdInStr
     });
