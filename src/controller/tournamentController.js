@@ -121,23 +121,23 @@ const createTournaments = async function (req, res) {
       maxTime: 4,
     };
 
-    let data3 = {
-      entryFee: 20,
-      prizeAmount: 20 * 4,
-      maxTime: 5,
-    };
+    // let data3 = {
+    //   entryFee: 20,
+    //   prizeAmount: 20 * 4,
+    //   maxTime: 5,
+    // };
 
-    let data4 = {
-      entryFee: 50,
-      prizeAmount: 50 * 4,
-      maxTime: 10,
-    };
+    // let data4 = {
+    //   entryFee: 50,
+    //   prizeAmount: 50 * 4,
+    //   maxTime: 10,
+    // };
 
-    let data5 = {
-      entryFee: 100,
-      prizeAmount: 100 * 4,
-      maxTime: 15,
-    };
+    // let data5 = {
+    //   entryFee: 100,
+    //   prizeAmount: 100 * 4,
+    //   maxTime: 15,
+    // };
     let tableId1;
     // Define functions to create tournaments
     async function createTournament1() {
@@ -166,47 +166,47 @@ const createTournaments = async function (req, res) {
       console.log(tournamentTable2);
     }
 
-    let tableId3;
-    async function createTournament3() {
-      if (tableId3 != undefined) {
-        createGroup(tableId3);
-      }
+    // let tableId3;
+    // async function createTournament3() {
+    //   if (tableId3 != undefined) {
+    //     createGroup(tableId3);
+    //   }
 
-      let endTime = Date.now() + 5 * 60 * 1000;
-      data3.endTime = req.query.endTime = endTime;
-      tournamentTable3 = await tournamentModel.create(data3);
-      tableId3 = tournamentTable3._id;
-      console.log(tournamentTable3);
-    }
-    let tableId4;
-    async function createTournament4() {
-      if (tableId4 != undefined) {
-        createGroup(tableId4);
-      }
-      endTime = Date.now() + 10 * 60 * 1000;
-      data4.endTime = req.query.endTime = endTime;
-      tournamentTable4 = await tournamentModel.create(data4);
-      tableId4 = tournamentTable4._id;
-      console.log(tournamentTable4);
-    }
-    let tableId5 ;
-    async function createTournament5() {
-      if (tableId5 != undefined) {
-        createGroup(tableId5);
-      }
-      endTime = Date.now() + 15 * 60 * 1000;
-      data5.endTime = req.query.endTime = endTime;
-      tournamentTable5 = await tournamentModel.create(data5);
-      tableId5 = tournamentTable5._id;
-      console.log(tournamentTable5);
-    }
+    //   let endTime = Date.now() + 5 * 60 * 1000;
+    //   data3.endTime = req.query.endTime = endTime;
+    //   tournamentTable3 = await tournamentModel.create(data3);
+    //   tableId3 = tournamentTable3._id;
+    //   console.log(tournamentTable3);
+    // }
+    // let tableId4;
+    // async function createTournament4() {
+    //   if (tableId4 != undefined) {
+    //     createGroup(tableId4);
+    //   }
+    //   endTime = Date.now() + 10 * 60 * 1000;
+    //   data4.endTime = req.query.endTime = endTime;
+    //   tournamentTable4 = await tournamentModel.create(data4);
+    //   tableId4 = tournamentTable4._id;
+    //   console.log(tournamentTable4);
+    // }
+    // let tableId5 ;
+    // async function createTournament5() {
+    //   if (tableId5 != undefined) {
+    //     createGroup(tableId5);
+    //   }
+    //   endTime = Date.now() + 15 * 60 * 1000;
+    //   data5.endTime = req.query.endTime = endTime;
+    //   tournamentTable5 = await tournamentModel.create(data5);
+    //   tableId5 = tournamentTable5._id;
+    //   console.log(tournamentTable5);
+    // }
 
     // Schedule each tournament creation independently
     cron.schedule("*/1 * * * *", createTournament1);
-    cron.schedule('*/4 * * * *', createTournament2);
-    cron.schedule('*/5 * * * *', createTournament3);
-    cron.schedule('*/10 * * * *', createTournament4);
-    cron.schedule('*/15 * * * *', createTournament5);
+    // cron.schedule('*/4 * * * *', createTournament2);
+    // cron.schedule('*/5 * * * *', createTournament3);
+    // cron.schedule('*/10 * * * *', createTournament4);
+    // cron.schedule('*/15 * * * *', createTournament5);
 
     // Send the success response
     return res.status(201).send({
