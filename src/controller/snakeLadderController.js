@@ -711,9 +711,10 @@ const getSnkByGroupId = async function (req, res) {
     );
 
     const updatedPlayersForRes = snakeLadder.updatedPlayers.map(
-      ({ UserId, points }) => ({
+      ({ UserId, points,dicePoints }) => ({
         UserId,
         points,
+        dicePoints
       })
     );
 
