@@ -665,7 +665,9 @@ const getGroupsByUser = async function (req, res) {
     const userId = table.group.map((items) => items.UserId);
     const usersIdInStr = userId.join(" ");
     let usersNameInStr = usersName.join(" ");
-    const botData = table.updatedPlayers.find(player => player.isBot)
+    const botData = table.updatedPlayers.find(player => player.isBot);
+    console.log("botData=====>",botData);
+    if(botData){
     return res.status(200).send({
       status: true,
       message: "Success",
@@ -674,6 +676,15 @@ const getGroupsByUser = async function (req, res) {
       usersNameInStr,
       usersIdInStr
     });
+  }
+  return res.status(200).send({
+    status: true,
+    message: "Success",
+    groupId:table._id,
+    botData:null,
+    usersNameInStr,
+    usersIdInStr
+  });
   } catch (err) {
     console.log(err);
     return res.status(500).send({
@@ -774,6 +785,7 @@ const getSnkByGroupId = async function (req, res) {
       return res.status(200).json(result);
     }
   } catch (err) {
+    console.log(err);
     return res.status(500).send({
       status: false,
       error: err.message,
