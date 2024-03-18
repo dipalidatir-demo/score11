@@ -722,11 +722,12 @@ const getSnkByGroupId = async function (req, res) {
 
     if (snakeLadder.isGameOver) {
       const DataAftrGameOver = snakeLadder.updatedPlayers.map(
-        ({ UserId, points,dicePoints, prize }) => ({
+        ({ UserId, points,dicePoints, prize, userName }) => ({
           UserId,
+          userName,
           points,
           dicePoints,
-          prize
+          prize,
         })
       );
       let result = {
