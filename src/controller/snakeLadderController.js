@@ -774,7 +774,7 @@ const getSnkByGroupId = async function (req, res) {
       return res.status(200).json(result);
     } else {
       let result = {
-        currentTurn: snakeLadder.UserId,
+        currentTurn: snakeLadder.currentUserId,
         currentTime: new Date(),
         nextTurnTime: snakeLadder.nextTurnTime,
         updatedPlayers: updatedPlayersForRes,
