@@ -175,54 +175,129 @@
 // module.exports = { sendNotification };
 //____________________________________notification using firebase________________________
 
-const admin = require('firebase-admin');
-const userModel = require('../model/userModel');
-const serviceAccount = require('../firebaseService.json');
+// const admin = require('firebase-admin');
+// const userModel = require('../model/userModel');
+// const serviceAccount = require('../firebaseService.json');
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: 'mongodb+srv://theproficienttech333:gzYGYI5pD4oAUvim@cluster0.gp7jlnb.mongodb.net/game'
-});
-
-
-// Assume you have an array of registration tokens for multiple users
-// const registrationTokens = ['token1', 'token2', 'token3']; // Replace with your actual tokens
-
-const sendNotification = async function(req, res){
-  try{
-
-    const query = { 
-      token: { 
-        $exists: true,  
-        $ne: ''        
-      }
-    };
-const fetchTokens = await userModel.find(query).select({token:1,_id:0});
-const registrationTokens = fetchTokens.map(tokens => tokens.token);
-console.log(registrationTokens,"====================");
-registrationTokens.forEach((token) => {
-  const message = {
-    data: {
-      title: 'Game Started',
-      body: 'Your game has started!'
-    },
-    token: token,
-  };
-
-  admin.messaging().send(message)
-    .then((response) => {
-      console.log('Successfully sent message:', response);
-    })
-    .catch((error) => {
-      console.error('Error sending message:', error);
-    });
-});
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount),
+//   databaseURL: "mongodb+srv://nikita1:7CSKh9nBmgBm27YC@cluster0.suzof1p.mongodb.net/nikita" // for local db
+// });
 
 
-  }catch(error){
-    console.log(error);
-    return res.status(500).send({status:false, message:error.message});
-  }
-}
+// const sendNotification = async function(req, res) {
+//   try {
+//     const query = { 
+//       token: { 
+//         $exists: true,  
+//         $ne: ''        
+//       }
+//     };
 
-module.exports = {sendNotification};
+//     const fetchTokens = await userModel.find(query).select({token:1, _id:0});
+//     const registrationTokens = fetchTokens.map(tokens => tokens.token);
+
+//     console.log(registrationTokens, "====================");
+
+//     const messages = registrationTokens.map(token => ({
+//       data: {
+//         title: 'Game Started',
+//         body: 'Your game has started!'
+//       },
+//       token: token
+//     }));
+
+//     const sendPromises = messages.map(message => admin.messaging().send(message));
+
+//     Promise.all(sendPromises)
+//       .then((responses) => {
+//         console.log('Successfully sent messages:', responses);
+//         return res.status(200).send({ status: true, message: "Messages sent successfully" });
+//       })
+//       .catch((error) => {
+//         console.error('Error sending messages:', error);
+//         return res.status(500).send({ status: false, message: error.message });
+//       });
+//   } catch (error) {
+//     console.log(error);
+//     return res.status(500).send({ status: false, message: error.message });
+//   }
+// }
+
+// module.exports = { sendNotification };
+
+
+// const fs = require("fs");
+// const path = require('path');
+// var FCM = require('fcm-node');
+
+
+// const sendPushNotification = async(userId,message) => {
+
+//     try {
+  
+//       console.log('User Id:- '+userId);
+//       console.log('message:- '+message);
+  
+//       fs.readFile(path.join(__dirname,'../firebaseService.json'), "utf8", async(err, jsonString) => {
+//       if (err) {
+//           console.log("Error reading file from disk:", err);
+//           return err;
+//         }
+//         try {
+  
+//           //firebase push notification send
+//           const data = JSON.parse(jsonString);
+//           var serverKey = data.SERVER_KEY;
+//           var fcm = new FCM(serverKey);
+  
+//           var push_tokens = await Push_Notification.find({ 
+//             where:{
+//               user_id:userId
+//             }
+//           });
+          
+//           var reg_ids = [];
+//           push_tokens.forEach(token => {
+//             reg_ids.push(token.fcm_token)
+//           })
+  
+//           if(reg_ids.length > 0){
+  
+//             var pushMessage = { //this may vary according to the message type (single recipient, multicast, topic, et cetera)
+//               registration_ids:reg_ids,
+//               content_available: true,
+//               mutable_content: true,
+//               notification: {
+//                   body: message,
+//                   icon : 'myicon',//Default Icon
+//                   sound : 'mySound',//Default sound
+//                   // badge: badgeCount, example:1 or 2 or 3 or etc....
+//               },
+//               // data: {
+//               //   notification_type: 5,
+//               //   conversation_id:inputs.user_id,
+//               // }
+//             };
+          
+//             fcm.send(pushMessage, function(err, response){
+//                 if (err) {
+//                     console.log("Something has gone wrong!",err);
+//                 } else {
+//                     console.log("Push notification sent.", response);
+//                 }
+//             });
+  
+//           }
+  
+  
+//         } catch (err) {
+//           console.log("Error parsing JSON string:", err);
+//         }
+//       });
+  
+//     } catch (error) {
+//       console.log(error);
+//     }
+  
+//   }

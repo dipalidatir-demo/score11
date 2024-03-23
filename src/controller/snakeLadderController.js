@@ -7,7 +7,7 @@ const Decimal = require("decimal.js");
 const {
   updateBotPoints,
   createGroupForSnakeLadder,
-} = require("../reusableCodes/reusablecode");
+} = require("../reusableCodes/snkReus");
 const { log } = require("console");
 const { promises } = require("dns");
 const { resolve } = require("path");
@@ -15,6 +15,9 @@ const totalBotForSnk = 0;
 let currentDate = new Date();
 const moment = require("moment");
 const cron = require("node-cron");
+const rocketTournamentModel = require("../model/rocketTournamentModel");
+delete require.cache[require.resolve("../controller/rocketController")];
+const rktGroupModel = require("../controller/rocketController");
 
 //____________________________________create snakeladder tournaments by admin___________
 
@@ -176,35 +179,29 @@ const createSnakeLadderTables = async function (req, res) {
       maxTime: 4,
     };
 
-    let data3 = {
-      entryFee: 20,
-      prizeAmount: 20 * 2,
-      maxTime: 5,
+    let data1ForRkt = {
+      entryFee: 1,
+      prizeAmount: 1 * 2, 
+      maxTime: 1,
     };
 
-    let data4 = {
-      entryFee: 50,
-      prizeAmount: 50 * 2,
-      maxTime: 10,
-    };
-
-    let data5 = {
-      entryFee: 100,
-      prizeAmount: 100 * 2,
-      maxTime: 15,
+    let data2ForRkt = {
+      entryFee: 10,
+      prizeAmount: 10 * 2,
+      maxTime: 4,
     };
 
     let tournamentTable1;
     let tournamentTable2;
-    let tournamentTable3;
-    let tournamentTable4;
-    let tournamentTable5;
+    let tournamentTable1ForRkt;
+    let tournamentTable2ForRkt;
 
     //_______________________create table1 with setinterval an end time___________
     let tableId1;
+    let gameNameForSnk = 'SnakeLadder';
     async function createTournament1() {
       if (tableId1 != undefined) {
-        createGroupForSnakeLadder(tableId1);
+        createGroupForSnakeLadder(tableId1, gameNameForSnk);
       }
 
       endTime = Date.now() + 1 * 60 * 1000;
@@ -214,17 +211,35 @@ const createSnakeLadderTables = async function (req, res) {
       tableId1 = tournamentTable1._id;
       console.log(tournamentTable1);
     }
+ //_______________________create table1 with setinterval an end time for Rocket___________
+ let tableId1ForRkt;
+ let gameNameForRkt = 'Rocket' ;
+ async function createTournament1ForRkt() {
+   if (tableId1ForRkt != undefined ) {
+     createGroupForSnakeLadder(tableId1ForRkt, gameNameForRkt);
+   }
 
-    setInterval(createTournament1, 60000);
+   endTime = Date.now() + 1 * 60 * 1000;
+   data1ForRkt.endTime = req.query.endTime = endTime;
+
+   tournamentTable1ForRkt = await rocketTournamentModel.create(data1ForRkt);
+   tableId1ForRkt = tournamentTable1ForRkt._id;
+   console.log(tournamentTable1ForRkt);
+ }
+    setInterval(function() {
+      createTournament1();
+      createTournament1ForRkt();
+  }, 60000);
 
     createTournament1();
+    createTournament1ForRkt();
 
     //_______________________create table2 with setinterval an end time________________
     let tableId2;
 
     async function createTournament2() {
       if (tableId2 != undefined) {
-        createGroupForSnakeLadder(tableId2);
+        createGroupForSnakeLadder(tableId2, gameNameForSnk);
       }
 
       endTime = Date.now() + 4 * 60 * 1000;
@@ -234,62 +249,33 @@ const createSnakeLadderTables = async function (req, res) {
       tableId2 = tournamentTable2._id;
       // console.log(tournamentTable2);
     }
+ //_______________________create table2 with setinterval an end time for Rocket___________
+ let tableId2ForRkt;
+ async function createTournament2ForRkt() {
+   if (tableId2ForRkt != undefined) {
+     createGroupForSnakeLadder(tableId2ForRkt, gameNameForRkt);
+   }
 
-    setInterval(createTournament2, 240000);
-    createTournament2();
+   endTime = Date.now() + 1 * 60 * 1000;
+   data2ForRkt.endTime = req.query.endTime = endTime;
 
-    //_______________________create table3 with setinterval an end time________________
-    // let tableId3;
+   tournamentTable2ForRkt = await rocketTournamentModel.create(data2ForRkt);
+   tableId2ForRkt = tournamentTable2ForRkt._id;
+  //  console.log(tournamentTable2ForRkt);
+ }
+ setInterval(function() {
+  createTournament2();
+  createTournament2ForRkt();
+}, 240000);
 
-    // async function createTournament3() {
-    //   if (tableId3 != undefined) {
-    //     createGroupForSnakeLadder(tableId3);
-    //   }
+createTournament2();
+createTournament2ForRkt();
 
-    //   let endTime = Date.now() + 5 * 60 * 1000;
-    //   data3.endTime = req.query.endTime = endTime;
-    //   tournamentTable3 = await snkTournamentModel.create(data3);
-    //   tableId3 = tournamentTable3._id;
-    //   // console.log(tournamentTable3);
-    // }
-    // setInterval(createTournament3, 300000);
-    // createTournament3();
-
-    //  // _______________________create table4 with setinterval an end time________________
-    // let tableId4;
-
-    // async function createTournament4() {
-    //   if (tableId4 != undefined) {
-    //     createGroupForSnakeLadder(tableId4);
-    //   }
-    //   endTime = Date.now() + 10 * 60 * 1000;
-    //   data4.endTime = req.query.endTime = endTime;
-    //   tournamentTable4 = await snkTournamentModel.create(data4);
-    //   tableId4 = tournamentTable4._id;
-    //   // console.log(tournamentTable4);
-    // }
-    // setInterval(createTournament4, 600000);
-    // createTournament4();
-
-    //_____________________________create table5 with setinterval an end time____
-    // let tableId5;
-
-    // async function createTournament5() {
-    //   if (tableId5 != undefined) {
-    //     createGroupForSnakeLadder(tableId5);
-    //   }
-    //   endTime = Date.now() + 15 * 60 * 1000;
-    //   data5.endTime = req.query.endTime = endTime;
-    //   tournamentTable5 = await snkTournamentModel.create(data5);
-    //   tableId5 = tournamentTable5._id;
-    //   // console.log(tournamentTable5);
-    // }
-    // setInterval(createTournament5, 900000);
-    // createTournament5();
+   
 
     return res.status(201).send({
       status: true,
-      message: "Success",
+      message: "Success for both snakeladder and rocket",
       data: tournamentTable1,
     });
   } catch (err) {
@@ -299,7 +285,6 @@ const createSnakeLadderTables = async function (req, res) {
     });
   }
 };
-
 //______________________________________________get all data of SnakeLadder tournaments______________________________
 
 const getAllSnak = async function (req, res) {
@@ -925,7 +910,7 @@ const updatePointOfUser = async function (req, res) {
       (player) => player.isBot && player.turn
     );
     if (botPlayer) {
-      const updateDataForBot = await updateBotPoints(botPlayer, updatedData);
+      const updateDataForBot = await updateBotPoints(botPlayer, updatedData, groupModelForSnakeLadder, 'SnakeLadder');
       // console.log("updateDataForBot===>",updateDataForBot);
       const updatedPlayersForRes = updateDataForBot.updatedPlayers.map(
         ({ UserId, points, dicePoints }) => ({

@@ -93,6 +93,30 @@ const profitLossSchema = new mongoose.Schema({
         type: Number,
         default: 0,
       },
+      rktFullDayProfit:{
+        type: Number,
+        default: 0,
+      },
+      rktFullMonthProfit:{
+        type: Number,
+        default: 0,
+      },
+      rktFullYearProfit:{
+        type: Number,
+        default: 0,
+      },
+      rktFullDayLoss:{
+        type: Number,
+        default: 0,
+      },
+      rktFullMonthLoss:{
+        type: Number,
+        default: 0,
+      },
+      rktFullYearLoss:{
+        type: Number,
+        default: 0,
+      },
       tictactoeFullDayProfit:{
         type: Number,
         default: 0,

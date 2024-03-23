@@ -9,10 +9,20 @@ const ticTacToeController = require("../controller/ticTacToeController");
 const balanceController = require("../controller/balanceController");
 const tournamentController = require("../controller/tournamentController");
 const botPlayersController = require("../controller/dummyUsers");
-const sendNotificatinController = require("../controller/sendNotificationsController");
+// const sendNotificatinController = require("../controller/sendNotificationsController");
 const botController = require("../controller/botController");
 const razorpayController = require("../controller/razorpayController");
 const profitLossController = require("../controller/profitLossController");
+const { 
+  rktTablesCreatedByAdmin,
+  createRocketTables,
+  updateRocketTournaments,
+  getAllRocket,
+  getGroupsByUserForRkt,
+  getRktByGroupId,
+  updateRktPointOfUser,
+  getPlayersOfRocket,
+  getAllGroupsOfRocket }  = require("../controller/rocketController");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const Router = express.Router();
@@ -131,6 +141,25 @@ Router.get("/playersOfSnkLdr", snakeLadderController.getPlayersOfSnkLadder);
 
 Router.get("/getAllGroupsOfSnk", snakeLadderController.getAllGroupsOfSnk);
 
+//_________________________________Rocket______________________________________________________
+
+Router.post("/rkttournamentsByAdmin", rktTablesCreatedByAdmin);
+
+Router.post("/rkttournaments", createRocketTables);
+
+Router.get("/getAllRocketData", getAllRocket);
+
+Router.put("/updateRocket", updateRocketTournaments);
+
+Router.get("/getRktGroupsByUserId", getGroupsByUserForRkt);
+
+Router.get("/getRktGroup", getRktByGroupId);
+
+Router.put("/updateRocketPerPlayer", updateRktPointOfUser);
+
+Router.get("/playersOfRocket", getPlayersOfRocket);
+
+Router.get("/getAllGroupsOfRkt", getAllGroupsOfRocket);
 
 //__________________ticTacToe___________________
 
@@ -161,7 +190,7 @@ Router.get("/getAllTicTacToeData", ticTacToeController.getAllTic);
 
 Router.put("/updateBalance", balanceController.updatecredits);
 
-Router.get("/sendNotification", sendNotificatinController.sendNotification );
+// Router.get("/sendNotification", sendNotificatinController.sendNotification );
 
 //___________________________profit loss_________________
 

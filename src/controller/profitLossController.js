@@ -52,6 +52,8 @@ cron.schedule("0 0 * * *", async () => {
         snkFullYearLoss: lastDayProfit.snkFullYearLoss,
         crickFullYearProfit: lastDayProfit.crickFullYearProfit,
         crickFullYearLoss: lastDayProfit.crickFullYearLoss,
+        rktFullYearProfit:lastDayProfit.rktFullYearProfit,
+        rktFullYearLoss:lastDayProfit.rktFullYearLoss
       };
       const createProfit = await profitLossModel.create(profitData);
     } else if (currentDate !== lastUpdatedDate) {
@@ -73,6 +75,10 @@ cron.schedule("0 0 * * *", async () => {
         crickFullYearProfit: lastDayProfit.crickFullYearProfit,
         crickFullMonthLoss: lastDayProfit.crickFullMonthLoss,
         crickFullYearLoss: lastDayProfit.crickFullYearLoss,
+        rktFullMonthProfit:lastDayProfit.rktFullMonthProfit,
+        rktFullYearProfit:lastDayProfit.rktFullYearProfit,
+        rktFullMonthLoss:lastDayProfit.rktFullMonthLoss,
+        rktFullYearLoss:lastDayProfit.rktFullYearLoss
       };
       const createProfit = await profitLossModel.create(profitData);
     } else {

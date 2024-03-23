@@ -24,24 +24,24 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    token:{
-      type:String,
-      dfault:""
+    token: {
+      type: String,
+      dfault: "",
     },
     referralCode: {
       type: String,
     },
-    referralAmount:{
-      type:Number,
-      default:10
+    referralAmount: {
+      type: Number,
+      default: 10,
     },
-    referredBy:{
-      type:String
+    referredBy: {
+      type: String,
     },
-    referralHistory:[],
-    isActive:{
+    referralHistory: [],
+    isActive: {
       type: Boolean,
-      default: true
+      default: true,
     },
     credits: {
       type: Number,
@@ -52,7 +52,7 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
     realMoney: {
-      type:Number,
+      type: Number,
       default: 0,
     },
     status: {
@@ -62,7 +62,7 @@ const userSchema = new mongoose.Schema(
     banned: {
       type: Boolean,
       default: false,
-    }, 
+    },
     isDeleted: {
       type: Boolean,
       default: false,
@@ -71,63 +71,74 @@ const userSchema = new mongoose.Schema(
     transactionHistory: [],
     refToCricket: {
       type: String,
-      ref: 'cricket'
+      ref: "cricket",
     },
     refToHockey: {
       type: String,
-      ref: 'hocky'
+      ref: "hocky",
     },
     refToSnakeLadder: {
       type: String,
-      ref: 'snakeLadder'
+      ref: "snakeLadder",
     },
     refToTicTacToe: {
       type: String,
-      ref: 'ticTacToe'
+      ref: "ticTacToe",
     },
-    cricketData:[
+    cricketData: [
       {
-        _id:false,
-        playCount:Number, 
-        winCount:Number
-      }
+        _id: false,
+        playCount: Number,
+        winCount: Number,
+      },
     ],
-    cricketWinAmount:{
-      type:Number,
-      default:0
+    cricketWinAmount: {
+      type: Number,
+      default: 0,
     },
-    snkLadderData:[
+    snkLadderData: [
       {
-        _id:false,
-        playCount:Number, 
-        winCount:Number
-      }
+        _id: false,
+        playCount: Number,
+        winCount: Number,
+      },
     ],
-    snkLadderWinAmount:{
-      type:Number,
-      default:0
+    snkLadderWinAmount: {
+      type: Number,
+      default: 0,
     },
-    ticTacToeData:[
+    rocketData: [
       {
-        _id:false,
-        playCount:Number, 
-        winCount:Number
-      }
+        _id: false,
+        playCount: Number,
+        winCount: Number,
+      },
     ],
-    ticTacToeWinAmount:{
-      type:Number,
-      default:0
+    rocketWinAmount: {
+      type: Number,
+      default: 0,
     },
-    airHockeyData:[
+    ticTacToeData: [
       {
-        _id:false,
-        playCount:Number, 
-        winCount:Number
-      }
+        _id: false,
+        playCount: Number,
+        winCount: Number,
+      },
     ],
-    airHockeyWinAmount:{
-      type:Number,
-       default:0
+    ticTacToeWinAmount: {
+      type: Number,
+      default: 0,
+    },
+    airHockeyData: [
+      {
+        _id: false,
+        playCount: Number,
+        winCount: Number,
+      },
+    ],
+    airHockeyWinAmount: {
+      type: Number,
+      default: 0,
     },
   },
   { timestamps: true }
