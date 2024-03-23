@@ -148,7 +148,7 @@ const ticTacToeTablesCreatedByAdmin = async function (req, res) {
     console.log(tournamentStartTime, "========tournamentStartTime====", delay);
 
     if (delay < 0) {
-      return res.status(400).send({
+      return res.status(200).send({
         status: false,
         message: "Invalid date and time. Please provide a future date and time.",
       });
@@ -435,7 +435,7 @@ const updateTicTacToeTournaments = async function (req, res) {
     let { status } = updateData;
 
     if (Object.keys(updateData).length == 0) {
-      return res.status(400).send({
+      return res.status(200).send({
         status: false,
         message: "For updating please enter atleast one key",
       });
@@ -443,7 +443,7 @@ const updateTicTacToeTournaments = async function (req, res) {
 
     if (!mongoose.Types.ObjectId.isValid(tableId)) {
       return res
-        .status(400)
+        .status(200)
         .send({ status: false, message: "invalid tableId" });
     }
 
@@ -467,7 +467,7 @@ const updateTicTacToeTournaments = async function (req, res) {
       status = "full";
     }
     if (ExistPlayers > maxPlayers - 1) {
-      return res.status(400).send({ status: false, message: " Full " });
+      return res.status(200).send({ status: false, message: " Full " });
     }
 
     //________________________________find user,s Name _____________________________________
@@ -512,7 +512,7 @@ const updateTicTacToeTournaments = async function (req, res) {
           "time which he want to join___________"
         );
         if (Math.abs(time.getMinutes() - existTable.endTime.getMinutes()) < 5) {
-          return res.status(400).send({
+          return res.status(200).send({
             status: false,
             message: " You can not join",
           });
@@ -583,7 +583,7 @@ const getTicTacToeGroupsByUser = async function (req, res) {
     let UserId = req.query.UserId;
 
     if (Object.keys(req.query).length <= 1) {
-      return res.status(400).send({
+      return res.status(200).send({
         status: false,
         message: " Please provide both tableId and UserId ",
       });

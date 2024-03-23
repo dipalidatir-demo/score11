@@ -9,7 +9,7 @@ const ticTacToeController = require("../controller/ticTacToeController");
 const balanceController = require("../controller/balanceController");
 const tournamentController = require("../controller/tournamentController");
 const botPlayersController = require("../controller/dummyUsers");
-// const sendNotificatinController = require("../controller/sendNotificationsController");
+const sendNotificatinController = require("../controller/sendNotificationsController");
 const botController = require("../controller/botController");
 const razorpayController = require("../controller/razorpayController");
 const profitLossController = require("../controller/profitLossController");
@@ -190,7 +190,7 @@ Router.get("/getAllTicTacToeData", ticTacToeController.getAllTic);
 
 Router.put("/updateBalance", balanceController.updatecredits);
 
-// Router.get("/sendNotification", sendNotificatinController.sendNotification );
+Router.get("/sendNotification", sendNotificatinController.sendNotification );
 
 //___________________________profit loss_________________
 

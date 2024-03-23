@@ -252,7 +252,7 @@ const updateCric = async function (req, res) {
     let { UserId, groupId, run, wicket, ball } = req.query;
 
     if (!UserId || !groupId || !run || !wicket || !ball) {
-      return res.status(400).send({
+      return res.status(200).send({
         status: false,
         message: "All fields are required",
       });

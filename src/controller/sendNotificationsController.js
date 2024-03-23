@@ -227,77 +227,81 @@
 // module.exports = { sendNotification };
 
 
-// const fs = require("fs");
-// const path = require('path');
-// var FCM = require('fcm-node');
+const fs = require("fs");
+const path = require('path');
+var FCM = require('fcm-node');
+const userModel = require("../model/userModel");
 
+const sendNotification = async(req,res) => {
 
-// const sendPushNotification = async(userId,message) => {
-
-//     try {
+    try {
+      const {userId,message} = req.query ;
+      console.log('User Id:- '+userId);
+      console.log('message:- '+message);
   
-//       console.log('User Id:- '+userId);
-//       console.log('message:- '+message);
+      fs.readFile(path.join(__dirname,'../firebaseService.json'), "utf8", async(err, jsonString) => {
+      if (err) {
+          console.log("Error reading file from disk:", err);
+          return err;
+        }
+        try {
   
-//       fs.readFile(path.join(__dirname,'../firebaseService.json'), "utf8", async(err, jsonString) => {
-//       if (err) {
-//           console.log("Error reading file from disk:", err);
-//           return err;
-//         }
-//         try {
+          //firebase push notification send
+          const data = JSON.parse(jsonString);
+          var serverKey = data.SERVER_KEY;
+          var fcm = new FCM(serverKey);
   
-//           //firebase push notification send
-//           const data = JSON.parse(jsonString);
-//           var serverKey = data.SERVER_KEY;
-//           var fcm = new FCM(serverKey);
-  
-//           var push_tokens = await Push_Notification.find({ 
-//             where:{
-//               user_id:userId
-//             }
-//           });
+          var push_tokens = await userModel.findOne({ UserId:userId}).select({UserId:1, token:1});
+          if(!push_tokens){
+            return res.status(200).send({message:"User not found"})
+          }
           
-//           var reg_ids = [];
-//           push_tokens.forEach(token => {
-//             reg_ids.push(token.fcm_token)
-//           })
+          // var reg_ids = [];
+          // push_tokens.forEach(token => {
+          //   reg_ids.push(token.fcm_token)
+          // })
+          var reg_ids = [push_tokens.token] ;
+          console.log("user=====>",push_tokens,"===reg_ids ==>",reg_ids );
   
-//           if(reg_ids.length > 0){
+          if(reg_ids.length > 0){
   
-//             var pushMessage = { //this may vary according to the message type (single recipient, multicast, topic, et cetera)
-//               registration_ids:reg_ids,
-//               content_available: true,
-//               mutable_content: true,
-//               notification: {
-//                   body: message,
-//                   icon : 'myicon',//Default Icon
-//                   sound : 'mySound',//Default sound
-//                   // badge: badgeCount, example:1 or 2 or 3 or etc....
-//               },
-//               // data: {
-//               //   notification_type: 5,
-//               //   conversation_id:inputs.user_id,
-//               // }
-//             };
-          
-//             fcm.send(pushMessage, function(err, response){
-//                 if (err) {
-//                     console.log("Something has gone wrong!",err);
-//                 } else {
-//                     console.log("Push notification sent.", response);
-//                 }
-//             });
+            var pushMessage = { //this may vary according to the message type (single recipient, multicast, topic, et cetera)
+              registration_ids:reg_ids,
+              content_available: true,
+              mutable_content: true,
+              notification: {
+                  body: message,
+                  icon : 'myicon',//Default Icon
+                  sound : 'mySound',//Default sound
+                  // badge: badgeCount, example:1 or 2 or 3 or etc....
+              },
+              // data: {
+              //   notification_type: 5,
+              //   conversation_id:inputs.user_id,
+              // }
+            };
+      
+            fcm.send(pushMessage, function(err, response) {
+              if (err) {
+                  console.log("Something has gone wrong!", err);
+                  return res.status(500).send({ status: false, message: "Failed to send notification", error: err });
+              } else {
+                  console.log("Push notification sent.", response);
+                  return res.status(200).send({ status: true, message: "Notification sent successfully", response: response });
+              }
+          });          
   
-//           }
+          }
   
   
-//         } catch (err) {
-//           console.log("Error parsing JSON string:", err);
-//         }
-//       });
+        } catch (err) {
+          console.log("Error parsing JSON string:", err);
+        }
+      });
   
-//     } catch (error) {
-//       console.log(error);
-//     }
+    } catch (error) {
+      console.log(error);
+    }
   
-//   }
+  }
+  module.exports = { sendNotification }

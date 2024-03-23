@@ -51,7 +51,7 @@ const tournamentsByAdmin = async function (req, res) {
     console.log(tournamentStartTime, "========tournamentStartTime====", delay);
 
     if (delay < 0) {
-      return res.status(400).send({
+      return res.status(200).send({
         status: false,
         message:
           "Invalid date and time. Please provide a future date and time.",

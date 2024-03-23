@@ -41,7 +41,7 @@ const rktTablesCreatedByAdmin = async function (req, res) {
   
       if (delay < 0) {
         console.log("error in delay====");
-        return res.status(400).send({
+        return res.status(200).send({
           status: false,
           message:
             "Invalid date and time. Please provide a future date and time.",
