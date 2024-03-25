@@ -107,7 +107,6 @@ const getCricByGroupId = async function (req, res) {
 const updateCric = async function (req, res) {
   try {
     let { UserId, groupId, run, wicket, ball } = req.query;
-    console.log(req.query, "=============req.query");
 
     if (!UserId || !groupId || !run || !wicket || !ball) {
       return res.status(200).send({
@@ -120,7 +119,6 @@ const updateCric = async function (req, res) {
     ball = parseInt(ball);
 
     if (run > 6 || run < 0 || run === 5) {
-      console.log("invalid input=====>", run, typeof run);
       return res.status(200).send({
         status: false,
         message: "Invalid Run",
@@ -133,7 +131,6 @@ const updateCric = async function (req, res) {
       .select({ group: 0 });
 
     if (!groupExist) {
-      console.error("No matching document found for groupId:", groupId);
       return res.status(404).send({
         status: false,
         message: "No matching document found",
@@ -141,33 +138,23 @@ const updateCric = async function (req, res) {
       });
     }
     if (groupExist.isMatchOver) {
-      return res
-        .status(200)
-        .send({
-          status: false,
-          message: "Game is over",
-          currentTime: new Date(),
-          nextBallTime: groupExist.nextBallTime,
-          RemainingBall: groupExist.ball,
-        });
+      return res.status(200).send({
+        status: false,
+        message: "Game is over",
+        currentTime: new Date(),
+        nextBallTime: groupExist.nextBallTime,
+        RemainingBall: groupExist.ball,
+      });
     }
 
-    //____________check server side ball count or client side ball count is same or not
+    // Check if the server-side ball count matches the client-side ball count
     if (groupExist.ball !== ball) {
-      console.log(
-        "RemainingBall status false==========>",
-        groupExist.ball,
-        "=======client ball========>",
-        ball
-      );
-      return res
-        .status(200)
-        .send({
-          status: false,
-          currentTime: new Date(),
-          nextBallTime: groupExist.nextBallTime,
-          RemainingBall: groupExist.ball,
-        });
+      return res.status(200).send({
+        status: false,
+        currentTime: new Date(),
+        nextBallTime: groupExist.nextBallTime,
+        RemainingBall: groupExist.ball,
+      });
     }
 
     const index = groupExist.updatedPlayers.findIndex(
@@ -175,7 +162,6 @@ const updateCric = async function (req, res) {
     );
 
     if (index === -1) {
-      console.error("User not found in the updatedPlayers array");
       return res.status(200).send({
         status: false,
         message: "User not found in the updatedPlayers array",
@@ -183,12 +169,8 @@ const updateCric = async function (req, res) {
       });
     }
 
-    //______________________check the time diff and calculate run per player
-
-    let isRunUpdated = groupExist.updatedPlayers[index].isRunUpdated;
-
-    if (isRunUpdated === true || groupExist.isMatchOver) {
-      console.log("RemainingBall status true==========>", groupExist.ball);
+    // Check if run has already been updated or if the match is over
+    if (groupExist.updatedPlayers[index].isRunUpdated || groupExist.isMatchOver) {
       return res.status(200).json({
         status: true,
         currentTime: new Date(),
@@ -197,50 +179,46 @@ const updateCric = async function (req, res) {
       });
     }
 
-    //_______________update run and wicket___________________
-    if (isRunUpdated === false) {
-      let storedWicket = groupExist.updatedPlayers[index].wicket;
-      storedWicket = parseInt(storedWicket);
+    // Update run and wicket
+    if (!groupExist.updatedPlayers[index].isRunUpdated) {
+      let storedWicket = parseInt(groupExist.updatedPlayers[index].wicket);
       groupExist.updatedPlayers[index].hit = true;
       groupExist.updatedPlayers[index].isRunUpdated = true;
-      groupExist.updatedPlayers[index].run += parseInt(run);
+      groupExist.updatedPlayers[index].run += run;
 
       if (groupExist.updatedPlayers[index].runWithWicket.length <= 6) {
-        if (storedWicket < parseInt(wicket)) {
+        if (storedWicket < wicket) {
           groupExist.updatedPlayers[index].runWithWicket.push("W");
         } else {
           groupExist.updatedPlayers[index].runWithWicket.push(run);
         }
       }
-      console.log(
-        "runwith wicket============>",
-        groupExist.updatedPlayers[index].runWithWicket
-      );
-      groupExist.updatedPlayers[index].wicket = parseInt(wicket);
 
-      let updatedGroupFstHit = await groupModel.findOneAndUpdate(
-        { _id: groupId, updatedPlayers: { $elemMatch: { UserId: UserId } } },
-        { $set: { "updatedPlayers.$": groupExist.updatedPlayers } },
+      groupExist.updatedPlayers[index].wicket = wicket;
+
+      // Increment the __v field to ensure optimistic concurrency control
+      groupExist.__v++;
+
+      // Update the document with the modified updatedPlayers array, ensuring optimistic concurrency control
+      const updatedGroup = await groupModel.findOneAndUpdate(
+        { _id: groupId, __v: groupExist.__v - 1 }, // Ensure that the document hasn't been modified since it was fetched
+        { $set: { "updatedPlayers.$": groupExist.updatedPlayers[index] } },
         { new: true }
       );
-      console.log(
-        "RemainingBall status true==========>",
-        updatedGroupFstHit.ball
-      );
-      return res
-        .status(200)
-        .json({
-          status: true,
-          currentTime: new Date(),
-          nextBallTime: updatedGroupFstHit.nextBallTime,
-          RemainingBall: updatedGroupFstHit.ball,
-        });
+
+      return res.status(200).json({
+        status: true,
+        currentTime: new Date(),
+        nextBallTime: updatedGroup.nextBallTime,
+        RemainingBall: updatedGroup.ball,
+      });
     }
   } catch (err) {
     console.log(err);
     return res.status(500).send({ status: false, message: err.message });
   }
 };
+
 
 //__________________________declare the winner_______________________________(not used in this project)
 

@@ -13,7 +13,8 @@ async function updateProfitLoss(gameName, groupId, profit, loss, currentDateForm
     } else {
         game = "tictactoe";
     }
-
+    profit = parseInt(profit);
+    loss = parseInt(loss);
     const lastDayProfit = await profitLossModel
         .findOne()
         .sort({ createdAt: -1 })
