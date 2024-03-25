@@ -176,55 +176,77 @@
 //____________________________________notification using firebase________________________
 
 // const admin = require('firebase-admin');
-// const userModel = require('../model/userModel');
+// const { initializeApp } = require('firebase-admin/app');
+// const { getMessaging } = require('firebase-admin/messaging');
+// const userModel = require('../model/userModel'); // Assuming this is the correct path
 // const serviceAccount = require('../firebaseService.json');
 
-// admin.initializeApp({
-//   credential: admin.credential.cert(serviceAccount),
-//   databaseURL: "mongodb+srv://nikita1:7CSKh9nBmgBm27YC@cluster0.suzof1p.mongodb.net/nikita" // for local db
+// const fbApp = initializeApp({
+//     credential: admin.credential.cert(serviceAccount),
 // });
 
+// const messaging = getMessaging(fbApp);
 
-// const sendNotification = async function(req, res) {
-//   try {
-//     const query = { 
-//       token: { 
-//         $exists: true,  
-//         $ne: ''        
-//       }
-//     };
+// const sendNotification = async (req, res) => {
+//     try {
+//         const query = { 
+//             token: { 
+//                 $exists: true,  
+//                 $ne: ''        
+//             }
+//         };
 
-//     const fetchTokens = await userModel.find(query).select({token:1, _id:0});
-//     const registrationTokens = fetchTokens.map(tokens => tokens.token);
+//         const fetchTokens = await userModel.find(query).select({ token: 1, _id: 0 });
+//         const registrationTokens = fetchTokens.map(tokens => tokens.token);
 
-//     console.log(registrationTokens, "====================");
+//         console.log(registrationTokens, "====================");
 
-//     const messages = registrationTokens.map(token => ({
-//       data: {
-//         title: 'Game Started',
-//         body: 'Your game has started!'
-//       },
-//       token: token
-//     }));
+//         const messages = registrationTokens.map(token => ({
+//             notification: {
+//                 title: 'Game Started',
+//                 body: 'Your game has started!'
+//             },
+//             token: token
+//         }));
 
-//     const sendPromises = messages.map(message => admin.messaging().send(message));
+//         const sendPromises = messages.map(message => messaging.send(message));
 
-//     Promise.all(sendPromises)
-//       .then((responses) => {
-//         console.log('Successfully sent messages:', responses);
+//         Promise.all(sendPromises)
+//     .then((responses) => {
+//         let successCount = 0; // Counter to keep track of successful notifications
+//         responses.forEach((response, index) => {
+//             if (response.error) {
+//                 // Handle invalid registration token error
+//                 console.error('Error sending message for token at index', index, ':', response.error);
+//                 // Remove the invalid token from your database or mark it as invalid
+//                 // Example: userModel.findOneAndDelete({ token: registrationTokens[index] })
+//             } else {
+//                 console.log('Successfully sent message for token at index', index);
+//                 successCount++; // Increment success count
+//             }
+//         });
+
+//         // Log a success message if there are no errors
+//         if (successCount === registrationTokens.length) {
+//             console.log('All messages sent successfully');
+//         }
+
 //         return res.status(200).send({ status: true, message: "Messages sent successfully" });
-//       })
-//       .catch((error) => {
+//     })
+//     .catch((error) => {
 //         console.error('Error sending messages:', error);
 //         return res.status(500).send({ status: false, message: error.message });
-//       });
-//   } catch (error) {
-//     console.log(error);
-//     return res.status(500).send({ status: false, message: error.message });
-//   }
+//     });
+
+    
+//     } catch (error) {
+//         console.log(error);
+//         return res.status(500).send({ status: false, message: error.message });
+//     }
 // }
 
 // module.exports = { sendNotification };
+
 
 
 const fs = require("fs");
@@ -304,4 +326,66 @@ const sendNotification = async(req,res) => {
     }
   
   }
-  module.exports = { sendNotification }
+
+  //_______________________create pushNotifiaction function_______________________
+  const pushNotification = async (userTokens, message) => {
+    try {
+        console.log('User Ids:', userTokens);
+        console.log('Message:', message);
+
+        fs.readFile(path.join(__dirname, '../firebaseService.json'), "utf8", async (err, jsonString) => {
+            if (err) {
+                console.log("Error reading file from disk:", err);
+                throw err; // Throw error for proper handling
+            }
+            try {
+                // Parse JSON data
+                const data = JSON.parse(jsonString);
+                const serverKey = data.SERVER_KEY;
+
+                // Fetch user tokens from database
+                // const pushTokens = await userModel.find({ UserId: { $in: userIds } }).select({ UserId: 1, token: 1 });
+
+                if (userTokens.length === 0) {
+                    throw new Error("No users found");
+                }
+
+                // const regIds = pushTokens.map(token => token.token);
+
+                if (userTokens.length > 0) {
+                    const fcm = new FCM(serverKey);
+                    const pushMessage = {
+                        registration_ids: userTokens, //_ids most imp
+                        priority: 'high', // Set priority to 'high'
+                        content_available: true,
+                        mutable_content: true,
+                        notification: {
+                            body: message,
+                            icon: 'myicon', // Default Icon
+                            sound: 'mySound', // Default sound
+                        },
+                    };
+
+                    // Send push notifications
+                    fcm.send(pushMessage, function (err, response) {
+                        if (err) {
+                            console.log("Failed to send notification:", err);
+                            // Handle error accordingly
+                        } else {
+                            console.log("Notification sent successfully:", response);
+                            // Handle success accordingly
+                        }
+                    });
+                }
+            } catch (err) {
+                console.log("Error:", err.message);
+                // Handle error accordingly
+            }
+        });
+    } catch (error) {
+        console.log("Error:", error.message);
+        // Handle error accordingly
+    }
+};
+
+  module.exports = { sendNotification, pushNotification }

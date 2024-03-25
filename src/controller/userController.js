@@ -47,9 +47,9 @@ const createUsers = async function (req, res) {
     // }
     // queryData.token = token ;
     let checkUserId = await userModel
-      .findOne({ UserId: UserId })
+      .findOneAndUpdate({ UserId: UserId },{token:token},{new:true})
       .select({ _id: 0 });
-
+    console.log("checkUserId========>",checkUserId);
     if (checkUserId != null && checkUserId != undefined) {
       if (checkUserId.banned === true) {
         return res.status(200).send({

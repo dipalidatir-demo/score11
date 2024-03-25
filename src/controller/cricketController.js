@@ -102,154 +102,12 @@ const getCricByGroupId = async function (req, res) {
   }
 };
 
-// _______________________get cricket group by id data for socket____________________
-
-// const getCricByGroupIdUsingSocket = async function (req, res) {
-//   try {
-//     let groupId = req.query.groupId;
-//     const UserId = req.query.UserId;
-
-//     let cricket = await groupModel.findOneAndUpdate(
-//       { _id: groupId, "updatedPlayers.UserId": UserId },
-//       { $set: { "updatedPlayers.$.isBallThrow": true } },
-//       {
-//         projection: {
-//           'updatedPlayers.UserId': 1,
-//           'updatedPlayers.run': 1,
-//           'updatedPlayers.wicket': 1,
-//           'updatedPlayers.isBallThrow': 1,
-//           'ballSpeed': 1,
-//           'isMatchOver': 1,
-//           'nextBallTime': 1
-//         },
-//         new: true // Return the updated document
-//       }
-//     );
-
-//     console.log("cricket using socket====>", cricket);
-//     if (!cricket) {
-//       return res.status(200).send({ status: false, message: "this groupId not found" });
-//     }
-
-//     // Calculate currentBallTime
-//     let currentBallTime = Math.max(0, cricket.nextBallTime - new Date());
-
-//     if (cricket.isMatchOver === true) {
-//       let resForWinners = {
-//         updatedPlayers: cricket.updatedPlayers,
-//         currentBallTime: currentBallTime,
-//         ballSpeed: cricket.ballSpeed,
-//       };
-//       return res.status(200).json(resForWinners);
-//     }
-
-//     if (currentBallTime > 0) {
-//       if (cricket.updatedPlayers.length !== 0) {
-//         let cricket1 = {
-//           updatedPlayers: cricket.updatedPlayers,
-//           currentBallTime: currentBallTime,
-//           ballSpeed: cricket.ballSpeed,
-//         };
-//         return res.status(200).json(cricket1);
-//       }
-//     } else {
-//       let cricket1 = {
-//         updatedPlayers: cricket.updatedPlayers,
-//         currentBallTime: 0,
-//         ballSpeed: cricket.ballSpeed,
-//       };
-//       return res.status(200).json(cricket1);
-//     }
-
-//     return res.status(200).json(cricket);
-//   } catch (err) {
-//     console.log(err);
-//     return res.status(500).send({
-//       status: false,
-//       error: err.message,
-//     });
-//   }
-// };
-
-// const getCricByGroupIdUsingSocket = async function (socket, req, res) {
-//   try {
-//     let groupId = req.groupId;
-//     const UserId = req.UserId;
-
-//     console.log("groupId====>",groupId,"======UserId=====>",UserId);
-
-//     if(!groupId || !UserId){
-//       return res.status(400).send({status:false, message:"Both UserId and groupId are required"});
-//     }
-
-//     let cricket = await groupModel.findOneAndUpdate(
-//       { _id: groupId, "updatedPlayers.UserId": UserId },
-//       { $set: { "updatedPlayers.$.isBallThrow": true } },
-//       {
-//         projection: {
-//           'updatedPlayers.UserId': 1,
-//           'updatedPlayers.run': 1,
-//           'updatedPlayers.wicket': 1,
-//           'updatedPlayers.isBallThrow': 1,
-//           'ballSpeed': 1,
-//           'isMatchOver': 1,
-//           'nextBallTime': 1
-//         },
-//         new: true // Return the updated document
-//       }
-//     );
-
-//     console.log("cricket using socket====>", cricket);
-//     if (!cricket) {
-//       socket.emit('cricketData', { status: false, message: "this groupId not found" });
-//       return;
-//     }
-
-//     // Calculate currentBallTime
-//     let currentBallTime = Math.max(0, cricket.nextBallTime - new Date());
-
-//     if (cricket.isMatchOver === true) {
-//       let resForWinners = {
-//         updatedPlayers: cricket.updatedPlayers,
-//         currentBallTime: currentBallTime,
-//         ballSpeed: cricket.ballSpeed,
-//       };
-//       socket.emit('cricketData', resForWinners);
-//       return;
-//     }
-
-//     if (currentBallTime > 0) {
-//       if (cricket.updatedPlayers.length !== 0) {
-//         let cricket1 = {
-//           updatedPlayers: cricket.updatedPlayers,
-//           currentBallTime: currentBallTime,
-//           ballSpeed: cricket.ballSpeed,
-//         };
-//         socket.emit('cricketData', cricket1);
-//         return;
-//       }
-//     } else {
-//       let cricket1 = {
-//         updatedPlayers: cricket.updatedPlayers,
-//         currentBallTime: 0,
-//         ballSpeed: cricket.ballSpeed,
-//       };
-//       socket.emit('cricketData', cricket1);
-//       return;
-//     }
-
-//     socket.emit('cricketData', cricket);
-//   } catch (err) {
-//     console.log(err);
-//     socket.emit('cricketDataError', { status: false, error: err.message });
-//   }
-// };
-
 //____________________________update table__________________________
 
 const updateCric = async function (req, res) {
   try {
     let { UserId, groupId, run, wicket, ball } = req.query;
+    console.log(req.query, "=============req.query");
 
     if (!UserId || !groupId || !run || !wicket || !ball) {
       return res.status(200).send({
@@ -257,8 +115,12 @@ const updateCric = async function (req, res) {
         message: "All fields are required",
       });
     }
+    run = parseInt(run);
+    wicket = parseInt(wicket);
+    ball = parseInt(ball);
 
     if (run > 6 || run < 0 || run === 5) {
+      console.log("invalid input=====>", run, typeof run);
       return res.status(200).send({
         status: false,
         message: "Invalid Run",
@@ -267,7 +129,7 @@ const updateCric = async function (req, res) {
 
     // Find the document and update the run for the specified user
     const groupExist = await groupModel
-      .findOne({ _id: groupId, "updatedPlayers.UserId":UserId })
+      .findOne({ _id: groupId, "updatedPlayers.UserId": UserId })
       .select({ group: 0 });
 
     if (!groupExist) {
@@ -278,11 +140,34 @@ const updateCric = async function (req, res) {
         data: null,
       });
     }
+    if (groupExist.isMatchOver) {
+      return res
+        .status(200)
+        .send({
+          status: false,
+          message: "Game is over",
+          currentTime: new Date(),
+          nextBallTime: groupExist.nextBallTime,
+          RemainingBall: groupExist.ball,
+        });
+    }
 
     //____________check server side ball count or client side ball count is same or not
-    if (groupExist.ball !== parseInt(ball)) {
-      console.log("RemainingBall status false==========>", groupExist.ball, "=======client ball========>", ball);
-      return res.status(200).send({ status: false, currentTime: new Date(), nextBallTime: groupExist.nextBallTime, RemainingBall: groupExist.ball });
+    if (groupExist.ball !== ball) {
+      console.log(
+        "RemainingBall status false==========>",
+        groupExist.ball,
+        "=======client ball========>",
+        ball
+      );
+      return res
+        .status(200)
+        .send({
+          status: false,
+          currentTime: new Date(),
+          nextBallTime: groupExist.nextBallTime,
+          RemainingBall: groupExist.ball,
+        });
     }
 
     const index = groupExist.updatedPlayers.findIndex(
@@ -308,7 +193,7 @@ const updateCric = async function (req, res) {
         status: true,
         currentTime: new Date(),
         nextBallTime: groupExist.nextBallTime,
-        RemainingBall: groupExist.ball
+        RemainingBall: groupExist.ball,
       });
     }
 
@@ -327,7 +212,10 @@ const updateCric = async function (req, res) {
           groupExist.updatedPlayers[index].runWithWicket.push(run);
         }
       }
-      console.log("runwith wicket============>", groupExist.updatedPlayers[index].runWithWicket);
+      console.log(
+        "runwith wicket============>",
+        groupExist.updatedPlayers[index].runWithWicket
+      );
       groupExist.updatedPlayers[index].wicket = parseInt(wicket);
 
       let updatedGroupFstHit = await groupModel.findOneAndUpdate(
@@ -335,8 +223,18 @@ const updateCric = async function (req, res) {
         { $set: { "updatedPlayers.$": groupExist.updatedPlayers } },
         { new: true }
       );
-      console.log("RemainingBall status true==========>", updatedGroupFstHit.ball);
-      return res.status(200).json({ status: true, currentTime: new Date(), nextBallTime: updatedGroupFstHit.nextBallTime, RemainingBall: updatedGroupFstHit.ball });
+      console.log(
+        "RemainingBall status true==========>",
+        updatedGroupFstHit.ball
+      );
+      return res
+        .status(200)
+        .json({
+          status: true,
+          currentTime: new Date(),
+          nextBallTime: updatedGroupFstHit.nextBallTime,
+          RemainingBall: updatedGroupFstHit.ball,
+        });
     }
   } catch (err) {
     console.log(err);
@@ -442,12 +340,14 @@ const getAllGroups = async function (req, res) {
 const getGameEndTime = async function (req, res) {
   try {
     const groupId = req.query.groupId;
-    if(!groupId){
-      return res.status(200).send({status:false, message:"Group id is required"});
+    if (!groupId) {
+      return res
+        .status(200)
+        .send({ status: false, message: "Group id is required" });
     }
     const checkGorup = await groupModel
       .findById({ _id: groupId })
-      .select({ nextBallTime: 1, ball:1, start:1});
+      .select({ nextBallTime: 1, ball: 1, start: 1 });
 
     if (!checkGorup) {
       return res
@@ -456,18 +356,32 @@ const getGameEndTime = async function (req, res) {
     }
     if (!checkGorup.start) {
       // console.log("time for nextball is start is false===>",checkGorup.nextBallTime - Date.now());
-      console.log("start or not ====>",checkGorup.start);
+      console.log("start or not ====>", checkGorup.start);
       const remainingTime = Math.max(0, checkGorup.nextBallTime - Date.now());
-      if(remainingTime == 0){
-        return res.status(200).send({ status: true, currentTime: new Date(), nextBallTime: checkGorup.nextBallTime, RemainingBall:checkGorup.ball });
-
-      }else{
-
-        return res.status(200).json({ status: true, matchStartTime: remainingTime });
+      if (remainingTime == 0) {
+        return res
+          .status(200)
+          .send({
+            status: true,
+            currentTime: new Date(),
+            nextBallTime: checkGorup.nextBallTime,
+            RemainingBall: checkGorup.ball,
+          });
+      } else {
+        return res
+          .status(200)
+          .json({ status: true, matchStartTime: remainingTime });
       }
     }
 
-    return res.status(200).send({ status: true, currentTime: new Date(), nextBallTime: checkGorup.nextBallTime, RemainingBall:checkGorup.ball });
+    return res
+      .status(200)
+      .send({
+        status: true,
+        currentTime: new Date(),
+        nextBallTime: checkGorup.nextBallTime,
+        RemainingBall: checkGorup.ball,
+      });
   } catch (error) {
     console.log(error);
     return res.status(500).send({ status: false, message: error.message });
@@ -489,7 +403,7 @@ const getPlayersData = async function (req, res) {
     // Find the document and update the run for the specified user
     const groupExist = await groupModel
       .findOne({ _id: groupId })
-      .select({updatedPlayers:1, start:1, ball:1})
+      .select({ updatedPlayers: 1, start: 1, ball: 1 })
       .lean(); // Convert to plain JavaScript object
 
     if (!groupExist) {
@@ -501,17 +415,25 @@ const getPlayersData = async function (req, res) {
       });
     }
     const updatedPlayers = groupExist.updatedPlayers.map((player) => {
-      const { userName, botType, isBallThrow, isBot, isRunUpdated, hit, ...rest } = player;
+      const {
+        userName,
+        botType,
+        isBallThrow,
+        isBot,
+        isRunUpdated,
+        hit,
+        ...rest
+      } = player;
       return rest;
     });
-  
+
     let response = {
       _id: groupExist._id,
       updatedPlayers: updatedPlayers,
       start: groupExist.start,
-      RemainingBall:groupExist.ball
+      RemainingBall: groupExist.ball,
     };
-console.log("response====>", response);
+    console.log("response====>", response);
     return res.status(200).json(response);
   } catch (error) {
     console.log(error);
@@ -525,6 +447,5 @@ module.exports = {
   winTheGame,
   getAllGroups,
   getGameEndTime,
-  getPlayersData
-  // getCricByGroupIdUsingSocket
+  getPlayersData,
 };

@@ -371,7 +371,7 @@ const updateTournament = async function (req, res) {
         message: " user not found",
       });
     }
-    let { userName, isBot, credits, realMoney } = userExist;
+    let { userName, isBot, credits, realMoney, token } = userExist;
 
     credits = credits + parseInt(realMoney);
 
@@ -430,6 +430,7 @@ const updateTournament = async function (req, res) {
             Users: {
               UserId: UserId,
               userName: userName,
+              token:token,
               isBot: isBot,
               joined: true,
               endTime: existTable.endTime,

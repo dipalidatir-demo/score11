@@ -9,8 +9,7 @@ const Decimal = require("decimal.js");
 const profitLossModel = require("../model/profitLossModel");
 const botModel = require("../model/botModel");
 const moment = require("moment");
-const cron = require("node-cron");
-
+const {pushNotification} = require("../controller/sendNotificationsController");
 //_____crete group as per the admin_______
 
 const createGroupByAdmin = async function (tableId) {
@@ -88,6 +87,7 @@ const createGroupByAdmin = async function (tableId) {
             return {
               UserId: user.UserId,
               userName: user.userName,
+              token:user.token,
               isBot: user.isBot,
             };
           });
@@ -171,6 +171,9 @@ const createGroupByAdmin = async function (tableId) {
         botType: name.botType,
       }));
       // console.log("result", result);
+      const Token = group.map(item => item.token).filter(token => token !== undefined);
+      console.log("Token===========>",Token);
+      pushNotification(Token,"Game will start soon!");
       let totalBot = result.filter((players) => players.isBot === true);
       totalBot = totalBot.length;
       let totalRealPlayres = result.filter((players) => players.isBot === false);
@@ -244,7 +247,7 @@ const createGroupByAdmin = async function (tableId) {
     
        console.log("this is updated data start game and updating botsrun>>>>>>>>>>", runUpdatedForBot.start);
       setTimeout(function () {
-        runUpdateBalls(grpId);
+        runUpdateBalls(grpId, Token);
       }, 17000);
     }
   }
@@ -258,20 +261,22 @@ const createGroupByAdmin = async function (tableId) {
       let tableId = updateWicket.tableId;
       if (ballCountForWicket < 6 && !updateWicket.isMatchOver) {
         let updatedPlayers = updateWicket.updatedPlayers.map((player) => {
-          if (!player.hit && player.isBot === false) {
-            //___________If the player did not hit the ball, set the wicket to true
-            player.wicket += 1;
-            player.isRunUpdated = false;
-            player.runWithWicket.push("W");
+          let updatedPlayer = { ...player }; // Clone the player object
+          if (!updatedPlayer.hit && updatedPlayer.isBot === false) {
+              // If the player did not hit the ball, set the wicket to true
+              updatedPlayer.wicket += 1;
+              updatedPlayer.isRunUpdated = false;
+              updatedPlayer.runWithWicket.push("W");
           }
-          if (player.hit && ballCountForWicket > 0) {
-            //______________If the player did not hit the ball, set the wicket to true
-            player.hit = false;
-            player.isRunUpdated = false;
+          if (updatedPlayer.hit && ballCountForWicket > 0) {
+              // If the player hit the ball, reset the hit status
+              updatedPlayer.hit = false;
+              updatedPlayer.isRunUpdated = false;
           }
-          player.isBallThrow = false
-          return player;
-        });
+          updatedPlayer.isBallThrow = false;
+          return updatedPlayer;
+      });
+      
   
         await groupModel.updateOne({ _id: grpId }, { $set: { updatedPlayers } });
       }
@@ -932,11 +937,12 @@ const createGroupByAdmin = async function (tableId) {
   
   //_________________________________________update run___________________
   
-  async function runUpdateBalls(grpId) {
+  async function runUpdateBalls(grpId,Token) {
     console.log("call the runUpdateBalls function >>>>>>>>>>>", grpId);
     if (grpId != undefined) {
         let executionCount = 0;
-  
+        console.log("Token===========>",Token);
+        pushNotification(Token,"Game has started");
         async function updateBallsRecursive() {
             const MAX_EXECUTION_COUNT = 8;
             if (executionCount < MAX_EXECUTION_COUNT) {
