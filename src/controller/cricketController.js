@@ -107,7 +107,7 @@ const getCricByGroupId = async function (req, res) {
 const updateCric = async function (req, res) {
   try {
     let { UserId, groupId, run, wicket, ball } = req.query;
-
+    console.log("req.query============>",req.query);
     if (!UserId || !groupId || !run || !wicket || !ball) {
       return res.status(400).json({
         status: false,
@@ -178,9 +178,9 @@ const updateCric = async function (req, res) {
     groupExist.updatedPlayers[playerIndex].run += run;
     groupExist.updatedPlayers[playerIndex].wicket = wicket;
     groupExist.updatedPlayers[playerIndex].runWithWicket.push(run);
-
+    console.log( "runwithwicket array before updatein====>",groupExist.updatedPlayers[playerIndex].runWithWicket);
     const updatedGroup = await groupExist.save();
-
+    console.log( "runwithwicket array after updatein====>",updatedGroup.updatedPlayers[playerIndex].runWithWicket);
     return res.status(200).json({
       status: true,
       message: "Run and wicket updated successfully",

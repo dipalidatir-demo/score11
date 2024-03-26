@@ -442,7 +442,7 @@ const updateTournament = async function (req, res) {
         { new: true }
       )
       .select({ players: 1, _id: 0 });
-
+console.log("tableUpdate token=====>",tableUpdate.Users);
     //_________________________update playerWithBot in table________________
     if (existTable.playerWithBot === 0) {
       setTimeout(() => {
