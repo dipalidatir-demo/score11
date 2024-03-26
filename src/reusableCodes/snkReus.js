@@ -586,7 +586,7 @@ async function overTheGameForPlayers ( groupId, gameName, Token ) {
   console.log( "game name in overthegame ====>", gameName );
       pushNotification(Token,"Game has started");
   const MAX_DURATION_SECONDS = 180; // 3 minutes
-  const INTERVAL_MILLISECONDS = 15000; // 15 seconds
+  const INTERVAL_MILLISECONDS = 3000; // 3 seconds
   let startTime = Date.now();
   let intervalId; // Store the interval ID
   if ( groupId !== undefined ) {
