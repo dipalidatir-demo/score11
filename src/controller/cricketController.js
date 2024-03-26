@@ -163,21 +163,25 @@ const updateCric = async function (req, res) {
       });
     }
 
-    // if (groupExist.updatedPlayers[playerIndex].isRunUpdated) {
-    //   return res.status(200).json({
-    //     status: true,
-    //     message: "Run already updated",
-    //     currentTime: new Date(),
-    //     nextBallTime: groupExist.nextBallTime,
-    //     remainingBalls: groupExist.ball,
-    //   });
-    // }
+    if (groupExist.updatedPlayers[playerIndex].isRunUpdated) {
+      return res.status(200).json({
+        status: true,
+        message: "Run already updated",
+        currentTime: new Date(),
+        nextBallTime: groupExist.nextBallTime,
+        remainingBalls: groupExist.ball,
+      });
+    }
 
     groupExist.updatedPlayers[playerIndex].hit = true;
     groupExist.updatedPlayers[playerIndex].isRunUpdated = true;
     groupExist.updatedPlayers[playerIndex].run += run;
     groupExist.updatedPlayers[playerIndex].wicket = wicket;
-    groupExist.updatedPlayers[playerIndex].runWithWicket.push(run);
+    if(run === 0){
+      groupExist.updatedPlayers[playerIndex].runWithWicket.push("W");
+    }else{
+      groupExist.updatedPlayers[playerIndex].runWithWicket.push(run);
+    }
     console.log( "runwithwicket array before updatein====>",groupExist.updatedPlayers[playerIndex].runWithWicket);
     const updatedGroup = await groupExist.save();
     console.log( "runwithwicket array after updatein====>",updatedGroup.updatedPlayers[playerIndex].runWithWicket);

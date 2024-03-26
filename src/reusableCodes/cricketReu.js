@@ -261,24 +261,24 @@ const createGroupByAdmin = async function (tableId) {
       let tableId = updateWicket.tableId;
       if (ballCountForWicket < 6 && !updateWicket.isMatchOver) {
         let updatedPlayers = updateWicket.updatedPlayers.map((player) => {
-          let updatedPlayer = { ...player }; // Clone the player object
-          if (!updatedPlayer.hit && updatedPlayer.isBot === false) {
-              // If the player did not hit the ball, set the wicket to true
-              updatedPlayer.wicket += 1;
-              updatedPlayer.isRunUpdated = false;
-              updatedPlayer.runWithWicket.push("W");
+          // let updatedPlayer = { ...player }; // Clone the player object
+          if (!player.hit && player.isBot === false) {
+            //___________If the player did not hit the ball, set the wicket to true
+            player.wicket += 1;
+            player.isRunUpdated = false;
+            player.runWithWicket.push("W");
           }
-          if (updatedPlayer.hit && ballCountForWicket > 0) {
-              // If the player hit the ball, reset the hit status
-              updatedPlayer.hit = false;
-              updatedPlayer.isRunUpdated = false;
+          if (player.hit && ballCountForWicket > 0) {
+            //______________If the player did not hit the ball, set the wicket to true
+            player.hit = false;
+            player.isRunUpdated = false;
           }
-          updatedPlayer.isBallThrow = false;
-          return updatedPlayer;
+          player.isBallThrow = false
+          return player;
       });
       
   
-        await groupModel.updateOne({ _id: grpId }, { $set: { updatedPlayers } });
+      await groupModel.updateOne({ _id: grpId }, { $set: { updatedPlayers } });
       }
   
       if (ballCountForWicket === 0 && !updateWicket.isMatchOver) {
