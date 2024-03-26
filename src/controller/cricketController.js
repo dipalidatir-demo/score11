@@ -163,15 +163,15 @@ const updateCric = async function (req, res) {
       });
     }
 
-    if (groupExist.updatedPlayers[playerIndex].isRunUpdated) {
-      return res.status(200).json({
-        status: true,
-        message: "Run already updated",
-        currentTime: new Date(),
-        nextBallTime: groupExist.nextBallTime,
-        remainingBalls: groupExist.ball,
-      });
-    }
+    // if (groupExist.updatedPlayers[playerIndex].isRunUpdated) {
+    //   return res.status(200).json({
+    //     status: true,
+    //     message: "Run already updated",
+    //     currentTime: new Date(),
+    //     nextBallTime: groupExist.nextBallTime,
+    //     remainingBalls: groupExist.ball,
+    //   });
+    // }
 
     groupExist.updatedPlayers[playerIndex].hit = true;
     groupExist.updatedPlayers[playerIndex].isRunUpdated = true;
