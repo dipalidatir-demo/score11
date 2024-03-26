@@ -175,7 +175,7 @@ const updateCric = async function (req, res) {
 
     groupExist.updatedPlayers[playerIndex].hit = true;
     groupExist.updatedPlayers[playerIndex].isRunUpdated = true;
-    groupExist.updatedPlayers[playerIndex].run = run;
+    groupExist.updatedPlayers[playerIndex].run += run;
     groupExist.updatedPlayers[playerIndex].wicket = wicket;
     groupExist.updatedPlayers[playerIndex].runWithWicket.push(run);
 
