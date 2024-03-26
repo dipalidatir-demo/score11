@@ -106,85 +106,57 @@ const getCricByGroupId = async function (req, res) {
 
 const updateCric = async function (req, res) {
   try {
-    let { UserId, groupId, run, wicket, ball } = req.query;
-    console.log("req.query============>",req.query);
+    const { UserId, groupId, run, wicket, ball } = req.query;
+    console.log("req.query============>", req.query);
+
     if (!UserId || !groupId || !run || !wicket || !ball) {
       return res.status(400).json({
         status: false,
         message: "All fields are required",
       });
     }
-    run = parseInt(run);
-    wicket = parseInt(wicket);
-    ball = parseInt(ball);
 
-    if (run > 6 || run < 0 || run === 5) {
+    const parsedRun = parseInt(run);
+    const parsedWicket = parseInt(wicket);
+    const parsedBall = parseInt(ball);
+
+    if (parsedRun > 6 || parsedRun < 0 || parsedRun === 5) {
       return res.status(400).json({
         status: false,
         message: "Invalid Run",
       });
     }
 
-    const groupExist = await groupModel.findById(groupId);
+    const updatedGroup = await groupModel.findOneAndUpdate(
+      {
+        _id: groupId,
+        isMatchOver: false,
+        "updatedPlayers.UserId": UserId,
+        "updatedPlayers.isRunUpdated": false,
+        ball: parsedBall
+      },
+      {
+        $set: {
+          "updatedPlayers.$.hit": true,
+          "updatedPlayers.$.isRunUpdated": true,
+          "updatedPlayers.$.wicket": parsedWicket,
+        },
+        $inc: { "updatedPlayers.$.run": parsedRun }, // Increment the run count
+        $push: {
+          "updatedPlayers.$.runWithWicket": parsedRun === 0 ? "W" : parsedRun,
+        },
+      },
+      { new: true }
+    );
+    
 
-    if (!groupExist) {
-      return res.status(404).json({
-        status: false,
-        message: "Group not found",
-      });
-    }
-
-    if (groupExist.isMatchOver) {
-      return res.status(400).json({
-        status: false,
-        message: "The match is over",
-        currentTime: new Date(),
-        nextBallTime: groupExist.nextBallTime,
-        remainingBalls: groupExist.ball,
-      });
-    }
-
-    if (groupExist.ball !== ball) {
-      return res.status(400).json({
-        status: false,
-        message: "Ball count mismatch",
-        currentTime: new Date(),
-        nextBallTime: groupExist.nextBallTime,
-        remainingBalls: groupExist.ball,
-      });
-    }
-
-    const playerIndex = groupExist.updatedPlayers.findIndex(player => player.UserId === UserId);
-
-    if (playerIndex === -1) {
-      return res.status(404).json({
-        status: false,
-        message: "Player not found in the group",
-      });
-    }
-
-    if (groupExist.updatedPlayers[playerIndex].isRunUpdated) {
+    if (!updatedGroup) {
       return res.status(200).json({
-        status: true,
-        message: "Run already updated",
-        currentTime: new Date(),
-        nextBallTime: groupExist.nextBallTime,
-        remainingBalls: groupExist.ball,
+        status: false,
+        message: "Player not found in the group or Group not found",
       });
     }
 
-    groupExist.updatedPlayers[playerIndex].hit = true;
-    groupExist.updatedPlayers[playerIndex].isRunUpdated = true;
-    groupExist.updatedPlayers[playerIndex].run += run;
-    groupExist.updatedPlayers[playerIndex].wicket = wicket;
-    if(run === 0){
-      groupExist.updatedPlayers[playerIndex].runWithWicket.push("W");
-    }else{
-      groupExist.updatedPlayers[playerIndex].runWithWicket.push(run);
-    }
-    console.log( "runwithwicket array before updatein====>",groupExist.updatedPlayers[playerIndex].runWithWicket);
-    const updatedGroup = await groupExist.save();
-    console.log( "runwithwicket array after updatein====>",updatedGroup.updatedPlayers[playerIndex].runWithWicket);
     return res.status(200).json({
       status: true,
       message: "Run and wicket updated successfully",
@@ -200,6 +172,7 @@ const updateCric = async function (req, res) {
     });
   }
 };
+
 
 
 
