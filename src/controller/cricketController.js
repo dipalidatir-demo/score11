@@ -138,6 +138,7 @@ const updateCric = async function (req, res) {
       return res.status(400).json({
         status: false,
         message: "The match is over",
+        currentTime: new Date(),
         nextBallTime: groupExist.nextBallTime,
         remainingBalls: groupExist.ball,
       });
@@ -147,6 +148,7 @@ const updateCric = async function (req, res) {
       return res.status(400).json({
         status: false,
         message: "Ball count mismatch",
+        currentTime: new Date(),
         nextBallTime: groupExist.nextBallTime,
         remainingBalls: groupExist.ball,
       });
@@ -165,6 +167,7 @@ const updateCric = async function (req, res) {
       return res.status(200).json({
         status: true,
         message: "Run already updated",
+        currentTime: new Date(),
         nextBallTime: groupExist.nextBallTime,
         remainingBalls: groupExist.ball,
       });
@@ -181,6 +184,7 @@ const updateCric = async function (req, res) {
     return res.status(200).json({
       status: true,
       message: "Run and wicket updated successfully",
+      currentTime: new Date(),
       nextBallTime: updatedGroup.nextBallTime,
       remainingBalls: updatedGroup.ball,
     });
