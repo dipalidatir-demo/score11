@@ -936,10 +936,9 @@ const updatePointOfUser = async function (req, res) {
       console.log("response after tab the dice for bot=====>");
       return res.status(200).json(result);
     } else {
-      const checkAndSetTimeout = await checkTurn(groupId, 'SnakeLadder',"called in updateUserPoints")
       setTimeout(async () => {
-        await checkAndSetTimeout();
-      }, 12000);
+        checkTurn(groupId, 'SnakeLadder', "called in updateUserPoints");
+    }, 12000);    
       const updatedPlayersForRes = updatedData.updatedPlayers.map(
         ({ UserId, points, dicePoints }) => ({
           UserId,
