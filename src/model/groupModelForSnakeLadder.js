@@ -40,6 +40,10 @@ const SnakeLadderGroupSchema = new mongoose.Schema(
             type: Number,
             default:0
           },
+          prevPoint:{
+            type: Number,
+            default:0
+          },
           movement:{
             type: String,
             default:''

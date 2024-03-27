@@ -709,10 +709,11 @@ const getSnkByGroupId = async function (req, res) {
     );
 
     const updatedPlayersForRes = snakeLadder.updatedPlayers.map(
-      ({ UserId, points,dicePoints }) => ({
+      ({ UserId, points,dicePoints, prevPoint }) => ({
         UserId,
         points,
-        dicePoints
+        dicePoints,
+        prevPoint
       })
     );
 
@@ -720,12 +721,13 @@ const getSnkByGroupId = async function (req, res) {
 
     if (snakeLadder.isGameOver) {
       const DataAftrGameOver = snakeLadder.updatedPlayers.map(
-        ({ UserId, points,dicePoints, prize, userName }) => ({
+        ({ UserId, points,dicePoints, prize, userName, prevPoint }) => ({
           UserId,
           userName,
           points,
           dicePoints,
           prize,
+          prevPoint
         })
       );
       let result = {
@@ -809,7 +811,7 @@ const updatePointOfUser = async function (req, res) {
         .send({ status: false, message: "groupId is not present" });
     }
     if(groupExist.isGameOver){
-      return res.status(200).send({sttaus:false, messge:"Game is Over"})
+      return res.status(200).send({status:false, messge:"Game is Over"})
     }
     let isUserExist = groupExist.updatedPlayers.find(
       (players) => players.UserId === UserId
@@ -833,11 +835,9 @@ const updatePointOfUser = async function (req, res) {
     const randomIndex = Math.floor(Math.random() * possibleValues.length);
 
     const randomValue = possibleValues[randomIndex];
-
+    const prevPoint =  updatedPlayers[currentUserIndex].points ;
     // check for snakes, ladders, and tunnels
-    const currentPosition =
-      updatedPlayers[currentUserIndex].points + randomValue;
-
+    const currentPosition = prevPoint + randomValue;
     // Ensure that the current position does not exceed 99
     const newPosition =
       currentPosition > 99
@@ -885,9 +885,10 @@ const updatePointOfUser = async function (req, res) {
     }
 
     updatedPlayers[currentUserIndex].dicePoints = randomValue;
-    updatedPlayers[nextUserIndex].dicePoints = 0;
     updatedPlayers[currentUserIndex].currentPoints = newPosition;
     updatedPlayers[currentUserIndex].turn = false;
+    updatedPlayers[currentUserIndex].prevPoint = prevPoint ;
+    updatedPlayers[nextUserIndex].dicePoints = 0;
     updatedPlayers[nextUserIndex].turn = true;
 
     groupExist.updatedPlayers = updatedPlayers;
@@ -914,6 +915,7 @@ const updatePointOfUser = async function (req, res) {
     let botPlayer = updatedData.updatedPlayers.find(
       (player) => player.isBot && player.turn
     );
+    // console.log("updatedData=======>",updatedData.updatedPlayers);
     if (botPlayer) {
       setTimeout(async () => {
         checkTurn(groupId, 'SnakeLadder', 16); //15 sec because of bot
@@ -921,10 +923,11 @@ const updatePointOfUser = async function (req, res) {
       const updateDataForBot = await updateBotPoints(botPlayer, updatedData, groupModelForSnakeLadder, 'SnakeLadder');
       // console.log("updateDataForBot===>",updateDataForBot);
       const updatedPlayersForRes = updateDataForBot.updatedPlayers.map(
-        ({ UserId, points, dicePoints }) => ({
+        ({ UserId, points, dicePoints, prevPoint }) => ({
           UserId,
           points,
           dicePoints,
+          prevPoint
         })
       );
       let result = {
@@ -943,10 +946,11 @@ const updatePointOfUser = async function (req, res) {
         checkTurn(groupId, 'SnakeLadder', 12); //12 sec
     }, 12000);    
       const updatedPlayersForRes = updatedData.updatedPlayers.map(
-        ({ UserId, points, dicePoints }) => ({
+        ({ UserId, points, dicePoints, prevPoint }) => ({
           UserId,
           points,
           dicePoints,
+          prevPoint
         })
       );
       let result = {

@@ -36,6 +36,10 @@ const rocketGroupSchema = new mongoose.Schema(
             type:Number,
             default:0
           },
+          prevPoint:{
+            type: Number,
+            default:0
+          },
       },
     ],
     start: {

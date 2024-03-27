@@ -495,7 +495,7 @@ const updateRocketTournaments = async function (req, res) {
       const usersIdInStr = userId.join(" ");
       let usersNameInStr = usersName.join(" ");
       const botData = table.updatedPlayers.find(player => player.isBot);
-      console.log("botData=====>",botData);
+      // console.log("botData=====>",botData);
       if(botData){
       return res.status(200).send({
         status: true,
@@ -610,7 +610,7 @@ const updateRocketTournaments = async function (req, res) {
           isGameOver: rocket.isGameOver,
           gameEndTime: rocket.gameEndTime,
         };
-        console.log("dicepoints and position of player", result.updatedPlayers);
+        console.log("dicepoints and position of player");
         return res.status(200).json(result);
       }
     } catch (err) {

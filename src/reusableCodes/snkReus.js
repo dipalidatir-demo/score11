@@ -14,6 +14,7 @@ const { updateProfitLoss } = require( "../reusableCodes/profitAndLossReu" );
 const rktGroupModel = require( "../model/rktGroupModel" );
 const rocketTournamentModel = require( "../model/rocketTournamentModel" );
 const { pushNotification } = require( "../controller/sendNotificationsController" );
+const { log } = require( "winston" );
 // delete require.cache[require.resolve("../reusableCodes/rocktReuCode")]
 // const {checkTurnForRkt} = require("../reusableCodes/rocktReuCode");
 //________________________________________________for snakeLadder________________________________________________
@@ -85,7 +86,6 @@ const createGroupForSnakeLadder = async function ( tableId, gameName ) {
         const completeGroups = _.chunk( completePlayers, 2 );
 
         for ( let i = 0; i < completeGroups.length; i++ ) {
-          console.log();
           // Check if a group with the same tableId already exists
           // const existingGroup = await grpModel.findOne({ tableId });
 
@@ -99,7 +99,7 @@ const createGroupForSnakeLadder = async function ( tableId, gameName ) {
           const grpId = createGrp._id;
           const group = createGrp.group;
 
-          console.log( createGrp );
+          // console.log( createGrp );
           startMatchForSnkLdr( grpId, group, gameName );
           // }
         }
@@ -124,6 +124,7 @@ async function startMatchForSnkLdr ( grpId, group, gameName ) {
       turn: name.turn,
       dicePoints: 0,
       currentPoints: 0,
+      prevPoint:0,
       movement: "",
     } ) );
     // console.log("result", result);
@@ -138,8 +139,8 @@ async function startMatchForSnkLdr ( grpId, group, gameName ) {
     }
     // console.log("result", result);
     const Token = group.map( item => item.token ).filter( token => token !== undefined );
-    console.log( "Token===========>", Token );
-    pushNotification( Token, "Game will start soon!" );
+    // console.log( "Token===========>", Token );
+    // pushNotification( Token, "Game will start soon!" );
     let totalBot = result.filter( ( players ) => players.isBot === true );
     totalBot = totalBot.length;
     let totalRealPlayres = result.filter( ( players ) => players.isBot === false );
@@ -217,10 +218,9 @@ async function updateBotPoints ( botPlayer, gameData, grpModel, gameName ) {
 
     const randomIndex = Math.floor( Math.random() * possibleValues.length );
     const randomValue = possibleValues[randomIndex];
-
+    const prevPoint = botPlayer.points ;
     // Calculate current position
-    let currentPosition = botPlayer.points + randomValue;
-
+    let currentPosition = prevPoint + randomValue;
     // Update position based on game rules
     if ( gameName === "SnakeLadder" ) {
       currentPosition = calculateSnakeLadderPosition( currentPosition );
@@ -236,6 +236,7 @@ async function updateBotPoints ( botPlayer, gameData, grpModel, gameName ) {
     updatedPlayers[currentUserIndex].dicePoints = randomValue;
     updatedPlayers[nextUserIndex].dicePoints = 0;
     updatedPlayers[currentUserIndex].turn = false;
+    updatedPlayers[currentUserIndex].prevPoint = prevPoint ;
 
     // Update game data with next turn details
     gameData.nextTurnTime = new Date( Date.now() + 16 * 1000 ); // Set turn 16 sec for real user
