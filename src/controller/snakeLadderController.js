@@ -813,6 +813,9 @@ const updatePointOfUser = async function (req, res) {
     let isUserExist = groupExist.updatedPlayers.find(
       (players) => players.UserId === UserId
     );
+    if(!isUserExist){
+      return res.status(200).send({status:false, message:"User not found"});
+    }
     let turn = isUserExist.turn;
 
     if (turn === false) {

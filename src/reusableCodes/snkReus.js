@@ -294,7 +294,7 @@ function calculateRocketPosition ( currentPosition, botPlayerPosition ) {
 
 async function checkTurn ( groupId, gameName ) {
   if ( !groupId ) return false; // Check if groupId is defined
-  console.log( "gamename in checkTurn ====>", gameName );
+  console.log( "time in checkTurn ====>", new Date() );
   try {
     let trnmtMode;
     let grpModel;
@@ -538,7 +538,7 @@ async function checkTurn ( groupId, gameName ) {
 
 async function changeTurn ( snakeLadder, gameName ) {
   try {
-    console.log( "gameName=====>", gameName );
+    console.log( "gameName in change turn =====>", gameName );
 
     let grpModel;
     if ( gameName === "SnakeLadder" ) {
@@ -582,36 +582,43 @@ async function changeTurn ( snakeLadder, gameName ) {
   }
 }
 
-async function overTheGameForPlayers ( groupId, gameName, Token ) {
-  console.log( "game name in overthegame ====>", gameName );
-      pushNotification(Token,"Game has started");
-  const MAX_DURATION_SECONDS = 180; // 3 minutes
-  const INTERVAL_MILLISECONDS = 3000; // 3 seconds
-  let startTime = Date.now();
-  let intervalId; // Store the interval ID
-  if ( groupId !== undefined ) {
-    try {
-      intervalId = setInterval( async () => {
-        const elapsedTimeSeconds = ( Date.now() - startTime ) / 1000;
-        if ( elapsedTimeSeconds >= MAX_DURATION_SECONDS ) {
-          console.log( "Max duration reached. Stopping interval." );
-          clearInterval( intervalId ); // Stop the interval
-          return;
-        }
+async function overTheGameForPlayers(groupId, gameName, Token) {
+  console.log("game name in overthegame ====>", gameName);
+  pushNotification(Token, "Game has started");
 
-        try {
-          const isMaxCountReached = await checkTurn( groupId, gameName );
-          if ( isMaxCountReached ) {
-            console.log( "Max count reached. Stopping interval." );
-            clearInterval( intervalId ); // Stop the interval
-          }
-        } catch ( error ) {
-          console.error( "Error in interval execution:", error );
-        }
-      }, INTERVAL_MILLISECONDS );
-    } catch ( error ) {
-      console.error( "Error setting up interval:", error );
-    }
+  const MAX_DURATION_SECONDS = 180; // 3 minutes
+  let startTime = Date.now();
+  let timeoutId; // Store the timeout ID
+
+  if (groupId !== undefined) {
+      try {
+          const checkAndSetTimeout = async () => {
+              const elapsedTimeSeconds = (Date.now() - startTime) / 1000;
+              if (elapsedTimeSeconds >= MAX_DURATION_SECONDS) {
+                  console.log("Max duration reached. Stopping timeout.");
+                  clearTimeout(timeoutId); // Stop the timeout
+                  return;
+              }
+
+              try {
+                  const isMaxCountReached = await checkTurn(groupId, gameName);
+                  if (!isMaxCountReached) {
+                      // If max count not reached, set the timeout for next iteration
+                      timeoutId = setTimeout(checkAndSetTimeout, 12000); // 12 seconds
+                  } else {
+                      console.log("Max count reached. Stopping timeout.");
+                      clearTimeout(timeoutId); // Stop the timeout
+                  }
+              } catch (error) {
+                  console.error("Error in timeout execution:", error);
+              }
+          };
+
+          // Start the initial call to the timeout function
+          timeoutId = setTimeout(checkAndSetTimeout, 12000); // 12 seconds
+      } catch (error) {
+          console.error("Error setting up timeout:", error);
+      }
   }
 }
 
