@@ -937,7 +937,9 @@ const updatePointOfUser = async function (req, res) {
       return res.status(200).json(result);
     } else {
       const checkAndSetTimeout = await checkTurn(groupId, 'SnakeLadder',"called in updateUserPoints")
-      setTimeout(checkAndSetTimeout, 12000)
+      setTimeout(async () => {
+        await checkAndSetTimeout();
+      }, 12000);
       const updatedPlayersForRes = updatedData.updatedPlayers.map(
         ({ UserId, points, dicePoints }) => ({
           UserId,
