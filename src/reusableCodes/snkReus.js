@@ -292,9 +292,9 @@ function calculateRocketPosition ( currentPosition, botPlayerPosition ) {
   return currentPosition > 20 ? botPlayerPosition : currentPosition;
 }
 
-async function checkTurn ( groupId, gameName, msg ) {
+async function checkTurn ( groupId, gameName, turnTime ) {
   if ( !groupId ) return false; // Check if groupId is defined
-  console.log( "time in checkTurn ====>", new Date(), msg );
+  console.log( "time in checkTurn ====>", new Date(), "=====>turnTime====>",turnTime);
   try {
     let trnmtMode;
     let grpModel;
@@ -526,7 +526,7 @@ async function checkTurn ( groupId, gameName, msg ) {
     const timeSinceNextTurnTime =
       ( nextTurnTime.getTime() - currentDate.getTime() ) / 1000;
 
-    if ( timeSinceLastHit >= 12 && timeSinceNextTurnTime <= 0) {
+    if ( timeSinceLastHit >= parseInt(turnTime) && timeSinceNextTurnTime <= 0) {
       // Change turn logic
       await changeTurn( snakeLadder, gameName );
     }
@@ -589,7 +589,7 @@ async function overTheGameForPlayers(groupId, gameName, Token) {
   const MAX_DURATION_SECONDS = 180; // 3 minutes
   let startTime = Date.now();
   let timeoutId; // Store the timeout ID
-
+  let turnTime = 12 ;
   if (groupId !== undefined) {
       try {
           const checkAndSetTimeout = async () => {
@@ -601,7 +601,7 @@ async function overTheGameForPlayers(groupId, gameName, Token) {
               }
 
               try {
-                  const isMaxCountReached = await checkTurn(groupId, gameName);
+                  const isMaxCountReached = await checkTurn(groupId, gameName, turnTime);
                   if (!isMaxCountReached) {
                       // If max count not reached, set the timeout for next iteration
                       timeoutId = setTimeout(checkAndSetTimeout, 12000); // 12 seconds
