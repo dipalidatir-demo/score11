@@ -7,6 +7,7 @@ const Decimal = require("decimal.js");
 const {
   updateBotPoints,
   createGroupForSnakeLadder,
+  checkTurn
 } = require("../reusableCodes/snkReus");
 const { log } = require("console");
 const { promises } = require("dns");
@@ -756,7 +757,7 @@ const getSnkByGroupId = async function (req, res) {
         isGameOver: snakeLadder.isGameOver,
         gameEndTime: snakeLadder.gameEndTime,
       };
-      console.log("Wait for the turn");
+      console.log("Wait for the turn time====>",result.nextTurnTime);
       return res.status(200).json(result);
     } else {
       let result = {
@@ -767,7 +768,7 @@ const getSnkByGroupId = async function (req, res) {
         isGameOver: snakeLadder.isGameOver,
         gameEndTime: snakeLadder.gameEndTime,
       };
-      console.log("dicepoints and position of player", result.updatedPlayers);
+      console.log("dicepoints and position of player with next turn time=====>", result.nextTurnTime);
       return res.status(200).json(result);
     }
   } catch (err) {
@@ -932,9 +933,11 @@ const updatePointOfUser = async function (req, res) {
         isGameOver: updateDataForBot.isGameOver,
         gameEndTime: updateDataForBot.gameEndTime,
       };
-      console.log("response after tab the dice for bot=====>", result);
+      console.log("response after tab the dice for bot=====>");
       return res.status(200).json(result);
     } else {
+      const checkAndSetTimeout = await checkTurn(groupId, 'SnakeLadder',"called in updateUserPoints")
+      setTimeout(checkAndSetTimeout, 12000)
       const updatedPlayersForRes = updatedData.updatedPlayers.map(
         ({ UserId, points, dicePoints }) => ({
           UserId,
@@ -951,72 +954,10 @@ const updatePointOfUser = async function (req, res) {
         isGameOver: updatedData.isGameOver,
         gameEndTime: updatedData.gameEndTime,
       };
-      console.log("response after tab the dice=====>", result);
+      console.log("response after tab the dice=====>");
       return res.status(200).json(result);
     }
-    // const nextTurnHandler = () => {
-    //   groupExist.lastHitTime = new Date();
-    //   groupExist.currentUserId = nextUserId;
-    //   groupExist.updatedPlayers[nextUserIndex].turn = true;
-    //   groupExist.save();
-    //   console.log(
-    //     "after sertTimeout  in put >>>>>>>>>>",
-    //     new Date().getSeconds(),
-    //     "++++++++++++",
-    //     groupExist
-    //   );
-    // };
-
-    // if (
-    //   newPosition === 2 ||
-    //   newPosition === 8 ||
-    //   newPosition === 19 ||
-    //   newPosition === 25 ||
-    //   newPosition === 41 ||
-    //   newPosition === 49 ||
-    //   newPosition === 74
-    // ) {
-    //   let result = {
-    //     nextTurn: nextUserId,
-    //     currentTime: new Date(),
-    //     nextTurnTime: updatedData.nextTurnTime,
-    //     currentPoints: newPosition,
-    //     dicePoints: randomValue,
-    //     userName: updatedUser.userName,
-    //     UserId: updatedUser.UserId,
-    //     prize: updatedUser.prize,
-    //     isBot: updatedUser.isBot,
-    //     totalPoints: updatedUser.points,
-    //     turn: updatedUser.turn,
-    //   };
-    //   console.log(result, "==========================", new Date());
-
-    //   // setTimeout(nextTurnHandler, 11000);
-
-    //   return res.status(200).json(result);
-    // } else {
-    //   let result = {
-    //     nextTurn: nextUserId,
-    //     currentTime: new Date(),
-    //     nextTurnTime: updatedData.nextTurnTime,
-    //     currentPoints: newPosition,
-    //     dicePoints: randomValue,
-    //     userName: updatedUser.userName,
-    //     UserId: updatedUser.UserId,
-    //     prize: updatedUser.prize,
-    //     isBot: updatedUser.isBot,
-    //     totalPoints: updatedUser.points,
-    //     turn: updatedUser.turn,
-    //   };
-    //   console.log(
-    //     result,
-    //     "==========================",
-    //     new Date().getSeconds()
-    //   );
-
-    // setTimeout(nextTurnHandler, 4000);
-
-    // }
+    
   } catch (err) {
     console.log(err);
     return res.status(500).send({

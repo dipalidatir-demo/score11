@@ -292,9 +292,9 @@ function calculateRocketPosition ( currentPosition, botPlayerPosition ) {
   return currentPosition > 20 ? botPlayerPosition : currentPosition;
 }
 
-async function checkTurn ( groupId, gameName ) {
+async function checkTurn ( groupId, gameName, msg ) {
   if ( !groupId ) return false; // Check if groupId is defined
-  console.log( "time in checkTurn ====>", new Date() );
+  console.log( "time in checkTurn ====>", new Date(), msg );
   try {
     let trnmtMode;
     let grpModel;
@@ -526,7 +526,7 @@ async function checkTurn ( groupId, gameName ) {
     const timeSinceNextTurnTime =
       ( nextTurnTime.getTime() - currentDate.getTime() ) / 1000;
 
-    if ( timeSinceLastHit >= 12 ) {
+    if ( timeSinceLastHit >= 12 && timeSinceNextTurnTime <= 0) {
       // Change turn logic
       await changeTurn( snakeLadder, gameName );
     }
@@ -567,7 +567,7 @@ async function changeTurn ( snakeLadder, gameName ) {
     );
     if ( checkBot ) {
       console.log(
-        "<====calling the funtion if the player is time is passed ====>"
+        "<====calling the funtion if the player's time is passed ====>"
       );
       await updateBotPoints( botPlayer, snakeLadder, grpModel, gameName );
     } else {
@@ -627,4 +627,5 @@ module.exports = {
   updateBotPoints,
   changeTurn,
   overTheGameForPlayers,
+  checkTurn,
 };
