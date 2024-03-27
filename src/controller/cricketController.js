@@ -105,6 +105,8 @@ const getCricByGroupId = async function (req, res) {
 //____________________________update table__________________________
 
 const updateCric = async function (req, res) {
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
     const { UserId, groupId, run, wicket, ball } = req.query;
     console.log("req.query============>", req.query);
@@ -144,18 +146,22 @@ const updateCric = async function (req, res) {
         $inc: { "updatedPlayers.$.run": parsedRun }, // Increment the run count
         $push: {
           "updatedPlayers.$.runWithWicket": parsedRun === 0 ? "W" : parsedRun,
-        },
+        }
       },
-      { new: true }
+      { new: true, session }
     );
-    
 
     if (!updatedGroup) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(200).json({
         status: false,
         message: "Player not found in the group or Group not found",
       });
     }
+
+    await session.commitTransaction();
+    session.endSession();
 
     return res.status(200).json({
       status: true,
@@ -166,12 +172,16 @@ const updateCric = async function (req, res) {
     });
   } catch (err) {
     console.error(err);
+    await session.abortTransaction();
+    session.endSession();
     return res.status(500).json({
       status: false,
       message: "Internal server error",
     });
   }
 };
+
+
 
 
 
