@@ -105,11 +105,8 @@ const getCricByGroupId = async function (req, res) {
 //____________________________update table__________________________
 
 const updateCric = async function (req, res) {
-  const session = await mongoose.startSession();
-  session.startTransaction();
   try {
     const { UserId, groupId, run, wicket, ball } = req.query;
-    console.log("req.query============>", req.query);
 
     if (!UserId || !groupId || !run || !wicket || !ball) {
       return res.status(400).json({
@@ -133,7 +130,7 @@ const updateCric = async function (req, res) {
       {
         _id: groupId,
         isMatchOver: false,
-        "updatedPlayers.UserId": UserId, // Include UserId in the query
+        "updatedPlayers.UserId": UserId,
         "updatedPlayers.isRunUpdated": false,
         ball: parsedBall
       },
@@ -143,26 +140,20 @@ const updateCric = async function (req, res) {
           "updatedPlayers.$[player].isRunUpdated": true,
           "updatedPlayers.$[player].wicket": parsedWicket,
         },
-        $inc: { "updatedPlayers.$[player].run": parsedRun }, // Increment the run count
+        $inc: { "updatedPlayers.$[player].run": parsedRun },
         $push: {
           "updatedPlayers.$[player].runWithWicket": parsedRun === 0 ? "W" : parsedRun,
         }
       },
-      { new: true, session, arrayFilters: [{ "player.UserId": UserId }] }
+      { new: true, arrayFilters: [{ "player.UserId": UserId }] }
     );
-    
-    
+
     if (!updatedGroup) {
-      await session.abortTransaction();
-      session.endSession();
       return res.status(200).json({
         status: false,
         message: "Player not found in the group or Group not found",
       });
     }
-
-    await session.commitTransaction();
-    session.endSession();
 
     return res.status(200).json({
       status: true,
@@ -173,8 +164,6 @@ const updateCric = async function (req, res) {
     });
   } catch (err) {
     console.error(err);
-    await session.abortTransaction();
-    session.endSession();
     return res.status(500).json({
       status: false,
       message: "Internal server error",
