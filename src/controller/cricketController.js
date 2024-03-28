@@ -139,17 +139,18 @@ const updateCric = async function (req, res) {
       },
       {
         $set: {
-          "updatedPlayers.$.hit": true,
-          "updatedPlayers.$.isRunUpdated": true,
-          "updatedPlayers.$.wicket": parsedWicket,
+          "updatedPlayers.$[player].hit": true,
+          "updatedPlayers.$[player].isRunUpdated": true,
+          "updatedPlayers.$[player].wicket": parsedWicket,
         },
-        $inc: { "updatedPlayers.$.run": parsedRun }, // Increment the run count
+        $inc: { "updatedPlayers.$[player].run": parsedRun }, // Increment the run count
         $push: {
-          "updatedPlayers.$.runWithWicket": parsedRun === 0 ? "W" : parsedRun,
+          "updatedPlayers.$[player].runWithWicket": parsedRun === 0 ? "W" : parsedRun,
         }
       },
-      { new: true, session, arrayFilters: [{ "updatedPlayers.$.UserId": UserId }] }
+      { new: true, session, arrayFilters: [{ "player.UserId": UserId }] }
     );
+    
     
     if (!updatedGroup) {
       await session.abortTransaction();
