@@ -918,7 +918,7 @@ const updatePointOfUser = async function (req, res) {
     // console.log("updatedData=======>",updatedData.updatedPlayers);
     if (botPlayer) {
       setTimeout(async () => {
-        checkTurn(groupId, 'SnakeLadder', 16); //15 sec because of bot
+        checkTurn(groupId, 'SnakeLadder', 12); //12 sec because of bot
     }, 12000); 
       const updateDataForBot = await updateBotPoints(botPlayer, updatedData, groupModelForSnakeLadder, 'SnakeLadder');
       // console.log("updateDataForBot===>",updateDataForBot);

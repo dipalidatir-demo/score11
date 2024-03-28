@@ -133,7 +133,6 @@ const updateCric = async function (req, res) {
       {
         _id: groupId,
         isMatchOver: false,
-        "updatedPlayers.UserId": UserId,
         "updatedPlayers.isRunUpdated": false,
         ball: parsedBall
       },

@@ -239,7 +239,7 @@ async function updateBotPoints ( botPlayer, gameData, grpModel, gameName ) {
     updatedPlayers[currentUserIndex].prevPoint = prevPoint ;
 
     // Update game data with next turn details
-    gameData.nextTurnTime = new Date( Date.now() + 16 * 1000 ); // Set turn 16 sec for real user
+    gameData.nextTurnTime = new Date( Date.now() + 12 * 1000 ); // Set turn 12 sec for real user
     gameData.currentUserId = nextUserId;
     gameData.updatedPlayers[nextUserIndex].turn = true;
     gameData.lastHitTime = new Date();
@@ -551,6 +551,11 @@ async function changeTurn ( snakeLadder, gameName ) {
     const currentUserIndex = updatedPlayers.findIndex(
       ( player ) => player.UserId === snakeLadder.currentUserId
     );
+    const isBotTurn = updatedPlayers[currentUserIndex].isBot;
+    if(isBotTurn){
+      let botPlayer = updatedPlayers[currentUserIndex] ;
+      await updateBotPoints( botPlayer, snakeLadder, grpModel, gameName );
+    }else{
 
     const nextUserIndex = ( currentUserIndex + 1 ) % updatedPlayers.length;
     const nextUserId = updatedPlayers[nextUserIndex].UserId;
@@ -578,6 +583,7 @@ async function changeTurn ( snakeLadder, gameName ) {
         { new: true }
       );
     }
+  }
   } catch ( error ) {
     console.log( "Error in checkTurn function:", error );
   }
