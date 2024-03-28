@@ -129,46 +129,37 @@ const updateCric = async function (req, res) {
       });
     }
 
-    const checkGrp = await groupModel.findOne({
-      _id: groupId,
-      isMatchOver: false,
-      "updatedPlayers.UserId": UserId,
-      "updatedPlayers.isRunUpdated": false,
-      ball: parsedBall
-    });
-
-    if (!checkGrp) {
+    const updatedGroup = await groupModel.findOneAndUpdate(
+      {
+        _id: groupId,
+        isMatchOver: false,
+        "updatedPlayers.UserId": UserId,
+        "updatedPlayers.isRunUpdated": false,
+        ball: parsedBall
+      },
+      {
+        $set: {
+          "updatedPlayers.$.hit": true,
+          "updatedPlayers.$.isRunUpdated": true,
+          "updatedPlayers.$.wicket": parsedWicket,
+        },
+        $inc: { "updatedPlayers.$.run": parsedRun }, // Increment the run count
+        $push: {
+          "updatedPlayers.$.runWithWicket": parsedRun === 0 ? "W" : parsedRun,
+        }
+      },
+      { new: true, session, arrayFilters: [{ "updatedPlayers.$.UserId": UserId }] }
+    );
+    
+    if (!updatedGroup) {
       await session.abortTransaction();
       session.endSession();
       return res.status(200).json({
         status: false,
-        message: "Group not found",
+        message: "Player not found in the group or Group not found",
       });
     }
 
-    const UserIndex = checkGrp.updatedPlayers.findIndex(player => player.UserId === UserId);
-
-    if (UserIndex === -1) {
-      await session.abortTransaction();
-      session.endSession();
-      return res.status(200).json({
-        status: false,
-        message: "Player not found",
-      });
-    }
-
-    // const updatedPlayers = checkGrp.updatedPlayers;
-    checkGrp.updatedPlayers[UserIndex].hit = true;
-    checkGrp.updatedPlayers[UserIndex].isRunUpdated = true;
-    checkGrp.updatedPlayers[UserIndex].run += parsedRun;
-    
-    if (parsedRun > 0) {
-      checkGrp.updatedPlayers[UserIndex].runWithWicket.push(parsedRun);
-    }else{
-      checkGrp.updatedPlayers[UserIndex].runWithWicket.push("w");
-    }
-  const updatedGroup = await checkGrp.save();
-    
     await session.commitTransaction();
     session.endSession();
 
@@ -189,6 +180,10 @@ const updateCric = async function (req, res) {
     });
   }
 };
+
+
+
+
 
 
 //__________________________declare the winner_______________________________(not used in this project)
