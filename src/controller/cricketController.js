@@ -157,39 +157,18 @@ const updateCric = async function (req, res) {
       });
     }
 
-    const updatedPlayers = checkGrp.updatedPlayers;
-    updatedPlayers[UserIndex].hit = true;
-    updatedPlayers[UserIndex].isRunUpdated = true;
-    updatedPlayers[UserIndex].run += parsedRun;
+    // const updatedPlayers = checkGrp.updatedPlayers;
+    checkGrp.updatedPlayers[UserIndex].hit = true;
+    checkGrp.updatedPlayers[UserIndex].isRunUpdated = true;
+    checkGrp.updatedPlayers[UserIndex].run += parsedRun;
     
-    if (parsedRun >= 0) {
-      updatedPlayers[UserIndex].runWithWicket.push(parsedRun);
+    if (parsedRun > 0) {
+      checkGrp.updatedPlayers[UserIndex].runWithWicket.push(parsedRun);
+    }else{
+      checkGrp.updatedPlayers[UserIndex].runWithWicket.push("w");
     }
-
-    const updatedGroup = await groupModel.findOneAndUpdate(
-      {
-        _id: groupId,
-        "updatedPlayers.UserId": UserId,
-      },
-      {
-        $set: {
-          updatedPlayers: updatedPlayers
-        }
-      },
-      {
-        new: true,
-      }
-    );
-
-    if (!updatedGroup) {
-      await session.abortTransaction();
-      session.endSession();
-      return res.status(200).json({
-        status: false,
-        message: "Player not found in the group or Group not found",
-      });
-    }
-
+  const updatedGroup = await checkGrp.save();
+    
     await session.commitTransaction();
     session.endSession();
 
