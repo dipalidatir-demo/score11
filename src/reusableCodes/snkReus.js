@@ -527,7 +527,7 @@ async function checkTurn ( groupId, gameName, turnTime ) {
     const timeSinceNextTurnTime =
       ( nextTurnTime.getTime() - currentDate.getTime() ) / 1000;
 
-    if ( timeSinceLastHit >= parseInt(turnTime) && timeSinceNextTurnTime <= 0) {
+    if ( timeSinceNextTurnTime <= 0) {
       // Change turn logic
       await changeTurn( snakeLadder, gameName );
     }
