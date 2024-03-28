@@ -129,26 +129,56 @@ const updateCric = async function (req, res) {
       });
     }
 
+    const checkGrp = await groupModel.findOne({
+      _id: groupId,
+      isMatchOver: false,
+      "updatedPlayers.UserId": UserId,
+      "updatedPlayers.isRunUpdated": false,
+      ball: parsedBall
+    });
+
+    if (!checkGrp) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(200).json({
+        status: false,
+        message: "Group not found",
+      });
+    }
+
+    const UserIndex = checkGrp.updatedPlayers.findIndex(player => player.UserId === UserId);
+
+    if (UserIndex === -1) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(200).json({
+        status: false,
+        message: "Player not found",
+      });
+    }
+
+    const updatedPlayers = checkGrp.updatedPlayers;
+    updatedPlayers[UserIndex].hit = true;
+    updatedPlayers[UserIndex].isRunUpdated = true;
+    updatedPlayers[UserIndex].run += parsedRun;
+    
+    if (parsedRun >= 0) {
+      updatedPlayers[UserIndex].runWithWicket.push(parsedRun);
+    }
+
     const updatedGroup = await groupModel.findOneAndUpdate(
       {
         _id: groupId,
-        isMatchOver: false,
         "updatedPlayers.UserId": UserId,
-        "updatedPlayers.isRunUpdated": false,
-        ball: parsedBall
       },
       {
         $set: {
-          "updatedPlayers.$.hit": true,
-          "updatedPlayers.$.isRunUpdated": true,
-          "updatedPlayers.$.wicket": parsedWicket,
-        },
-        $inc: { "updatedPlayers.$.run": parsedRun }, // Increment the run count
-        $push: {
-          "updatedPlayers.$.runWithWicket": parsedRun === 0 ? "W" : parsedRun,
+          updatedPlayers: updatedPlayers
         }
       },
-      { new: true, session }
+      {
+        new: true,
+      }
     );
 
     if (!updatedGroup) {
@@ -180,10 +210,6 @@ const updateCric = async function (req, res) {
     });
   }
 };
-
-
-
-
 
 
 //__________________________declare the winner_______________________________(not used in this project)
