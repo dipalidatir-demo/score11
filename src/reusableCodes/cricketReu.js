@@ -33,7 +33,7 @@ const createGroupByAdmin = async function (tableId) {
           // Fetch dummy users from the botModel where the type is "normal"
           const dummyUsers = await botModel.find({
             botType: { $in: ["normal", "hard"] },
-          });
+          }).select({ UserId: 1, userName: 1, isBot: 1, _d:0, botType:1});
   
           const groups = _.chunk(players, 5);
           let completePlayers = [...users];
@@ -113,7 +113,7 @@ const createGroupByAdmin = async function (tableId) {
           // Fetch dummy users from the botModel where the type is "normal"
           const dummyUsers = await botModel.find({
             botType: { $in: ["normal", "hard"] },
-          });
+          }).select({ UserId: 1, userName: 1, isBot: 1, _id:0, botType:1});
   
           const groups = _.chunk(players, 5);
           let completePlayers = [...users];

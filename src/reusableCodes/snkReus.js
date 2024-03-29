@@ -19,45 +19,42 @@ const { log } = require( "winston" );
 // const {checkTurnForRkt} = require("../reusableCodes/rocktReuCode");
 //________________________________________________for snakeLadder________________________________________________
 
-const createGroupForSnakeLadder = async function ( tableId, gameName ) {
-  console.log( tableId, "============call group in", `${gameName}` );
+const createGroupForSnakeLadder = async function (tableId, gameName) {
+  console.log(tableId, "============call group in", `${gameName}`);
   try {
-    if ( tableId != undefined ) {
+    if (tableId != undefined) {
       let trnmtMode;
       let grpModel;
-      if ( gameName === "SnakeLadder" ) {
+      if (gameName === "SnakeLadder") {
         trnmtMode = snkTournamentModel;
         grpModel = groupModelForSnakeLadder;
-      } else if ( gameName === "Rocket" ) {
+      } else if (gameName === "Rocket") {
         trnmtMode = rocketTournamentModel;
         grpModel = rktGroupModel;
       }
-      let table = await trnmtMode.findOne( { _id: tableId } );
+      let table = await trnmtMode.findOne({ _id: tableId });
 
-      if ( table && table.Users.length !== 0 ) {
-        console.log( tableId, "============create group in snk===>" );
+      if (table && table.Users.length !== 0) {
+        console.log(tableId, "============create group in snk===>");
 
         let players = table.players;
         let users = table.Users;
 
-        // if (users.length !== 0) {
         // Map users to required format
-        users = users.map( ( user ) => {
+        users = users.map((user) => {
           return {
             UserId: user.UserId,
             userName: user.userName,
             token: user.token,
             isBot: user.isBot,
           };
-        } );
+        });
 
-        const requiredBot = players % 2;
-        let totalBot;
-        if ( requiredBot === 1 ) {
-          totalBot = 1;
-        } else {
-          totalBot = 0;
-        }
+        // Calculate the number of bot players needed to complete groups
+        let totalBot = players % 2;
+        // if (players % 2 === 1) {
+        //   totalBot = 1; // Add one bot if the total number of players is odd
+        // }
 
         // Update tournament with totalBotInTable and totalPlayersInTable
         const updateTournament = await trnmtMode.findOneAndUpdate(
@@ -66,50 +63,50 @@ const createGroupForSnakeLadder = async function ( tableId, gameName ) {
           { new: true }
         );
 
-        // Import dummy users
-        let dummyUsers = fakeUsers.fakeUsers;
-        dummyUsers = dummyUsers.map( ( user ) => {
-          return {
-            UserId: user.UserId,
-            userName: user.userName,
-            isBot: user.isBot,
-          };
-        } );
+        // Get bot players array
+        let botPlayersArray = fakeUsers.fakeUsers;
+
+        // If there are sufficient real players, don't add any bot players
+        if (players % 2 === 0) {
+          botPlayersArray = [];
+        }
 
         // Calculate the number of dummy users needed to complete groups
-        const remainingPlayers = 2 - ( users.length % 2 );
+        const remainingPlayers = (players + totalBot) % 2; // Adjust for the bot player
         const completePlayers = [
           ...users,
-          ...dummyUsers.slice( 0, remainingPlayers ),
+          ...botPlayersArray.slice(0, remainingPlayers),
         ];
 
-        const completeGroups = _.chunk( completePlayers, 2 );
+        const completeGroups = _.chunk(completePlayers, 2);
 
-        for ( let i = 0; i < completeGroups.length; i++ ) {
-          // Check if a group with the same tableId already exists
-          // const existingGroup = await grpModel.findOne({ tableId });
-
-          // If no group exists, create a new one
-          // if (!existingGroup) {
-          const createGrp = await grpModel.create( {
-            group: completeGroups[i],
+        for (let i = 0; i < completeGroups.length; i++) {
+          let groupPlayers = completeGroups[i];
+          // Add a random bot if needed
+          if (groupPlayers.length === 1 && totalBot > 0) {
+            const randomIndex = Math.floor(Math.random() * botPlayersArray.length);
+            const randomBotPlayer = botPlayersArray[randomIndex];
+            groupPlayers.push(randomBotPlayer);
+            totalBot--;
+          }
+          const createGrp = await grpModel.create({
+            group: groupPlayers,
             tableId: tableId,
-          } );
+          });
 
           const grpId = createGrp._id;
           const group = createGrp.group;
 
-          // console.log( createGrp );
-          startMatchForSnkLdr( grpId, group, gameName );
-          // }
+          startMatchForSnkLdr(grpId, group, gameName);
         }
-        // }
       }
     }
-  } catch ( error ) {
-    console.error( "Error in createGroupForSnakeLadder:", error );
+  } catch (error) {
+    console.error("Error in createGroupForSnakeLadder:", error);
   }
 };
+
+
 
 async function startMatchForSnkLdr ( grpId, group, gameName ) {
   console.log( "grpid>>>>>>>>>>>", grpId );
@@ -293,9 +290,9 @@ function calculateRocketPosition ( currentPosition, botPlayerPosition ) {
   return currentPosition > 20 ? botPlayerPosition : currentPosition;
 }
 
-async function checkTurn ( groupId, gameName, turnTime ) {
+async function checkTurn ( groupId, gameName) {
   if ( !groupId ) return false; // Check if groupId is defined
-  console.log( "time in checkTurn ====>", new Date(), "=====>turnTime====>",turnTime);
+  console.log( "time in checkTurn ====>", new Date().getSeconds());
   try {
     let trnmtMode;
     let grpModel;
@@ -593,10 +590,9 @@ async function overTheGameForPlayers(groupId, gameName, Token) {
   console.log("game name in overthegame ====>", gameName);
   pushNotification(Token, "Game has started");
 
-  const MAX_DURATION_SECONDS = 180; // 3 minutes
+  const MAX_DURATION_SECONDS = 136; // 2 min 16 sec
   let startTime = Date.now();
   let timeoutId; // Store the timeout ID
-  let turnTime = 12 ;
   if (groupId !== undefined) {
       try {
           const checkAndSetTimeout = async () => {
@@ -608,10 +604,10 @@ async function overTheGameForPlayers(groupId, gameName, Token) {
               }
 
               try {
-                  const isMaxCountReached = await checkTurn(groupId, gameName, turnTime);
+                  const isMaxCountReached = await checkTurn(groupId, gameName);
                   if (!isMaxCountReached) {
                       // If max count not reached, set the timeout for next iteration
-                      timeoutId = setTimeout(checkAndSetTimeout, 12000); // 12 seconds
+                      timeoutId = setTimeout(checkAndSetTimeout, 2000); // 2 seconds
                   } else {
                       console.log("Max count reached. Stopping timeout.");
                       clearTimeout(timeoutId); // Stop the timeout
@@ -622,7 +618,7 @@ async function overTheGameForPlayers(groupId, gameName, Token) {
           };
 
           // Start the initial call to the timeout function
-          timeoutId = setTimeout(checkAndSetTimeout, 12000); // 12 seconds
+          timeoutId = setTimeout(checkAndSetTimeout, 2000); // 2 seconds
       } catch (error) {
           console.error("Error setting up timeout:", error);
       }

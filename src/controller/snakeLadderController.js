@@ -895,21 +895,6 @@ const updatePointOfUser = async function (req, res) {
     groupExist.nextTurnTime = new Date(Date.now() + 12 * 1000);
     groupExist.lastHitTime = new Date();
     groupExist.currentUserId = nextUserId;
-    // if (
-    //   newPosition === 2 ||
-    //   newPosition === 8 ||
-    //   newPosition === 19 ||
-    //   newPosition === 25 ||
-    //   newPosition === 41 ||
-    //   newPosition === 49 ||
-    //   newPosition === 74
-    // ) {
-    //   // groupExist.nextTurnTime = new Date(Date.now() + 15 * 1000); // 8+7
-    //   groupExist.nextTurnTime = new Date(Date.now() + 11 * 1000); // 8+7
-    // } else {
-    //   // groupExist.nextTurnTime = new Date(Date.now() + 12 * 1000); //8+4
-    //   groupExist.nextTurnTime = new Date(Date.now() + 11 * 1000); //8+4
-    // }
 
     let updatedData = await groupExist.save();
     let botPlayer = updatedData.updatedPlayers.find(
@@ -917,9 +902,9 @@ const updatePointOfUser = async function (req, res) {
     );
     // console.log("updatedData=======>",updatedData.updatedPlayers);
     if (botPlayer) {
-      setTimeout(async () => {
-        checkTurn(groupId, 'SnakeLadder', 12); //12 sec because of bot
-    }, 12000); 
+    //   setTimeout(async () => {
+    //     checkTurn(groupId, 'SnakeLadder', 12); //12 sec because of bot
+    // }, 12000); 
       const updateDataForBot = await updateBotPoints(botPlayer, updatedData, groupModelForSnakeLadder, 'SnakeLadder');
       // console.log("updateDataForBot===>",updateDataForBot);
       const updatedPlayersForRes = updateDataForBot.updatedPlayers.map(
@@ -942,9 +927,9 @@ const updatePointOfUser = async function (req, res) {
       console.log("response after tab the dice for bot=====>");
       return res.status(200).json(result);
     } else {
-      setTimeout(async () => {
-        checkTurn(groupId, 'SnakeLadder', 12); //12 sec
-    }, 12000);    
+    //   setTimeout(async () => {
+    //     checkTurn(groupId, 'SnakeLadder', 12); //12 sec
+    // }, 12000);    
       const updatedPlayersForRes = updatedData.updatedPlayers.map(
         ({ UserId, points, dicePoints, prevPoint }) => ({
           UserId,
