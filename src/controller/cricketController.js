@@ -130,24 +130,29 @@ const updateCric = async function (req, res) {
       {
         _id: groupId,
         isMatchOver: false,
-        "updatedPlayers.UserId": UserId,
-        "updatedPlayers.isRunUpdated": false,
-        ball: parsedBall
+        ball: parsedBall,
+        "updatedPlayers": {
+          $elemMatch: {
+            UserId: UserId,
+            isRunUpdated: false
+          }
+        }
       },
       {
         $set: {
-          "updatedPlayers.$[player].hit": true,
-          "updatedPlayers.$[player].isRunUpdated": true,
-          "updatedPlayers.$[player].wicket": parsedWicket,
+          "updatedPlayers.$.hit": true,
+          "updatedPlayers.$.isRunUpdated": true,
+          "updatedPlayers.$.wicket": parsedWicket,
         },
-        $inc: { "updatedPlayers.$[player].run": parsedRun },
+        $inc: { "updatedPlayers.$.run": parsedRun },
         $push: {
-          "updatedPlayers.$[player].runWithWicket": parsedRun === 0 ? "W" : parsedRun,
+          "updatedPlayers.$.runWithWicket": parsedRun === 0 ? "W" : parsedRun,
         }
       },
-      { new: true, arrayFilters: [{ "player.UserId": UserId }] }
+      { new: true }
     );
-
+    // console.log("updatedGroup=======>",updatedGroup);
+    
     if (!updatedGroup) {
       return res.status(200).json({
         status: false,
@@ -170,6 +175,7 @@ const updateCric = async function (req, res) {
     });
   }
 };
+
 
 
 
