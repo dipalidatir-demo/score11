@@ -322,9 +322,10 @@ async function checkTurn ( groupId, gameName) {
       timeDiff <= 0 ||
       ( gameName === "SnakeLadder" &&
         updatedPlayers.some( ( player ) => player.points === 99 ) ) ||
-      ( gameName !== "SnakeLadder" &&
+      ( gameName !== "Rocket" &&
         updatedPlayers.find( ( player ) => player.points === 19 ) )
     ) {
+      console.log("<===========end time is over ==============");
       let overTheGame = await trnmtMode.findByIdAndUpdate(
         { _id: tableId },
         { isMatchOverForTable: true },
