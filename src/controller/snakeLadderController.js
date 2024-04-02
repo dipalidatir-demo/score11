@@ -3,6 +3,7 @@ const userModel = require("../model/userModel");
 const snkTournamentModel = require("../model/snkTournamentModel");
 const groupModelForSnakeLadder = require("../model/groupModelForSnakeLadder");
 const snakeLadderModel = require("../model/snakeLadderModel");
+const airHockyTrnmtModel = require("../model/airHocTrnmtModel");
 const Decimal = require("decimal.js");
 const {
   updateBotPoints,
@@ -192,10 +193,23 @@ const createSnakeLadderTables = async function (req, res) {
       maxTime: 4,
     };
 
+    let data1ForAirHoc = {
+      entryFee: 1,
+      prizeAmount: 1 * 2, //___win amount will be entry fee multiply with 4 players(5-1 = 4)
+      maxTime: 1,
+    };
+
+    let data2ForAirHoc = {
+      entryFee: 10,
+      prizeAmount: 10 * 2,
+      maxTime: 4,
+    };
     let tournamentTable1;
     let tournamentTable2;
     let tournamentTable1ForRkt;
     let tournamentTable2ForRkt;
+    let tournamentTable1ForAirHoc;
+    let tournamentTable2ForAirHoc;
 
     //_______________________create table1 with setinterval an end time___________
     let tableId1;
@@ -227,13 +241,31 @@ const createSnakeLadderTables = async function (req, res) {
    tableId1ForRkt = tournamentTable1ForRkt._id;
    console.log(tournamentTable1ForRkt);
  }
+
+ //_____________________create table1 for airHockey_______________________
+ let tableId1ForAirHoc;
+ let gameNameForAirHoc = 'AirHockey' ;
+ async function createTournament1ForAirHoc() {
+   if (tableId1ForAirHoc != undefined ) {
+     createGroupForSnakeLadder(tableId1ForAirHoc, gameNameForAirHoc);
+   }
+
+   endTime = Date.now() + 1 * 60 * 1000;
+   data1ForAirHoc.endTime = req.query.endTime = endTime;
+
+   tournamentTable1ForAirHoc = await airHockyTrnmtModel.create(data1ForAirHoc);
+   tableId1ForAirHoc = tournamentTable1ForAirHoc._id;
+   console.log(tournamentTable1ForAirHoc);
+ }
     setInterval(function() {
       createTournament1();
       createTournament1ForRkt();
+      createTournament1ForAirHoc();
   }, 60000);
 
     createTournament1();
     createTournament1ForRkt();
+    createTournament1ForAirHoc();
 
     //_______________________create table2 with setinterval an end time________________
     let tableId2;
@@ -264,19 +296,35 @@ const createSnakeLadderTables = async function (req, res) {
    tableId2ForRkt = tournamentTable2ForRkt._id;
   //  console.log(tournamentTable2ForRkt);
  }
+
+ ////_______________________create table2 with setinterval an end time for airHockey___________
+ let tableId2ForAirHoc;
+ async function createTournament2ForAirHoc() {
+   if (tableId1ForAirHoc != undefined ) {
+     createGroupForSnakeLadder(tableId2ForAirHoc, gameNameForAirHoc);
+   }
+
+   endTime = Date.now() + 1 * 60 * 1000;
+   data2ForAirHoc.endTime = req.query.endTime = endTime;
+
+   tournamentTable2ForAirHoc = await airHockyTrnmtModel.create(data2ForAirHoc);
+   tableId2ForAirHoc = tournamentTable2ForAirHoc._id;
+  //  console.log(tournamentTable2ForAirHoc);
+ }
+
  setInterval(function() {
   createTournament2();
   createTournament2ForRkt();
+  createTournament2ForAirHoc();
 }, 240000);
 
 createTournament2();
 createTournament2ForRkt();
-
-   
+createTournament2ForAirHoc();
 
     return res.status(201).send({
       status: true,
-      message: "Success for both snakeladder and rocket",
+      message: "Success for snakeladder, rocket and airHockey",
       data: tournamentTable1,
     });
   } catch (err) {
@@ -621,33 +669,7 @@ const getGroupsByUser = async function (req, res) {
         message: " This table is not present ",
       });
     }
-    // let groups = table.map((items) => items.group);
-    // console.log(groups, "groups>>>>>>>>>>>");
-
-    // let user, groupId, users;
-    // for (let group = 0; group < groups.length; group++) {
-    //   console.log(groups[group], "================================");
-
-    //   let findUser = groups[group].find((user) => user.userName === userName);
-
-    //   if (findUser != null) {
-    //     user = findUser;
-    //     groupId = table[group]._id;
-    //     users = groups[group];
-    //     break;
-    //   }
-    // }
-
-    // if (!user) {
-    //   return res.status(200).send({
-    //     status: true,
-    //     message: "this user is not present in any group",
-    //   });
-    // }
-
-    // console.log(user, ">>>>>>>>>>>>>");
-    // users = users.map((items) => items.userName);
-    // let usersNameInStr = users.join(" ");
+  
     const usersName = table.group.map((items) => items.userName);
     const userId = table.group.map((items) => items.UserId);
     const usersIdInStr = userId.join(" ");
@@ -811,7 +833,27 @@ const updatePointOfUser = async function (req, res) {
         .send({ status: false, message: "groupId is not present" });
     }
     if(groupExist.isGameOver){
-      return res.status(200).send({status:false, messge:"Game is Over"})
+      const updatedPlayersForRes = groupExist.updatedPlayers.map(
+        ({ UserId, points, dicePoints, prevPoint }) => ({
+          UserId,
+          points,
+          dicePoints,
+          prevPoint
+        })
+      );
+      let result = {
+        status:false,
+        messge:"Game is Over",
+        currentTurn: groupExist.currentUserId,
+        currentTime: new Date(),
+        nextTurnTime: groupExist.nextTurnTime,
+        dicePointForPlayer: 0,
+        updatedPlayers: updatedPlayersForRes,
+        isGameOver: groupExist.isGameOver,
+        gameEndTime: groupExist.gameEndTime,
+      };
+      console.log("response when game is over=====>");
+      return res.status(200).json(result);
     }
     let isUserExist = groupExist.updatedPlayers.find(
       (players) => players.UserId === UserId

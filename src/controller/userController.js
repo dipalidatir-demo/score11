@@ -7,6 +7,8 @@ const hockyModel = require("../model/hockyModel");
 const snakeLadderModel = require("../model/snakeLadderModel");
 const ticTacToeModel = require("../model/ticTacToeModel");
 const adminModel = require("../model/adminModel");
+const rocketModel = require("../model/rocketModel");
+const airHockeyModel = require("../model/airHockeyModel");
 const { log } = require("console");
 const logger = require("../logger");
 
@@ -22,17 +24,7 @@ const createUsers = async function (req, res) {
       email,
       phone,
       token,
-      status,
-      credits,
       referralCode,
-      isBot,
-      isActive,
-      winCount,
-      playCount,
-      hockeyDataData,
-      ticTacToeDataData,
-      snkLadderData,
-      cricketData,
     } = queryData;
 
     if (Object.keys(queryData).length == 0) {
@@ -82,7 +74,8 @@ const createUsers = async function (req, res) {
     queryData.cricketData = [{ playCount: 0, winCount: 0 }];
     queryData.snkLadderData = [{ playCount: 0, winCount: 0 }];
     queryData.ticTacToeDataData = [{ playCount: 0, winCount: 0 }];
-    queryData.hockeyDataData = [{ playCount: 0, winCount: 0 }];
+    queryData.airHockeyData = [{ playCount: 0, winCount: 0 }];
+    queryData.rocketData = [{ playCount: 0, winCount: 0 }];
     queryData.isActive = true;
 
     // Generate a unique referral code for the new user
@@ -120,9 +113,10 @@ const createUsers = async function (req, res) {
 
     const userCreated = await userModel.create(queryData);
     const CricTable = await cricketModel.create(queryData);
-    const HocTable = await hockyModel.create(queryData);
+    const airHockeyTable = await airHockeyModel.create(queryData);
     const SnakeTable = await snakeLadderModel.create(queryData);
     const TicTable = await ticTacToeModel.create(queryData);
+    const rocketTable = await rocketModel.create(queryData);
 
     // const updateIsActive = await userModel.findOneAndUpdate(
     //   {UserId:UserId},
@@ -135,9 +129,10 @@ const createUsers = async function (req, res) {
       message: "success",
       data: userCreated,
       CricTable,
-      HocTable,
+      airHockeyTable,
       SnakeTable,
       TicTable,
+      rocketTable
     });
   } catch (error) {
     return res.status(500).send({

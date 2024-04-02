@@ -311,7 +311,7 @@ const updateRocketTournaments = async function (req, res) {
           message: "user not found",
         });
       }
-      let { userName, isBot, credits, realMoney } = userExist;
+      let { userName, isBot, credits, realMoney,token } = userExist;
       credits = credits + parseInt(realMoney);
       if (credits < entryFee) {
         return res.status(200).send({
@@ -335,7 +335,7 @@ const updateRocketTournaments = async function (req, res) {
         },
       ]);
 
-      console.log("userData======>",userData);
+      // console.log("userData======>",userData);
   
       if (userData.length !== 0) {
         for (let i = 0; i < userData.length; i++) {
@@ -365,6 +365,7 @@ const updateRocketTournaments = async function (req, res) {
               Users: {
                 UserId: UserId,
                 userName: userName,
+                token:token,
                 isBot: isBot,
                 joined: true,
                 endTime: existTable.endTime,
@@ -551,10 +552,11 @@ const updateRocketTournaments = async function (req, res) {
       );
   
       const updatedPlayersForRes = rocket.updatedPlayers.map(
-        ({ UserId, points,dicePoints }) => ({
+        ({ UserId, points,dicePoints,prevPoint }) => ({
           UserId,
           points,
-          dicePoints
+          dicePoints,
+          prevPoint
         })
       );
   
@@ -562,12 +564,13 @@ const updateRocketTournaments = async function (req, res) {
   
       if (rocket.isGameOver) {
         const DataAftrGameOver = rocket.updatedPlayers.map(
-          ({ UserId, points,dicePoints, prize, userName }) => ({
+          ({ UserId, points,dicePoints, prize, userName,prevPoint }) => ({
             UserId,
             userName,
             points,
             dicePoints,
             prize,
+            prevPoint
           })
         );
         let result = {
@@ -651,7 +654,27 @@ const updateRocketTournaments = async function (req, res) {
           .send({ status: false, message: "groupId is not present" });
       }
       if(groupExist.isGameOver){
-        return res.status(200).send({sttaus:false, messge:"Game is Over"})
+        const updatedPlayersForRes = groupExist.updatedPlayers.map(
+          ({ UserId, points, dicePoints, prevPoint }) => ({
+            UserId,
+            points,
+            dicePoints,
+            prevPoint
+          })
+        );
+        let result = {
+          status:false,
+          messge:"Game is Over",
+          currentTurn: groupExist.currentUserId,
+          currentTime: new Date(),
+          nextTurnTime: groupExist.nextTurnTime,
+          dicePointForPlayer:0,
+          updatedPlayers: updatedPlayersForRes,
+          isGameOver: groupExist.isGameOver,
+          gameEndTime: groupExist.gameEndTime,
+        };
+        console.log("response when game is over=====>");
+        return res.status(200).json(result);
       }
       let isUserExist = groupExist.updatedPlayers.find(
         (players) => players.UserId === UserId
@@ -672,10 +695,9 @@ const updateRocketTournaments = async function (req, res) {
       const randomIndex = Math.floor(Math.random() * possibleValues.length);
   
       const randomValue = possibleValues[randomIndex];
-  
+      const prevPoint =  updatedPlayers[currentUserIndex].points ;
       // check for snakes, ladders, and tunnels
-      const currentPosition =
-        updatedPlayers[currentUserIndex].points + randomValue;
+      const currentPosition = prevPoint + randomValue;
   
       // Ensure that the current position does not exceed 99
       const newPosition =
@@ -684,63 +706,72 @@ const updateRocketTournaments = async function (req, res) {
           : currentPosition;
   
       
-      updatedPlayers[currentUserIndex].points = newPosition;
-      updatedPlayers[currentUserIndex].dicePoints = randomValue;
-      updatedPlayers[nextUserIndex].dicePoints = 0;
-      updatedPlayers[currentUserIndex].currentPoints = newPosition;
-      updatedPlayers[currentUserIndex].turn = false;
-      updatedPlayers[nextUserIndex].turn = true;
-  
-      groupExist.updatedPlayers = updatedPlayers;
-      groupExist.nextTurnTime = new Date(Date.now() + 12 * 1000);
-      groupExist.lastHitTime = new Date();
-      groupExist.currentUserId = nextUserId;
-      let updatedData = await groupExist.save();
-      let botPlayer = updatedData.updatedPlayers.find(
-        (player) => player.isBot && player.turn
-      );
-      if (botPlayer) {
-        const updateDataForBot = await updateBotPoints(botPlayer, updatedData, rktGroupModel, 'Rocket');
-        // console.log("updateDataForBot===>",updateDataForBot);
-        const updatedPlayersForRes = updateDataForBot.updatedPlayers.map(
-          ({ UserId, points, dicePoints }) => ({
-            UserId,
-            points,
-            dicePoints,
-          })
-        );
-        let result = {
-          currentTurn: updateDataForBot.currentUserId,
-          currentTime: new Date(),
-          nextTurnTime: updateDataForBot.nextTurnTime,
-          dicePointForPlayer: randomValue,
-          updatedPlayers: updatedPlayersForRes,
-          isGameOver: updateDataForBot.isGameOver,
-          gameEndTime: updateDataForBot.gameEndTime,
-        };
-        console.log("response after tab the dice for bot=====>", result);
-        return res.status(200).json(result);
-      } else {
-        const updatedPlayersForRes = updatedData.updatedPlayers.map(
-          ({ UserId, points, dicePoints }) => ({
-            UserId,
-            points,
-            dicePoints,
-          })
-        );
-        let result = {
-          currentTurn: updatedData.currentUserId,
-          currentTime: new Date(),
-          nextTurnTime: updatedData.nextTurnTime,
-          dicePointForPlayer: randomValue,
-          updatedPlayers: updatedPlayersForRes,
-          isGameOver: updatedData.isGameOver,
-          gameEndTime: updatedData.gameEndTime,
-        };
-        console.log("response after tab the dice=====>", result);
-        return res.status(200).json(result);
-      }
+          updatedPlayers[currentUserIndex].dicePoints = randomValue;
+          updatedPlayers[currentUserIndex].currentPoints = newPosition;
+          updatedPlayers[currentUserIndex].turn = false;
+          updatedPlayers[currentUserIndex].prevPoint = prevPoint ;
+          updatedPlayers[nextUserIndex].dicePoints = 0;
+          updatedPlayers[nextUserIndex].turn = true;
       
+          groupExist.updatedPlayers = updatedPlayers;
+          groupExist.nextTurnTime = new Date(Date.now() + 12 * 1000);
+          groupExist.lastHitTime = new Date();
+          groupExist.currentUserId = nextUserId;
+      
+          let updatedData = await groupExist.save();
+          let botPlayer = updatedData.updatedPlayers.find(
+            (player) => player.isBot && player.turn
+          );
+          // console.log("updatedData=======>",updatedData.updatedPlayers);
+          if (botPlayer) {
+          //   setTimeout(async () => {
+          //     checkTurn(groupId, 'SnakeLadder', 12); //12 sec because of bot
+          // }, 12000); 
+            const updateDataForBot = await updateBotPoints(botPlayer, updatedData, rktGroupModel, 'Rocket');
+            // console.log("updateDataForBot===>",updateDataForBot);
+            const updatedPlayersForRes = updateDataForBot.updatedPlayers.map(
+              ({ UserId, points, dicePoints, prevPoint }) => ({
+                UserId,
+                points,
+                dicePoints,
+                prevPoint
+              })
+            );
+            let result = {
+              currentTurn: updateDataForBot.currentUserId,
+              currentTime: new Date(),
+              nextTurnTime: updateDataForBot.nextTurnTime,
+              dicePointForPlayer: randomValue,
+              updatedPlayers: updatedPlayersForRes,
+              isGameOver: updateDataForBot.isGameOver,
+              gameEndTime: updateDataForBot.gameEndTime,
+            };
+            console.log("response after tab the dice for bot=====>");
+            return res.status(200).json(result);
+          } else {
+          //   setTimeout(async () => {
+          //     checkTurn(groupId, 'SnakeLadder', 12); //12 sec
+          // }, 12000);    
+            const updatedPlayersForRes = updatedData.updatedPlayers.map(
+              ({ UserId, points, dicePoints, prevPoint }) => ({
+                UserId,
+                points,
+                dicePoints,
+                prevPoint
+              })
+            );
+            let result = {
+              currentTurn: updatedData.currentUserId,
+              currentTime: new Date(),
+              nextTurnTime: updatedData.nextTurnTime,
+              dicePointForPlayer: randomValue,
+              updatedPlayers: updatedPlayersForRes,
+              isGameOver: updatedData.isGameOver,
+              gameEndTime: updatedData.gameEndTime,
+            };
+            console.log("response after tab the dice=====>");
+            return res.status(200).json(result);
+          }
     } catch (err) {
       console.log(err);
       return res.status(500).send({

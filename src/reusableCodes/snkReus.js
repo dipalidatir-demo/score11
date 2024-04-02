@@ -5,6 +5,8 @@ const fakeUsers = require( "../controller/dummyUsers" );
 const { find } = require( "lodash" );
 const snkTournamentModel = require( "../model/snkTournamentModel" );
 const groupModelForSnakeLadder = require( "../model/groupModelForSnakeLadder" );
+const airHockyTrnmtModel = require("../model/airHocTrnmtModel");
+const airHockeyGroupModel = require("../model/airHocGrpModel");
 delete require.cache[require.resolve( "../controller/rocketController" )];
 const Decimal = require( "decimal.js" );
 const moment = require( "moment" );
@@ -13,6 +15,7 @@ const { updateProfitLoss } = require( "../reusableCodes/profitAndLossReu" );
 // const rktGroupModel = require("../controller/rocketController");
 const rktGroupModel = require( "../model/rktGroupModel" );
 const rocketTournamentModel = require( "../model/rocketTournamentModel" );
+const {overTheGameAirHoc} = require ("../reusableCodes/airHocReus");
 const { pushNotification } = require( "../controller/sendNotificationsController" );
 const { log } = require( "winston" );
 // delete require.cache[require.resolve("../reusableCodes/rocktReuCode")]
@@ -31,6 +34,9 @@ const createGroupForSnakeLadder = async function (tableId, gameName) {
       } else if (gameName === "Rocket") {
         trnmtMode = rocketTournamentModel;
         grpModel = rktGroupModel;
+      }else if (gameName === "AirHockey") {
+        trnmtMode = airHockyTrnmtModel;
+        grpModel = airHockeyGroupModel;
       }
       let table = await trnmtMode.findOne({ _id: tableId });
 
@@ -97,7 +103,7 @@ const createGroupForSnakeLadder = async function (tableId, gameName) {
           const grpId = createGrp._id;
           const group = createGrp.group;
 
-          startMatchForSnkLdr(grpId, group, gameName);
+          startMatchForSnkLdr(grpId, group, gameName,grpModel);
         }
       }
     }
@@ -108,7 +114,7 @@ const createGroupForSnakeLadder = async function (tableId, gameName) {
 
 
 
-async function startMatchForSnkLdr ( grpId, group, gameName ) {
+async function startMatchForSnkLdr ( grpId, group, gameName, grpModel ) {
   console.log( "grpid>>>>>>>>>>>", grpId );
   console.log( "gameName>>>>>>>>>>>>>>>>>", gameName );
 
@@ -124,17 +130,13 @@ async function startMatchForSnkLdr ( grpId, group, gameName ) {
       prevPoint:0,
       movement: "",
     } ) );
-    // console.log("result", result);
-    let trnmtMode;
-    let grpModel;
-    if ( gameName === "SnakeLadder" ) {
-      trnmtMode = snkTournamentModel;
-      grpModel = groupModelForSnakeLadder;
-    } else {
-      trnmtMode = rocketTournamentModel;
-      grpModel = rktGroupModel;
+
+    let updateEndTime = 0;
+    if (gameName === "SnakeLadder" || gameName === "Rocket") {
+      updateEndTime = 2 * 60 * 1000 + 15 * 1000; // 2 min 15 sec
+    }else if (gameName === "AirHockey") {
+      updateEndTime = 100000; // 100 sec
     }
-    // console.log("result", result);
     const Token = group.map( item => item.token ).filter( token => token !== undefined );
     // console.log( "Token===========>", Token );
     // pushNotification( Token, "Game will start soon!" );
@@ -142,7 +144,6 @@ async function startMatchForSnkLdr ( grpId, group, gameName ) {
     totalBot = totalBot.length;
     let totalRealPlayres = result.filter( ( players ) => players.isBot === false );
     totalRealPlayres = totalRealPlayres.length;
-    const twoMinutesFifteenSeconds = 2 * 60 * 1000 + 15 * 1000;
     const matchData = await grpModel.findOneAndUpdate(
       { _id: grpId },
       {
@@ -151,7 +152,7 @@ async function startMatchForSnkLdr ( grpId, group, gameName ) {
           totalBotInGrp: totalBot,
           totalPlayerInGrp: totalRealPlayres,
           start: true,
-          gameEndTime: Date.now() + twoMinutesFifteenSeconds,
+          gameEndTime: Date.now() + updateEndTime,
         },
       },
       { new: true, setDefaultsOnInsert: true }
@@ -190,7 +191,12 @@ async function startMatchForSnkLdr ( grpId, group, gameName ) {
         updatedGroupFst.isGameStart
       );
       resolve(); // Resolve the promise to continue with the rest of the code
-      overTheGameForPlayers( grpId, gameName, Token);
+      if(gameName === "AirHockey") {
+        console.log("<============ game name is AirHockey  ==========>");
+        overTheGameAirHoc( grpId, gameName, Token);
+      }else{
+        overTheGameForPlayers( grpId, gameName, Token);
+      }
     } );
   }
 }

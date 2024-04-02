@@ -32,7 +32,7 @@ const snkTournamentSchema = new mongoose.Schema(
 
     maxPlayers: {
       type: Number,
-      default:100,
+      default:20,
       trim: true,
     },
 

@@ -109,7 +109,7 @@ const updateCric = async function (req, res) {
     const { UserId, groupId, run, wicket, ball } = req.query;
 
     if (!UserId || !groupId || !run || !wicket || !ball) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: false,
         message: "All fields are required",
       });
@@ -120,7 +120,7 @@ const updateCric = async function (req, res) {
     const parsedBall = parseInt(ball);
 
     if (parsedRun > 6 || parsedRun < 0 || parsedRun === 5) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: false,
         message: "Invalid Run",
       });
@@ -142,9 +142,9 @@ const updateCric = async function (req, res) {
         $set: {
           "updatedPlayers.$.hit": true,
           "updatedPlayers.$.isRunUpdated": true,
-          "updatedPlayers.$.wicket": parsedWicket,
         },
-        $inc: { "updatedPlayers.$.run": parsedRun },
+        $inc: { "updatedPlayers.$.run": parsedRun,
+                "updatedPlayers.$.wicket": parsedRun === 0 ? 1 : 0 },
         $push: {
           "updatedPlayers.$.runWithWicket": parsedRun === 0 ? "W" : parsedRun,
         }

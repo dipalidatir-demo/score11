@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const ObjectId = mongoose.Schema.Types.ObjectId;
 
-const rocketGroupSchema = new mongoose.Schema(
+const airHockeyGroupSchema = new mongoose.Schema(
   {
     createdTime: {
       type: Date,
@@ -27,19 +27,7 @@ const rocketGroupSchema = new mongoose.Schema(
         points: {
           type: Number,
           default: 0,
-        },
-        turn: {
-          type: Boolean,
-          default: false,
-        },
-        dicePoints: {
-          type: Number,
-          default: 0,
-        },
-        prevPoint: {
-          type: Number,
-          default: 0,
-        },
+        }
       },
     ],
     start: {
@@ -53,10 +41,6 @@ const rocketGroupSchema = new mongoose.Schema(
     currentUserId: {
       type: String,
       default: "",
-    },
-    nextTurnTime: {
-      type: Date,
-      default: new Date(),
     },
     isGameOver: {
       type: Boolean,
@@ -81,4 +65,4 @@ const rocketGroupSchema = new mongoose.Schema(
   { strict: false }
 );
 
-module.exports = mongoose.model("RocketGroup", rocketGroupSchema);
+module.exports = mongoose.model("   AirHockeyGroup", airHockeyGroupSchema);

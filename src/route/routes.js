@@ -23,6 +23,16 @@ const {
   updateRktPointOfUser,
   getPlayersOfRocket,
   getAllGroupsOfRocket }  = require("../controller/rocketController");
+
+  const { airHockeyTablesCreatedByAdmin,
+    updateAirHockeyTournaments,
+    getAllAirHockey,
+    getGroupsByUserForAirHoc,
+    getAirHocByGroupId,
+    updateAirHocPointOfUser,
+    getPlayersOfAirHoc,
+    getAllGroupsOfAirHoc} = require("../controller/airHockeyController");
+
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const Router = express.Router();
@@ -155,11 +165,30 @@ Router.get("/getRktGroupsByUserId", getGroupsByUserForRkt);
 
 Router.get("/getRktGroup", getRktByGroupId);
 
-Router.put("/updateRocketPerPlayer", updateRktPointOfUser);
+Router.get("/updateRocketPerPlayer", updateRktPointOfUser);
 
 Router.get("/playersOfRocket", getPlayersOfRocket);
 
 Router.get("/getAllGroupsOfRkt", getAllGroupsOfRocket);
+
+
+//_________________________________airHockey_________________________________
+
+Router.post("/airHoctournamentsByAdmin", airHockeyTablesCreatedByAdmin);
+
+Router.get("/getAllAirHocData", getAllAirHockey);
+
+Router.put("/updateAirHocey", updateAirHockeyTournaments);
+
+Router.get("/getAirHocGroupsByUserId", getGroupsByUserForAirHoc);
+
+Router.get("/getAirHocGroup", getAirHocByGroupId);
+
+Router.get("/updateAirHocPerPlayer", updateAirHocPointOfUser);
+
+Router.get("/playersOfAirHoc", getPlayersOfAirHoc);
+
+Router.get("/getAllGroupsOfAirHoc", getAllGroupsOfAirHoc);
 
 //__________________ticTacToe___________________
 

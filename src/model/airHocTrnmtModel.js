@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const ticTacToeTournamentSchema = new mongoose.Schema(
+const airHocTournamentSchema = new mongoose.Schema(
   {
     UserId: {
       type: String,
@@ -13,10 +13,21 @@ const ticTacToeTournamentSchema = new mongoose.Schema(
       type: Number,
       trim: true,
     },
-
     prizeAmount: {
       type: Number,
       trim: true,
+    },
+    playerWithBot: {
+      type:Number,
+      default:0
+    },
+    totalPlayersInTable:{
+      type: Number,
+      default: 0,
+    },
+    totalBotInTable:{
+      type: Number,
+      default: 0,
     },
 
     maxPlayers: {
@@ -45,13 +56,13 @@ const ticTacToeTournamentSchema = new mongoose.Schema(
     },
     gameName:{
       type:String,
-      default:"TicTacToe"
+      default:"AirHockey"
     },
     Users: [],
     createdTime: {
       type: Date,
       default: Date.now,
-      // expires: "30m",
+      expires: "30m",
     },
     endTime: {
       type: Date,
@@ -64,4 +75,4 @@ const ticTacToeTournamentSchema = new mongoose.Schema(
 
   { timestamps: true }
 );
-module.exports = mongoose.model("TicTacToeTournament", ticTacToeTournamentSchema);
+module.exports = mongoose.model("AirHockeyTournament", airHocTournamentSchema);
