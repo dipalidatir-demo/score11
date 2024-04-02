@@ -565,7 +565,7 @@ const updateAirHocPointOfUser = async function (req, res) {
     let groupExist = await airHockeyGroupModel.findById({
       _id: groupId,
       "updatedPlayers.UserId": UserId,
-    });
+    }).select({group:0});
     if (!groupExist) {
       return res
         .status(200)
@@ -575,7 +575,7 @@ const updateAirHocPointOfUser = async function (req, res) {
       (players) => players.points === 3
     );
     if (maxPoints) {
-      const resultDeclared = await declareWinner(updatedGroup, "AirHockey");
+      const resultDeclared = await declareWinner(groupExist, "AirHockey");
       const updatedPlayersForRes = resultDeclared.updatedPlayers.map(
         ({ UserId, points }) => ({
           UserId,
@@ -585,8 +585,8 @@ const updateAirHocPointOfUser = async function (req, res) {
       let result = {
         currentTime: new Date(),
         updatedPlayers: updatedPlayersForRes,
-        isGameOver: updateDataForBot.isGameOver,
-        gameEndTime: updateDataForBot.gameEndTime,
+        isGameOver: resultDeclared.isGameOver,
+        gameEndTime: resultDeclared.gameEndTime,
       };
       console.log("response when user point is 3=====>");
       return res.status(200).json(result);
@@ -614,7 +614,7 @@ const updateAirHocPointOfUser = async function (req, res) {
     const updatedGroup = await airHockeyGroupModel.findOneAndUpdate(
       {
         _id: groupId,
-        // isMatchOver: false,
+        isGameOver: false,
         updatedPlayers: {
           $elemMatch: {
             UserId: UserId,
@@ -622,6 +622,7 @@ const updateAirHocPointOfUser = async function (req, res) {
         },
       },
       {
+        $set: {lastHitTime: new Date()},
         $inc: { "updatedPlayers.$.points": 1 },
       },
       { new: true }
@@ -637,6 +638,7 @@ const updateAirHocPointOfUser = async function (req, res) {
     );
     if (maxPoibtsAfterUpdate) {
       const resultDeclared = await declareWinner(updatedGroup, "AirHockey");
+      console.log("resultDeclared======>", resultDeclared);
       const updatedPlayersForRes = resultDeclared.updatedPlayers.map(
         ({ UserId, points }) => ({
           UserId,
@@ -646,14 +648,14 @@ const updateAirHocPointOfUser = async function (req, res) {
       let result = {
         currentTime: new Date(),
         updatedPlayers: updatedPlayersForRes,
-        isGameOver: updateDataForBot.isGameOver,
-        gameEndTime: updateDataForBot.gameEndTime,
+        isGameOver: resultDeclared.isGameOver,
+        gameEndTime: resultDeclared.gameEndTime,
       };
       console.log("response when user point is 3=====>");
       return res.status(200).json(result);
     }
 
-    const updatedPlayersForRes = groupExist.updatedPlayers.map(
+    const updatedPlayersForRes = updatedGroup.updatedPlayers.map(
       ({ UserId, points }) => ({
         UserId,
         points,
@@ -662,8 +664,8 @@ const updateAirHocPointOfUser = async function (req, res) {
     let result = {
       currentTime: new Date(),
       updatedPlayers: updatedPlayersForRes,
-      isGameOver: updateDataForBot.isGameOver,
-      gameEndTime: updateDataForBot.gameEndTime,
+      isGameOver: updatedGroup.isGameOver,
+      gameEndTime: updatedGroup.gameEndTime,
     };
     console.log("response after tab the dice for bot=====>");
     return res.status(200).json(result);

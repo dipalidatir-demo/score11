@@ -293,7 +293,7 @@ function calculateSnakeLadderPosition ( currentPosition ) {
 
 function calculateRocketPosition ( currentPosition, botPlayerPosition ) {
   // Ensure that the current position does not exceed 20
-  return currentPosition > 20 ? botPlayerPosition : currentPosition;
+  return currentPosition > 19 ? botPlayerPosition : currentPosition;
 }
 
 async function checkTurn ( groupId, gameName) {

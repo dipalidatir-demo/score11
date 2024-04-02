@@ -29,15 +29,22 @@ async function checkPoint ( groupId, gameName) {
         timeDiff <= 0 ||
           updatedPlayers.find( ( player ) => player.points === 3 ) 
       ) {
-        await declareWinner(airHockey,gameName);
+       const overGame = await declareWinner(airHockey,gameName);
+       if ( overGame.isGameOver === true ) {
+        console.log( "Reached minimum point!" );
+        return true; // Stop the calling
+      }
+       
       }
 
       const timeSinceNextTurnTime =
-        ( lastHitTime.getTime() - currentDate.getTime() ) / 1000;
+        ( currentDate.getTime() - lastHitTime.getTime() ) / 1000;
   
         const isBot = updatedPlayers.find(player => player.isBot);
-      if ( timeSinceNextTurnTime <= 0 && isBot) {
-        await updatePointForBot( airHockey, gameName, isBot.UserId );
+      if ( timeSinceNextTurnTime >= 10 && isBot) {
+        // console.log("<======update for bot====>",isBot.UserId);
+        const updateBotPoint = await updatePointForBot( airHockey, gameName, isBot.UserId );
+        // console.log("updateBotPointafter updation====>",updateBotPoint);
       }
     } catch ( error ) {
       console.log( "Error in checkTurn function:", error );
@@ -84,12 +91,13 @@ async function overTheGameAirHoc(groupId, gameName, Token) {
   }
 
   async function updatePointForBot(airHockey, gameName, UserId ){
+    console.log("UserId in botPoint UpDATION====",UserId);
     try{
 
         const updatedGroup = await airHockeyGroupModel.findOneAndUpdate(
             {
               _id: airHockey._id,
-              isMatchOver: false,
+              isGameOver: false,
               "updatedPlayers": {
                 $elemMatch: {
                   UserId: UserId
@@ -97,22 +105,26 @@ async function overTheGameAirHoc(groupId, gameName, Token) {
               }
             },
             {
-             
+             $set: {lastHitTime: new Date()},
               $inc: { "updatedPlayers.$.points": 1}
             },
             { new: true }
           );
+           return updatedGroup
     }catch (error) {
             console.error("Error setting up timeout:", error);
         }
   };
 async function declareWinner(airHockey,gameName){
     try{
+      let tableId = airHockey.tableId ;
+      let groupId = airHockey._id ;
         let overTheGame = await airHockyTrnmtModel.findByIdAndUpdate(
-            { _id: airHockey.tableId },
+            { _id: tableId },
             { isMatchOverForTable: true },
             { new: true }
           );
+          
           let updatedPlayers = airHockey.updatedPlayers ;
           let profit = 0;
           let loss = 0;
@@ -278,10 +290,7 @@ async function declareWinner(airHockey,gameName){
           if ( !overGame ) {
             console.log( { status: false, error: "Game not found" } );
           }
-          if ( overGame.isGameOver === true ) {
-            console.log( "Reached minimum point!" );
-            return true; // Stop the calling
-          }
+           return overGame ;
 
     }catch (error) {
             console.error("Error setting up timeout:", error);

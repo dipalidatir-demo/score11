@@ -701,13 +701,14 @@ const updateRocketTournaments = async function (req, res) {
   
       // Ensure that the current position does not exceed 99
       const newPosition =
-        currentPosition > 20
-          ? updatedPlayers[currentUserIndex].points
+        currentPosition > 19
+          ? prevPoint
           : currentPosition;
   
       
           updatedPlayers[currentUserIndex].dicePoints = randomValue;
           updatedPlayers[currentUserIndex].currentPoints = newPosition;
+          updatedPlayers[currentUserIndex].points = newPosition;
           updatedPlayers[currentUserIndex].turn = false;
           updatedPlayers[currentUserIndex].prevPoint = prevPoint ;
           updatedPlayers[nextUserIndex].dicePoints = 0;
