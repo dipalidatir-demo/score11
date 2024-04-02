@@ -571,26 +571,6 @@ const updateAirHocPointOfUser = async function (req, res) {
         .status(200)
         .send({ status: false, message: "groupId is not present" });
     }
-    let maxPoints = groupExist.updatedPlayers.find(
-      (players) => players.points === 3
-    );
-    if (maxPoints) {
-      const resultDeclared = await declareWinner(groupExist, "AirHockey");
-      const updatedPlayersForRes = resultDeclared.updatedPlayers.map(
-        ({ UserId, points }) => ({
-          UserId,
-          points,
-        })
-      );
-      let result = {
-        currentTime: new Date(),
-        updatedPlayers: updatedPlayersForRes,
-        isGameOver: resultDeclared.isGameOver,
-        gameEndTime: resultDeclared.gameEndTime,
-      };
-      console.log("response when user point is 3=====>");
-      return res.status(200).json(result);
-    }
     if (groupExist.isGameOver) {
       const winnerlayersForRes = groupExist.updatedPlayers.map(
         ({ UserId, points, prize }) => ({
@@ -610,6 +590,28 @@ const updateAirHocPointOfUser = async function (req, res) {
       console.log("response when game is over=====>");
       return res.status(200).json(result);
     }
+    let maxPoints = groupExist.updatedPlayers.find(
+      (players) => players.points === 3
+    );
+    if (maxPoints) {
+      const resultDeclared = await declareWinner(groupExist, "AirHockey");
+      const updatedPlayersForRes = resultDeclared.updatedPlayers.map(
+        ({ UserId, points, prize }) => ({
+          UserId,
+          points,
+          prize,
+        })
+      );
+      let result = {
+        currentTime: new Date(),
+        updatedPlayers: updatedPlayersForRes,
+        isGameOver: resultDeclared.isGameOver,
+        gameEndTime: resultDeclared.gameEndTime,
+      };
+      console.log("response when user point is 3=====>");
+      return res.status(200).json(result);
+    }
+   
 
     const updatedGroup = await airHockeyGroupModel.findOneAndUpdate(
       {
@@ -640,9 +642,10 @@ const updateAirHocPointOfUser = async function (req, res) {
       const resultDeclared = await declareWinner(updatedGroup, "AirHockey");
       console.log("resultDeclared======>", resultDeclared);
       const updatedPlayersForRes = resultDeclared.updatedPlayers.map(
-        ({ UserId, points }) => ({
+        ({ UserId, points, prize }) => ({
           UserId,
           points,
+          prize,
         })
       );
       let result = {
