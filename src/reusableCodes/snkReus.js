@@ -242,7 +242,7 @@ async function updateBotPoints ( botPlayer, gameData, grpModel, gameName ) {
     updatedPlayers[currentUserIndex].prevPoint = prevPoint ;
 
     // Update game data with next turn details
-    gameData.nextTurnTime = new Date( Date.now() + 12 * 1000 ); // Set turn 12 sec for real user
+    gameData.nextTurnTime = new Date( Date.now() + 15 * 1000 ); // Set turn 15 sec for real user
     gameData.currentUserId = nextUserId;
     gameData.updatedPlayers[nextUserIndex].turn = true;
     gameData.lastHitTime = new Date();
@@ -323,7 +323,7 @@ async function checkTurn ( groupId, gameName) {
       ( gameName === "SnakeLadder" &&
         updatedPlayers.some( ( player ) => player.points === 99 ) ) ||
       ( gameName !== "SnakeLadder" &&
-        updatedPlayers.find( ( player ) => player.points === 20 ) )
+        updatedPlayers.find( ( player ) => player.points === 19 ) )
     ) {
       let overTheGame = await trnmtMode.findByIdAndUpdate(
         { _id: tableId },
