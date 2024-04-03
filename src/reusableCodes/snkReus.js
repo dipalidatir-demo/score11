@@ -313,7 +313,7 @@ async function checkTurn ( groupId, gameName) {
     const snakeLadder = await grpModel.findById( groupId );
 
     if ( !snakeLadder ) return false; // Check if group exists
-    // console.log("==========>",snakeLadder);
+    // console.log("updatedPlayers==========>",typeof(snakeLadder.updatedPlayers[0].points));
     const { tableId, updatedPlayers, gameEndTime, lastHitTime, nextTurnTime } =
       snakeLadder;
       const currentDate = new Date();
@@ -321,9 +321,9 @@ async function checkTurn ( groupId, gameName) {
     if (
       timeDiff <= 0 ||
       ( gameName === "SnakeLadder" &&
-        updatedPlayers.some( ( player ) => player.points === 99 ) ) ||
-      ( gameName !== "Rocket" &&
-        updatedPlayers.find( ( player ) => player.points === 19 ) )
+        updatedPlayers.some( ( player ) => player.points >= 99 ) ) ||
+      ( gameName === "Rocket" &&
+        updatedPlayers.some( ( player ) => player.points >= 19 ) )
     ) {
       console.log("<===========end time is over ==============");
       let overTheGame = await trnmtMode.findByIdAndUpdate(
