@@ -105,7 +105,6 @@ async function overTheGameAirHoc(groupId, gameName, Token) {
               }
             },
             {
-             $set: {lastHitTime: new Date()},
               $inc: { "updatedPlayers.$.points": 1}
             },
             { new: true }

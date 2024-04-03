@@ -573,21 +573,13 @@ const getGroups = async function (req, res) {
         message: " Please provide both tableId and UserId ",
       });
     }
-    let userExist = await userModel.findOne({ UserId: UserId });
-
-    if (userExist == null) {
-      return res.status(200).send({
-        status: false,
-        message: " User not found ",
-      });
-    }
 
     const table = await groupModel
       .findOne({ tableId: tableId, "group.UserId": UserId })
       .select({ group: 1, updatedPlayers: 1 })
       .lean();
     // console.log("groupAsper tableid====", table);
-
+    
     if (!table) {
       return res.status(200).send({
         status: false,

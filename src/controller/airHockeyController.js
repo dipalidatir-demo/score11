@@ -399,15 +399,15 @@ const getGroupsByUserForAirHoc = async function (req, res) {
         message: " Please provide both tableId and UserId ",
       });
     }
-    let userExist = await userModel.findOne({ UserId: UserId });
+    // let userExist = await userModel.findOne({ UserId: UserId });
 
-    if (userExist == null) {
-      return res.status(200).send({
-        status: false,
-        message: " User not found ",
-      });
-    }
-    let userName = userExist.userName;
+    // if (userExist == null) {
+    //   return res.status(200).send({
+    //     status: false,
+    //     message: " User not found ",
+    //   });
+    // }
+    // let userName = userExist.userName;
 
     const table = await airHockeyGroupModel
       .findOne({ tableId: tableId, "group.UserId": UserId })
@@ -548,7 +548,7 @@ console.log("inputgroupId===>",groupId);
 
 const updateAirHocPointOfUser = async function (req, res) {
   try {
-    let { UserId, groupId } = req.query;
+    let { UserId, groupId, points} = req.query;
 
     if (!UserId || !groupId) {
       return res.status(200).send({
@@ -624,8 +624,7 @@ const updateAirHocPointOfUser = async function (req, res) {
         },
       },
       {
-        $set: {lastHitTime: new Date()},
-        $inc: { "updatedPlayers.$.points": 1 },
+        $set: {"updatedPlayers.$.points": parseInt(points)}
       },
       { new: true }
     );
@@ -740,6 +739,35 @@ const getAllGroupsOfAirHoc = async function (req, res) {
   }
 };
 
+//________________check player is online or off line___________________
+const playerActive = async function (req, res) {
+  try {
+    let groupId = req.query.groupId;
+    if (!mongoose.Types.ObjectId.isValid(groupId)) {
+      return res
+        .status(200)
+        .send({ status: false, message: "invalid groupId" });
+    }
+    let airHockey = await airHockeyGroupModel
+      .findOneAndUpdate({ _id: groupId, isGameOver:false },{$set: {lastHitTime: new Date()}},{new:true});
+
+    if (!airHockey) {
+      return res
+        .status(200)
+        .send({ status: false, message: "this groupId not found" });
+    }
+
+  return res.status(200).send({status:true, mesage:"successfully updated"});
+
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send({
+      status: false,
+      error: err.message,
+    });
+  }
+};
+
 module.exports = {
   airHockeyTablesCreatedByAdmin,
   updateAirHockeyTournaments,
@@ -749,4 +777,5 @@ module.exports = {
   updateAirHocPointOfUser,
   getPlayersOfAirHoc,
   getAllGroupsOfAirHoc,
+  playerActive
 };

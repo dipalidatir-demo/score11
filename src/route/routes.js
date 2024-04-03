@@ -31,7 +31,8 @@ const {
     getAirHocByGroupId,
     updateAirHocPointOfUser,
     getPlayersOfAirHoc,
-    getAllGroupsOfAirHoc} = require("../controller/airHockeyController");
+    getAllGroupsOfAirHoc,
+    playerActive} = require("../controller/airHockeyController");
 
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
@@ -171,6 +172,7 @@ Router.get("/playersOfRocket", getPlayersOfRocket);
 
 Router.get("/getAllGroupsOfRkt", getAllGroupsOfRocket);
 
+Router.get("/playerIsActive", playerActive);
 
 //_________________________________airHockey_________________________________
 

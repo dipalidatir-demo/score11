@@ -469,15 +469,15 @@ const updateRocketTournaments = async function (req, res) {
           message: " Please provide both tableId and UserId ",
         });
       }
-      let userExist = await userModel.findOne({ UserId: UserId });
+      // let userExist = await userModel.findOne({ UserId: UserId });
   
-      if (userExist == null) {
-        return res.status(200).send({
-          status: false,
-          message: " User not found ",
-        });
-      }
-      let userName = userExist.userName;
+      // if (userExist == null) {
+      //   return res.status(200).send({
+      //     status: false,
+      //     message: " User not found ",
+      //   });
+      // }
+      // let userName = userExist.userName;
   
       const table = await rktGroupModel.findOne({ tableId: tableId,"group.UserId": UserId })
       .select({ group: 1, updatedPlayers: 1 })
