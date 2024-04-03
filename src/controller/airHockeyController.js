@@ -459,7 +459,7 @@ const getGroupsByUserForAirHoc = async function (req, res) {
 const getAirHocByGroupId = async function (req, res) {
   try {
     let groupId = req.query.groupId;
-
+console.log("inputgroupId===>",groupId);
     if (!mongoose.Types.ObjectId.isValid(groupId)) {
       return res
         .status(200)

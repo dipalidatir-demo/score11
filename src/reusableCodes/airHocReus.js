@@ -27,7 +27,7 @@ async function checkPoint ( groupId, gameName) {
           const timeDiff = gameEndTime - currentDate;
       if (
         timeDiff <= 0 ||
-          updatedPlayers.find( ( player ) => player.points === 3 ) 
+          updatedPlayers.some( ( player ) => player.points === 3 ) 
       ) {
        const overGame = await declareWinner(airHockey,gameName);
        if ( overGame.isGameOver === true ) {
@@ -55,7 +55,7 @@ async function overTheGameAirHoc(groupId, gameName, Token) {
     console.log("game name in airHockey ====>", gameName);
     pushNotification(Token, "Game has started");
   
-    const MAX_DURATION_SECONDS = 90; // 90 sec
+    const MAX_DURATION_SECONDS = 100; // 100 sec
     let startTime = Date.now();
     let timeoutId; // Store the timeout ID
     if (groupId !== undefined) {
