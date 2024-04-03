@@ -293,12 +293,12 @@ function calculateSnakeLadderPosition ( currentPosition ) {
 
 function calculateRocketPosition ( currentPosition, botPlayerPosition ) {
   // Ensure that the current position does not exceed 20
-  return currentPosition > 19 ? botPlayerPosition : currentPosition;
+  return currentPosition > 20 ? botPlayerPosition : currentPosition;
 }
 
 async function checkTurn ( groupId, gameName) {
   if ( !groupId ) return false; // Check if groupId is defined
-  console.log( "time in checkTurn ====>", new Date().getSeconds());
+  // console.log( "time in checkTurn ====>", new Date().getSeconds());
   try {
     let trnmtMode;
     let grpModel;
@@ -318,6 +318,7 @@ async function checkTurn ( groupId, gameName) {
       snakeLadder;
       const currentDate = new Date();
         const timeDiff = gameEndTime - currentDate;
+        console.log("timeDiff for ending the game in checkTurn ===>",timeDiff);
     if (
       timeDiff <= 0 ||
       ( gameName === "SnakeLadder" &&
@@ -325,7 +326,7 @@ async function checkTurn ( groupId, gameName) {
       ( gameName === "Rocket" &&
         updatedPlayers.some( ( player ) => player.points >= 19 ) )
     ) {
-      console.log("<===========end time is over ==============");
+      console.log("<===========game end time is over ==============");
       let overTheGame = await trnmtMode.findByIdAndUpdate(
         { _id: tableId },
         { isMatchOverForTable: true },
@@ -493,9 +494,9 @@ async function checkTurn ( groupId, gameName) {
       let overGame = await grpModel.findOneAndUpdate(
         {
           _id: groupId,
-          "updatedPlayers.UserId": {
-            $in: updatedPlayers.map( ( player ) => player.UserId ),
-          },
+          // "updatedPlayers.UserId": {
+          //   $in: updatedPlayers.map( ( player ) => player.UserId ),
+          // },
         },
         {
           $set: {
@@ -511,9 +512,10 @@ async function checkTurn ( groupId, gameName) {
         console.log( { status: false, error: "Game not found" } );
       }
       if ( overGame.isGameOver === true ) {
-        console.log( "Reached minimum point!" );
+        console.log( "Reached minimum point!" , overGame.isGameOver);
         return true; // Stop the calling
       }
+      
     }
 
     const botPlayer = updatedPlayers.find(
@@ -597,7 +599,7 @@ async function overTheGameForPlayers(groupId, gameName, Token) {
   console.log("game name in overthegame ====>", gameName);
   pushNotification(Token, "Game has started");
 
-  const MAX_DURATION_SECONDS = 136; // 2 min 16 sec
+  const MAX_DURATION_SECONDS = 150; // 2 min 30 sec
   let startTime = Date.now();
   let timeoutId; // Store the timeout ID
   if (groupId !== undefined) {
