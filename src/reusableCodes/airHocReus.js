@@ -55,7 +55,7 @@ async function overTheGameAirHoc(groupId, gameName, Token) {
     console.log("game name in airHockey ====>", gameName);
     pushNotification(Token, "Game has started");
   
-    const MAX_DURATION_SECONDS = 100; // 100 sec
+    const MAX_DURATION_SECONDS = 120; // 120 sec
     let startTime = Date.now();
     let timeoutId; // Store the timeout ID
     if (groupId !== undefined) {
