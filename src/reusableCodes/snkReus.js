@@ -230,7 +230,7 @@ async function updateBotPoints ( botPlayer, gameData, grpModel, gameName ) {
     } else {
       currentPosition = calculateRocketPosition(
         currentPosition,
-        updatedPlayers[currentUserIndex].points
+        prevPoint
       );
     }
 
@@ -291,9 +291,9 @@ function calculateSnakeLadderPosition ( currentPosition ) {
   }
 }
 
-function calculateRocketPosition ( currentPosition, botPlayerPosition ) {
+function calculateRocketPosition ( currentPosition, prevPosition ) {
   // Ensure that the current position does not exceed 20
-  return currentPosition > 20 ? botPlayerPosition : currentPosition;
+  return currentPosition >= 20 ? prevPoint : currentPosition;
 }
 
 async function checkTurn ( groupId, gameName) {

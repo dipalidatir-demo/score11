@@ -130,13 +130,13 @@ const snkTablesCreatedByAdmin = async function (req, res) {
           let tableByAdmin1 = await snkTournamentModel.create(req.body);
           let tableId1 = tableByAdmin1._id;
 
-          console.log("Tournament created successfully!==", tableId1);
+          console.log("SnakeLadder Tournament created successfully!==", tableId1);
           if (tableId1) {
             // Schedule the createGroupByAdmin function after maxTime
             console.log("calling the setTimeout function");
             setTimeout(function () {
               console.log();
-              createGroupForSnakeLadder(tableId1);
+              createGroupForSnakeLadder(tableId1,'SnakeLadder');
               console.log(
                 tableByAdmin1,
                 "==========table for snk after setTimeOut===",
@@ -289,7 +289,7 @@ const createSnakeLadderTables = async function (req, res) {
      createGroupForSnakeLadder(tableId2ForRkt, gameNameForRkt);
    }
 
-   endTime = Date.now() + 1 * 60 * 1000;
+   endTime = Date.now() + 4 * 60 * 1000;
    data2ForRkt.endTime = req.query.endTime = endTime;
 
    tournamentTable2ForRkt = await rocketTournamentModel.create(data2ForRkt);
@@ -300,7 +300,7 @@ const createSnakeLadderTables = async function (req, res) {
  ////_______________________create table2 with setinterval an end time for airHockey___________
  let tableId2ForAirHoc;
  async function createTournament2ForAirHoc() {
-   if (tableId1ForAirHoc != undefined ) {
+   if (tableId2ForAirHoc != undefined ) {
      createGroupForSnakeLadder(tableId2ForAirHoc, gameNameForAirHoc);
    }
 

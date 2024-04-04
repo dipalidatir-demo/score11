@@ -63,13 +63,13 @@ const airHockeyTablesCreatedByAdmin = async function (req, res) {
           let tableByAdmin1 = await airHockyTrnmtModel.create(req.body);
           let tableId1 = tableByAdmin1._id;
 
-          console.log("Tournament created successfully!==", tableId1);
+          console.log("AirHockey Tournament created successfully!==", tableId1);
           if (tableId1) {
             // Schedule the createGroupByAdmin function after maxTime
             console.log("calling the setTimeout function");
             setTimeout(function () {
               console.log();
-              createGroupForSnakeLadder(tableId1);
+              createGroupForSnakeLadder(tableId1,'AirHockey');
               console.log(
                 tableByAdmin1,
                 "==========table for rkt after setTimeOut===",

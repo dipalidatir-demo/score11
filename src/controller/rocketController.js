@@ -6,7 +6,7 @@ const moment = require("moment");
 const cron = require("node-cron");
 // In rocketController.js
 // delete require.cache[require.resolve("../reusableCodes/rocktReuCode")];
- const {  updateBotPoints } = require("../reusableCodes/snkReus");
+ const {  updateBotPoints, createGroupForSnakeLadder } = require("../reusableCodes/snkReus");
 
 //____________________________________create snakeladder tournaments by admin___________
 //---------------------using node crone---------------------------------
@@ -66,13 +66,13 @@ const rktTablesCreatedByAdmin = async function (req, res) {
             let tableByAdmin1 = await rktTournameModel.create(req.body);
             let tableId1 = tableByAdmin1._id;
   
-            console.log("Tournament created successfully!==", tableId1);
+            console.log("Rocket Tournament created successfully!==", tableId1);
             if (tableId1) {
               // Schedule the createGroupByAdmin function after maxTime
               console.log("calling the setTimeout function");
               setTimeout(function () {
                 console.log();
-                createGroupFoRocket(tableId1);
+                createGroupForSnakeLadder(tableId1,'Rocket');
                 console.log(
                   tableByAdmin1,
                   "==========table for rkt after setTimeOut===",
@@ -469,16 +469,6 @@ const updateRocketTournaments = async function (req, res) {
           message: " Please provide both tableId and UserId ",
         });
       }
-      // let userExist = await userModel.findOne({ UserId: UserId });
-  
-      // if (userExist == null) {
-      //   return res.status(200).send({
-      //     status: false,
-      //     message: " User not found ",
-      //   });
-      // }
-      // let userName = userExist.userName;
-  
       const table = await rktGroupModel.findOne({ tableId: tableId,"group.UserId": UserId })
       .select({ group: 1, updatedPlayers: 1 })
       .lean();
@@ -701,7 +691,7 @@ const updateRocketTournaments = async function (req, res) {
   
       // Ensure that the current position does not exceed 99
       const newPosition =
-        currentPosition > 19
+        currentPosition > 20
           ? prevPoint
           : currentPosition;
   

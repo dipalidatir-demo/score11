@@ -25,6 +25,7 @@ async function checkPoint ( groupId, gameName) {
         airHockey;
         const currentDate = new Date();
           const timeDiff = gameEndTime - currentDate;
+          //_____________________declare winner_____________________________
       if (
         timeDiff <= 0 ||
           updatedPlayers.some( ( player ) => player.points === 3 ) 
@@ -41,7 +42,7 @@ async function checkPoint ( groupId, gameName) {
         ( currentDate.getTime() - lastHitTime.getTime() ) / 1000;
   
         const isBot = updatedPlayers.find(player => player.isBot);
-      if ( timeSinceNextTurnTime >= 10 && isBot) {
+      if ( timeSinceNextTurnTime >= 15 && isBot) {
         // console.log("<======update for bot====>",isBot.UserId);
         const updateBotPoint = await updatePointForBot( airHockey, gameName, isBot.UserId );
         // console.log("updateBotPointafter updation====>",updateBotPoint);

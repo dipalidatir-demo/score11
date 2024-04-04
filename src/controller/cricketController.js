@@ -343,7 +343,7 @@ const getPlayersData = async function (req, res) {
     // Find the document and update the run for the specified user
     const groupExist = await groupModel
       .findOne({ _id: groupId })
-      .select({ updatedPlayers: 1, start: 1, ball: 1 })
+      .select({ updatedPlayers: 1, start: 1, ball: 1, isMatchOver:1})
       .lean(); // Convert to plain JavaScript object
 
     if (!groupExist) {
@@ -372,6 +372,7 @@ const getPlayersData = async function (req, res) {
       updatedPlayers: updatedPlayers,
       start: groupExist.start,
       RemainingBall: groupExist.ball,
+      isGameOver: groupExist.isMatchOver
     };
     console.log("response====>", response);
     return res.status(200).json(response);

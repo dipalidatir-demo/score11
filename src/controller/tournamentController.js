@@ -76,7 +76,7 @@ const tournamentsByAdmin = async function (req, res) {
           let tableByAdmin1 = await tournamentModel.create(req.body);
           let tableId1 = tableByAdmin1._id;
 
-          console.log("Tournament created successfully!==", tableId1);
+          console.log("Cricket Tournament created successfully!==", tableId1);
           setTimeout(function () {
             createGroupByAdmin(tableId1);
             console.log(
