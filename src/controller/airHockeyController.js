@@ -483,9 +483,10 @@ console.log("inputgroupId===>",groupId);
     );
 
     const updatedPlayersForRes = airHockey.updatedPlayers.map(
-      ({ UserId, points }) => ({
+      ({ UserId, points, userName }) => ({
         UserId,
         points,
+        userName
       })
     );
 

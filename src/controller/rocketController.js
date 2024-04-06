@@ -542,11 +542,12 @@ const updateRocketTournaments = async function (req, res) {
       );
   
       const updatedPlayersForRes = rocket.updatedPlayers.map(
-        ({ UserId, points,dicePoints,prevPoint }) => ({
+        ({ UserId,userName, points,dicePoints,prevPoint }) => ({
           UserId,
           points,
           dicePoints,
-          prevPoint
+          prevPoint,
+          userName
         })
       );
   
@@ -634,7 +635,7 @@ const updateRocketTournaments = async function (req, res) {
           .send({ status: false, message: "invalid groupId" });
       }
   
-      let groupExist = await rktGroupModel.findById({
+      let groupExist = await rktGroupModel.findOne({
         _id: groupId,
         "updatedPlayers.UserId": UserId,
       });

@@ -722,7 +722,57 @@ const getAllGroupsOfTicTacToe = async function (req, res) {
   }
 };
 
+//______________________update tic tac toe data by user __________________
 
+const  makeMoven = async function (req, res) {
+  try{
+    const {groupId, row, col, playerId} = req.query ;
+  // Find the game group in the database
+  const group = await TicTacToeGroup.findById(groupId);
+  if (!group) {
+    throw new Error("Group not found");
+  }
+
+  // Check if it's the player's turn
+  const currentPlayerIndex = group.updatedPlayers.findIndex(player => player.UserId === playerId && player.turn);
+  if (currentPlayerIndex === -1) {
+    throw new Error("It's not your turn");
+  }
+
+  // Check if the move is valid
+  if (row < 0 || row > 2 || col < 0 || col > 2 || group.board[row][col] !== '') {
+    throw new Error("Invalid move");
+  }
+
+  // Update the game board
+  group.board[row][col] = group.updatedPlayers[currentPlayerIndex] = 'X';
+
+  // Check for a winner or draw
+  const winner = checkWinner(group.board);
+  if (winner) {
+    group.isGameOver = true;
+    group.winner = winner;
+  } else if (isDraw(group.board)) {
+    group.isGameOver = true;
+    group.isDraw = true;
+  } else {
+    // If it's the bot's turn, make a move for the bot
+    if (group.updatedPlayers[(currentPlayerIndex + 1) % 2].isBot) {
+      const botMoveCoordinates = botMove(group.board);
+      group.board[botMoveCoordinates.row][botMoveCoordinates.col] = 'O';
+    }
+    // Switch turns
+    group.updatedPlayers[currentPlayerIndex].turn = false;
+    group.updatedPlayers[(currentPlayerIndex + 1) % 2].turn = true;
+  }
+
+  // Save the updated game group
+  await group.save();
+}catch(error){
+  console.log("error in update tictac toe===",error);
+  return res.status(500).send({status:false, message:error.message});
+}
+}
 module.exports = {
   updateTic,
   getAllTic,
@@ -734,4 +784,5 @@ module.exports = {
   getPlayersOfTicTacToe,
   getAllGroupsOfTicTacToe,
   getGroupsOfTicTacToeAsPerGrpId,
+  makeMoven
 };

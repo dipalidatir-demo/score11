@@ -24,17 +24,20 @@ const TicTacToeGroupSchema = new mongoose.Schema(
           type: Boolean,
           default: false,
         },
-        positions: [],
+        positions: [{
+          _id:false
+        }],
           turn:{
             type:Boolean,
             default:false
           },
-          movement:{
+          sign:{
             type: String,
-            default:''
+            default:'0'
           }
       },
     ],
+    board:[],
     start: {
       type: Boolean,
       default: false,

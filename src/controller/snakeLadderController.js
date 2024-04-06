@@ -730,11 +730,12 @@ const getSnkByGroupId = async function (req, res) {
     );
 
     const updatedPlayersForRes = snakeLadder.updatedPlayers.map(
-      ({ UserId, points,dicePoints, prevPoint }) => ({
+      ({ UserId, points,dicePoints, prevPoint, userName }) => ({
         UserId,
         points,
         dicePoints,
-        prevPoint
+        prevPoint,
+        userName
       })
     );
 
@@ -822,7 +823,7 @@ const updatePointOfUser = async function (req, res) {
         .send({ status: false, message: "invalid groupId" });
     }
 
-    let groupExist = await groupModelForSnakeLadder.findById({
+    let groupExist = await groupModelForSnakeLadder.findOne({
       _id: groupId,
       "updatedPlayers.UserId": UserId,
     });
