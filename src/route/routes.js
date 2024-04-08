@@ -5,7 +5,7 @@ const userController = require("../controller/userController");
 const cricketController = require("../controller/cricketController");
 const hockyController = require("../controller/hockyController");
 const snakeLadderController = require("../controller/snakeLadderController");
-const ticTacToeController = require("../controller/ticTacToeController");
+// const ticTacToeController = require("../controller/ticTacToeController");
 const balanceController = require("../controller/balanceController");
 const tournamentController = require("../controller/tournamentController");
 const botPlayersController = require("../controller/dummyUsers");
@@ -33,7 +33,18 @@ const {
     getPlayersOfAirHoc,
     getAllGroupsOfAirHoc,
     playerActive} = require("../controller/airHockeyController");
-
+    
+const { updateTic,
+  getAllTic,
+  ticTacToeTablesCreatedByAdmin,
+  createTicTacToeTables,
+  getAllTicTacToeData,
+  updateTicTacToeTournaments,
+  getTicTacToeGroupsByUser,
+  getPlayersOfTicTacToe,
+  getAllGroupsOfTicTacToe,
+  getGroupsOfTicTacToeAsPerGrpId,
+  makeMovenForPlayer} = require("../controller/ticTacToeController");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const Router = express.Router();
@@ -194,27 +205,29 @@ Router.get("/getAllGroupsOfAirHoc", getAllGroupsOfAirHoc);
 
 //__________________ticTacToe___________________
 
-Router.post("/ticTacToetournamentsByAdmin", ticTacToeController.ticTacToeTablesCreatedByAdmin);
+Router.post("/ticTacToetournamentsByAdmin", ticTacToeTablesCreatedByAdmin);
 
-Router.post("/createTicTacToetournaments", ticTacToeController.createTicTacToeTables);
+// Router.post("/createTicTacToetournaments", ticTacToeController.createTicTacToeTables);
 
-Router.get("/getAllticTacToeTournaments", ticTacToeController.getAllTicTacToeData);
+Router.get("/getAllticTacToeTournaments", getAllTicTacToeData);
 
-Router.get("/getPlayersOfTicTacToe", ticTacToeController.getPlayersOfTicTacToe);
+Router.get("/getPlayersOfTicTacToe", getPlayersOfTicTacToe);
 
-Router.put("/updateTicTacToetournaments", ticTacToeController.updateTicTacToeTournaments);
+Router.put("/updateTicTacToetournaments", updateTicTacToeTournaments);
 
-Router.get("/getTicTacToeGroupByUserId", ticTacToeController.getTicTacToeGroupsByUser);
+Router.get("/getTicTacToeGroupByUserId", getTicTacToeGroupsByUser);
 
-Router.get("/getGroupsOfTicTacToeAsPerGrpId", ticTacToeController.getGroupsOfTicTacToeAsPerGrpId);
+Router.get("/makeMovenForPlayer", makeMovenForPlayer);
 
-Router.get("/getAllGroupsOfTicTacToe", ticTacToeController.getAllGroupsOfTicTacToe);
+Router.get("/getTicTacToeGrp", getGroupsOfTicTacToeAsPerGrpId);
+
+Router.get("/getAllGroupsOfTicTacToe", getAllGroupsOfTicTacToe);
 
 //______________________extra routes__________________
 
-Router.put("/updateTicTacToe", ticTacToeController.updateTic);
+Router.put("/updateTicTacToe", updateTic);
 
-Router.get("/getAllTicTacToeData", ticTacToeController.getAllTic);
+Router.get("/getAllTicTacToeData", getAllTic);
 
 
 //_________________credits_____________________

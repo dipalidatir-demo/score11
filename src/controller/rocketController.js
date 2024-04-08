@@ -668,11 +668,11 @@ const updateRocketTournaments = async function (req, res) {
         return res.status(200).json(result);
       }
       let isUserExist = groupExist.updatedPlayers.find(
-        (players) => players.UserId === UserId
+        (players) => players.UserId === UserId && players.turn
       );
-      let turn = isUserExist.turn;
+      // let turn = isUserExist.turn;
   
-      if (turn === false) {
+      if (!isUserExist) {
         return res.status(200).send({ message: "not your turn" });
       }
       const updatedPlayers = groupExist.updatedPlayers;
@@ -692,7 +692,7 @@ const updateRocketTournaments = async function (req, res) {
   
       // Ensure that the current position does not exceed 99
       const newPosition =
-        currentPosition > 20
+        currentPosition > 19
           ? prevPoint
           : currentPosition;
   
@@ -716,9 +716,6 @@ const updateRocketTournaments = async function (req, res) {
           );
           // console.log("updatedData=======>",updatedData.updatedPlayers);
           if (botPlayer) {
-          //   setTimeout(async () => {
-          //     checkTurn(groupId, 'SnakeLadder', 12); //12 sec because of bot
-          // }, 12000); 
             const updateDataForBot = await updateBotPoints(botPlayer, updatedData, rktGroupModel, 'Rocket');
             // console.log("updateDataForBot===>",updateDataForBot);
             const updatedPlayersForRes = updateDataForBot.updatedPlayers.map(
@@ -741,9 +738,7 @@ const updateRocketTournaments = async function (req, res) {
             console.log("response after tab the dice for bot=====>");
             return res.status(200).json(result);
           } else {
-          //   setTimeout(async () => {
-          //     checkTurn(groupId, 'SnakeLadder', 12); //12 sec
-          // }, 12000);    
+         
             const updatedPlayersForRes = updatedData.updatedPlayers.map(
               ({ UserId, points, dicePoints, prevPoint }) => ({
                 UserId,
@@ -780,7 +775,7 @@ const updateRocketTournaments = async function (req, res) {
       let players = await rktTournameModel
         .find({ endTime: { $gt: new Date() } })
         .sort({ maxTime: 1 })
-        .select({ _id: 1, players: 1, playerWithBot: 1 });
+        .select({ _id: 1, players: 1});
   
       if (players.length === 0) {
         return res.status(200).send({
@@ -789,14 +784,14 @@ const updateRocketTournaments = async function (req, res) {
         });
       }
   
-      players.forEach((item) => {
-        item.players = item.playerWithBot;
-        console.log(
-          item.players,
-          "==========data.players in ma=======",
-          item.playerWithBot
-        );
-      });
+      // players.forEach((item) => {
+      //   item.players = item.playerWithBot;
+      //   console.log(
+      //     item.players,
+      //     "==========data.players in ma=======",
+      //     item.playerWithBot
+      //   );
+      // });
   
       return res.status(200).send({
         status: true,

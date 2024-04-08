@@ -3,7 +3,7 @@ const userModel = require("../model/userModel");
 const ticTacToeModel = require("../model/ticTacToeModel");
 const ticTacToeTournamentModel = require("../model/ticTacToeTournamentModel");
 const ticTacToeGroupModel = require("../model/ticTacToeGroupModel");
-const { createGroupForticTacToe } = require("../reusableCodes/reusablecode");
+const { createGroupForticTacToe, updateBotPosition } = require("../reusableCodes/reusablecode");
 const moment = require("moment");
 const cron = require("node-cron");
 
@@ -121,15 +121,11 @@ const ticTacToeTablesCreatedByAdmin = async function (req, res) {
   try {
     let {
       entryFee,
-      prizeAmount,
-      players,
-      status,
       maxTime,
       maxPlayers,
       endTime,
-      tableByAdmin,
       date,
-      time
+      time,
     } = req.body;
 
     console.log(req.body, "============body data");
@@ -141,51 +137,67 @@ const ticTacToeTablesCreatedByAdmin = async function (req, res) {
     req.body.endTime = endTime;
 
     // Use moment for flexible date and time parsing
-    const tournamentStartTime = moment(`${date} ${time}`, 'YYYY-MM-DD HH:mm').toDate();
+    const tournamentStartTime = moment(
+      `${date} ${time}`,
+      "YYYY-MM-DD HH:mm"
+    ).toDate();
 
     // Calculate the delay in milliseconds until the tournament starts
     const delay = tournamentStartTime - Date.now();
     console.log(tournamentStartTime, "========tournamentStartTime====", delay);
 
     if (delay < 0) {
+      console.log("error in delay====");
       return res.status(200).send({
         status: false,
-        message: "Invalid date and time. Please provide a future date and time.",
+        message:
+          "Invalid date and time. Please provide a future date and time.",
       });
     }
 
     // Schedule the tournament creation using node-cron
-    cron.schedule(moment(tournamentStartTime).format('mm HH DD MM *'), async () => {
-      try {
-        // Update request body with user-provided values
-        console.log(tournamentStartTime, "========tournamentStartTime====", delay);
-        req.body.tableByAdmin = true;
-        req.body.maxPlayers = maxPlayers;
-        req.body.entryFee = entryFee;
+    cron.schedule(
+      moment(tournamentStartTime).format("mm HH DD MM *"),
+      async () => {
+        try {
+          // Update request body with user-provided values
+          console.log(
+            tournamentStartTime,
+            "========tournamentStartTime====",
+            delay
+          );
+          req.body.tableByAdmin = true;
+          req.body.maxPlayers = maxPlayers;
+          req.body.entryFee = entryFee;
 
-        let tableByAdmin1 = await ticTacToeTournamentModel.create(req.body);
-        let tableId1 = tableByAdmin1._id;
+          let tableByAdmin1 = await ticTacToeTournamentModel.create(req.body);
+          let tableId1 = tableByAdmin1._id;
 
-        console.log('Tournament created successfully!==', tableId1);
-        if(tableId1){
-          console.log("calling the setTimeout function");
-        setTimeout(function () {
-            createGroupForticTacToe(tableId1);
-            console.log(tableByAdmin1, "==========table for snk after setTimeOut===", new Date().getMinutes());
-          }, maxTime + 60 * 1000);
+          console.log("Rocket Tournament created successfully!==", tableId1);
+          if (tableId1) {
+            // Schedule the createGroupByAdmin function after maxTime
+            console.log("calling the setTimeout function");
+            setTimeout(function () {
+              console.log();
+              createGroupForticTacToe(tableId1,'TicTacToe');
+              console.log(
+                tableByAdmin1,
+                "==========table for rkt after setTimeOut===",
+                new Date().getMinutes()
+              );
+            }, maxTime + 60 * 1000);
+          }
+        } catch (error) {
+          console.error("Error creating tournament:", error.message);
         }
-        
-      } catch (error) {
-        console.error('Error creating tournament:', error.message);
       }
-    });
+    );
 
     return res.status(201).send({
       status: true,
       message: "Tournament creation scheduled",
     });
   } catch (error) {
-    console.log(error);
     return res.status(500).send({
       status: false,
       message: error.message,
@@ -193,13 +205,10 @@ const ticTacToeTablesCreatedByAdmin = async function (req, res) {
   }
 };
 
-//____________________________________create ticTacToe tournaments___________
+//_________________________________________________createSnakeLadder tournaments____________________________________
 
 const createTicTacToeTables = async function (req, res) {
   try {
-    let data = req.query;
-    let UserId = req.query.UserId;
-
     let data1 = {
       entryFee: 1,
       prizeAmount: 1 * 2, //___win amount will be entry fee multiply with 4 players(5-1 = 4)
@@ -211,39 +220,16 @@ const createTicTacToeTables = async function (req, res) {
       prizeAmount: 10 * 2,
       maxTime: 4,
     };
-
-    let data3 = {
-      entryFee: 20,
-      prizeAmount: 20 * 2,
-      maxTime: 5,
-    };
-
-    let data4 = {
-      entryFee: 50,
-      prizeAmount: 50 * 2,
-      maxTime: 10,
-    };
-
-    let data5 = {
-      entryFee: 100,
-      prizeAmount: 100 * 2,
-      maxTime: 15,
-    };
-
     let tournamentTable1;
     let tournamentTable2;
-    let tournamentTable3;
-    let tournamentTable4;
-    let tournamentTable5;
-
     //_______________________create table1 with setinterval an end time___________
     let tableId1;
     async function createTournament1() {
       if (tableId1 != undefined) {
-        createGroupForticTacToe(tableId1);
+        createGroupForticTacToe(tableId1,'TicTacToe');
       }
 
-      endTime = Date.now() + 1 * 20 * 1000;
+      endTime = Date.now() + 1 * 60 * 1000;
       data1.endTime = req.query.endTime = endTime;
 
       tournamentTable1 = await ticTacToeTournamentModel.create(data1);
@@ -251,7 +237,7 @@ const createTicTacToeTables = async function (req, res) {
       console.log(tournamentTable1);
     }
 
-    setInterval(createTournament1, 20000);
+    setInterval(createTournament1, 60000);
 
     createTournament1();
 
@@ -260,7 +246,7 @@ const createTicTacToeTables = async function (req, res) {
 
     async function createTournament2() {
       if (tableId2 != undefined) {
-        createGroupForticTacToe(tableId2);
+        createGroupForticTacToe(tableId1,'TicTacToe');
       }
 
       endTime = Date.now() + 4 * 60 * 1000;
@@ -274,59 +260,9 @@ const createTicTacToeTables = async function (req, res) {
     setInterval(createTournament2, 240000);
     createTournament2();
 
-    //_______________________create table3 with setinterval an end time________________
-    let tableId3;
-
-    async function createTournament3() {
-      if (tableId3 != undefined) {
-        createGroupForticTacToe(tableId3);
-      }
-
-      let endTime = Date.now() + 5 * 60 * 1000;
-      data3.endTime = req.query.endTime = endTime;
-      tournamentTable3 = await ticTacToeTournamentModel.create(data3);
-      tableId3 = tournamentTable3._id;
-      // console.log(tournamentTable3);
-    }
-    setInterval(createTournament3, 300000);
-    createTournament3();
-
-    //  // _______________________create table4 with setinterval an end time________________
-    let tableId4;
-
-    async function createTournament4() {
-      if (tableId4 != undefined) {
-        createGroupForticTacToe(tableId4);
-      }
-      endTime = Date.now() + 10 * 60 * 1000;
-      data4.endTime = req.query.endTime = endTime;
-      tournamentTable4 = await ticTacToeTournamentModel.create(data4);
-      tableId4 = tournamentTable4._id;
-      // console.log(tournamentTable4);
-    }
-    setInterval(createTournament4, 600000);
-    createTournament4();
-
-    //_____________________________create table5 with setinterval an end time____
-    let tableId5;
-
-    async function createTournament5() {
-      if (tableId5 != undefined) {
-        createGroupForticTacToe(tableId5);
-      }
-      endTime = Date.now() + 15 * 60 * 1000;
-      data5.endTime = req.query.endTime = endTime;
-      tournamentTable5 = await ticTacToeTournamentModel.create(data5);
-      tableId5 = tournamentTable5._id;
-      // console.log(tournamentTable5);
-    }
-    setInterval(createTournament5, 900000);
-    createTournament5();
-
     return res.status(201).send({
       status: true,
-      message: "Success",
-      data: tournamentTable1,
+      message: "Rocket tournament created Successfully"
     });
   } catch (err) {
     return res.status(500).send({
@@ -336,8 +272,7 @@ const createTicTacToeTables = async function (req, res) {
   }
 };
 
-
-//____________________________________ getAllTicTacToe tournaments___________
+//______________________________________________get all data of SnakeLadder tournaments______________________________
 
 const getAllTicTacToeData = async function (req, res) {
   try {
@@ -357,7 +292,7 @@ const getAllTicTacToeData = async function (req, res) {
         createdTime: 0,
       })
       .sort({ maxTime: 1 });
-
+console.log("data=======>",data);
     //__________fetch dataas per user id (it shows user joined in this table now)
 
     let userData = await ticTacToeTournamentModel.aggregate([
@@ -424,8 +359,7 @@ const getAllTicTacToeData = async function (req, res) {
     });
   }
 };
-
-//____________________________________updateTicTacToeTournaments  ______________
+//___________________________________________________update snakeLaddertournament_______________________________
 
 const updateTicTacToeTournaments = async function (req, res) {
   try {
@@ -433,6 +367,7 @@ const updateTicTacToeTournaments = async function (req, res) {
     let UserId = req.query.UserId;
     let updateData = req.query;
     let { status } = updateData;
+    console.log(req.query.UserId, "______________req.query.UserId");
 
     if (Object.keys(updateData).length == 0) {
       return res.status(200).send({
@@ -449,11 +384,12 @@ const updateTicTacToeTournaments = async function (req, res) {
 
     let existTable = await ticTacToeTournamentModel.findById({ _id: tableId });
     if (!existTable) {
-      return res.status(404).send({
+      return res.status(200).send({
         status: false,
         message: " This table is not present ",
       });
     }
+
     let ExistPlayers = existTable.players;
     let entryFee = existTable.entryFee;
     let maxPlayers = existTable.maxPlayers;
@@ -472,17 +408,20 @@ const updateTicTacToeTournaments = async function (req, res) {
 
     //________________________________find user,s Name _____________________________________
 
-    let userExist = await userModel.findOne({ UserId: UserId, isDeleted:false });
+    let userExist = await userModel.findOne({
+      UserId: UserId,
+      isDeleted: false,
+    });
     if (!userExist) {
-      return res.status(404).send({
+      return res.status(200).send({
         status: false,
-        message: " user not found",
+        message: "user not found",
       });
     }
-    const { userName, isBot, credits } = userExist;
-
+    let { userName, isBot, credits, realMoney,token } = userExist;
+    credits = credits + parseInt(realMoney);
     if (credits < entryFee) {
-      return res.status(404).send({
+      return res.status(200).send({
         status: false,
         message: " insufficient balance to play",
       });
@@ -503,9 +442,12 @@ const updateTicTacToeTournaments = async function (req, res) {
       },
     ]);
 
+    // console.log("userData======>",userData);
+
     if (userData.length !== 0) {
       for (let i = 0; i < userData.length; i++) {
         let time = userData[i].endTime;
+        console.log("time=======>",time);
         console.log(time.getMinutes(), "time___________");
         console.log(
           existTable.endTime.getMinutes(),
@@ -530,6 +472,7 @@ const updateTicTacToeTournaments = async function (req, res) {
             Users: {
               UserId: UserId,
               userName: userName,
+              token:token,
               isBot: isBot,
               joined: true,
               endTime: existTable.endTime,
@@ -543,21 +486,66 @@ const updateTicTacToeTournaments = async function (req, res) {
       .select({ players: 1, _id: 0 });
 
     //_______store user's tournament history in user profile
-
+    let userHistory;
     let time = existTable.createdAt;
-    let userHistory = await userModel.findOneAndUpdate(
-      { UserId: UserId },
-      {
-        $push: {
-          history: { gameType: "TicTacToe", tableId: tableId, time: time, result:"", win:0},
-          transactionHistory:{date:new Date(), amount:entryFee, type:"Entry Fee",gameType: "TicTacToe"}
+    if (userExist.credits >= entryFee) {
+      userHistory = await userModel.findOneAndUpdate(
+        { UserId: UserId },
+        {
+          $push: {
+            history: {
+              gameType: "ticTacToe",
+              tableId: tableId,
+              time: time,
+              result: "",
+              win: 0,
+            },
+            transactionHistory: {
+              date: new Date(),
+              amount: entryFee,
+              type: "Entry Fee",
+              gameType: "ticTacToe",
+            },
+          },
+          $inc: {
+            credits: -entryFee,
+            "ticTacToeData.0.playCount": 1, // Increment playCount by 1
+          },
         },
-        $inc: {
-          credits: -entryFee, "ticTacToeData.0.playCount": 1    // Increment playCount by 1
-        }, 
-      },
-      { new: true }
-    );
+        { new: true }
+      );
+    } else {
+      // Insufficient credits, deduct from realMoney
+      const remainingAmount = entryFee - userExist.credits;
+      userHistory = await userModel.findOneAndUpdate(
+        { UserId: UserId },
+        {
+          $push: {
+            history: {
+              gameType: "ticTacToe",
+              tableId: tableId,
+              time: time,
+              result: "",
+              win: 0,
+            },
+            transactionHistory: {
+              date: new Date(),
+              amount: entryFee,
+              type: "Entry Fee",
+              gameType: "ticTacToe",
+            },
+          },
+          $inc: {
+            realMoney: -remainingAmount,
+            "ticTacToeData.0.playCount": 1, // Increment playCount by 1
+          },
+          $set: {
+            credits: 0,
+          },
+        },
+        { new: true }
+      );
+    }
     // console.log("users data after deduct the credit >>>>>>>>>>>>>",userHistory)
     return res.status(200).send({
       status: true,
@@ -568,6 +556,7 @@ const updateTicTacToeTournaments = async function (req, res) {
       },
     });
   } catch (err) {
+    console.log(err);
     return res.status(500).send({
       status: false,
       error: err.message,
@@ -575,73 +564,56 @@ const updateTicTacToeTournaments = async function (req, res) {
   }
 };
 
-//__________________________________get groups per UserId and tableId ____________________________________________
-
+//__________________________________get groups per players and tableId ____________________________________________
 const getTicTacToeGroupsByUser = async function (req, res) {
   try {
     let tableId = req.query.tableId;
     let UserId = req.query.UserId;
-
+    console.log("input data=====>",tableId,"====>",UserId);
     if (Object.keys(req.query).length <= 1) {
       return res.status(200).send({
         status: false,
         message: " Please provide both tableId and UserId ",
       });
     }
-    let userExist = await userModel.findOne({ UserId: UserId });
+    const table = await ticTacToeGroupModel.findOne({ tableId: tableId,"group.UserId": UserId })
+    .select({ group: 1, updatedPlayers: 1 })
+    .lean();
+    // console.log("table>>>>>>>>>>>>>>", table);
 
-    if (userExist == null) {
-      return res.status(404).send({
-        status: false,
-        message: " User not found ",
-      });
-    }
-    let userName = userExist.userName;
-
-    const table = await ticTacToeGroupModel.find({ tableId: tableId });
-    console.log("table>>>>>>>>>>>>>>", table);
-
-    if (table.length === 0) {
-      return res.status(404).send({
+    if (!table) {
+      return res.status(200).send({
         status: false,
         message: " This table is not present ",
       });
     }
-    let groups = table.map((items) => items.group);
-    console.log(groups, "groups>>>>>>>>>>>");
-
-    let user, groupId, users;
-    for (let group = 0; group < groups.length; group++) {
-      console.log(groups[group], "================================");
-
-      let findUser = groups[group].find((user) => user.userName === userName);
-
-      if (findUser != null) {
-        user = findUser;
-        groupId = table[group]._id;
-        users = groups[group];
-        break;
-      }
-    }
-
-    if (!user) {
-      return res.status(404).send({
-        status: true,
-        message: "this user is not present in any group",
-      });
-    }
-
-    console.log(user, ">>>>>>>>>>>>>");
-    users = users.map((items) => items.userName);
-    let usersNameInStr = users.join(" ");
-
+    
+    const usersName = table.group.map((items) => items.userName);
+    const userId = table.group.map((items) => items.UserId);
+    const usersIdInStr = userId.join(" ");
+    let usersNameInStr = usersName.join(" ");
+    const botData = table.updatedPlayers.find(player => player.isBot);
+    // console.log("botData=====>",botData);
+    if(botData){
     return res.status(200).send({
       status: true,
       message: "Success",
-      groupId,
+      groupId:table._id,
+      botData:botData.UserId,
       usersNameInStr,
+      usersIdInStr
     });
+  }
+  return res.status(200).send({
+    status: true,
+    message: "Success",
+    groupId:table._id,
+    botData:null,
+    usersNameInStr,
+    usersIdInStr
+  });
   } catch (err) {
+    console.log(err);
     return res.status(500).send({
       status: false,
       error: err.message,
@@ -649,44 +621,273 @@ const getTicTacToeGroupsByUser = async function (req, res) {
   }
 };
 
-//________________________get groupdata as per groupid__________________
-
+//______________________get snakeladder data by groupId______________________
 const getGroupsOfTicTacToeAsPerGrpId = async function (req, res) {
   try {
-
     let groupId = req.query.groupId;
-    let groupsData = await ticTacToeGroupModel.findOne({_id:groupId});
 
-    if (groupsData.length === 0) {
-      return res.status(404).send({
-        status: false,
-        message: "data not found",
-      });
+    if (!mongoose.Types.ObjectId.isValid(groupId)) {
+      return res
+        .status(200)
+        .send({ status: false, message: "invalid groupId" });
     }
-    return res.status(200).json(groupsData);
+    let ticTacToe = await ticTacToeGroupModel
+      .findById({ _id: groupId })
+      .select({ group: 0 })
+      .lean();
+
+    if (!ticTacToe) {
+      return res
+        .status(200)
+        .send({ status: false, message: "this groupId not found" });
+    }
+
+    let timeDiff = ticTacToe.gameEndTime - new Date();
+    console.log(timeDiff, "endtime of a group==========");
+    let crntPlayer = ticTacToe.updatedPlayers.find(
+      (players) => players.turn === true
+    );
+
+    const updatedPlayersForRes = ticTacToe.updatedPlayers.map(
+      ({ UserId,userName, points,dicePoints,prevPoint }) => ({
+        UserId,
+        points,
+        dicePoints,
+        prevPoint,
+        userName
+      })
+    );
+
+    //_________________________winner declare_____________
+
+    if (ticTacToe.isGameOver) {
+      const DataAftrGameOver = ticTacToe.updatedPlayers.map(
+        ({ UserId, points,dicePoints, prize, userName,prevPoint }) => ({
+          UserId,
+          userName,
+          points,
+          dicePoints,
+          prize,
+          prevPoint
+        })
+      );
+      let result = {
+        message:"game is over",
+        currentTurn:ticTacToe.currentUserId,
+        currentTime: new Date(),
+        nextTurnTime: ticTacToe.nextTurnTime,
+        updatedPlayers: DataAftrGameOver,
+        isGameOver: ticTacToe.isGameOver,
+        gameEndTime: ticTacToe.gameEndTime,
+      };
+      console.log(result.updatedPlayers, "when winner is declared");
+      return res.status(200).json(result);
+    }
+
+    //___________Check if it's time to switch turn to next user
+
+    if (
+      crntPlayer === undefined ||
+      crntPlayer === null ||
+      !crntPlayer ||
+      ticTacToe.isGameStart === 0
+    ) {
+      let result = {
+        currentTurn: ticTacToe.currentUserId,
+        currentTime: new Date(),
+        nextTurnTime: ticTacToe.nextTurnTime,
+        updatedPlayers: updatedPlayersForRes,
+        isGameOver: ticTacToe.isGameOver,
+        gameEndTime: ticTacToe.gameEndTime,
+      };
+      console.log("Wait for the turn");
+      return res.status(200).json(result);
+    } else {
+      let result = {
+        currentTurn: ticTacToe.currentUserId,
+        currentTime: new Date(),
+        nextTurnTime: ticTacToe.nextTurnTime,
+        updatedPlayers: updatedPlayersForRes,
+        isGameOver: ticTacToe.isGameOver,
+        gameEndTime: ticTacToe.gameEndTime,
+      };
+      console.log("dicepoints and position of player");
+      return res.status(200).json(result);
+    }
   } catch (err) {
+    console.log(err);
     return res.status(500).send({
       status: false,
       error: err.message,
     });
   }
 };
+//______________________update tic tac toe data by user __________________
 
-//_____________________________________micro api for getting players_________________________________________
+const  makeMovenForPlayer = async function (req, res) {
+  try{
+    const {groupId, row, col, UserId} = req.query ;
+
+    if(!groupId || !row || !col || !UserId){
+      return res.status(200).send({status:false, message:"Please provide groupId, row, col, UserId"});
+    }
+  // Find the game group in the database
+  const group = await ticTacToeGroupModel.findOne({_id:groupId, "updatedPlayers.UserId":UserId});
+
+  if (!group) {
+    throw new Error("Group not found");
+  }
+
+  // Check if it's the player's turn
+  const currentPlayerIndex = group.updatedPlayers.findIndex(player => player.UserId === UserId && player.turn);
+  if (currentPlayerIndex === -1) {
+    throw new Error("It's not your turn");
+  }
+  const nextUserIndex = ( currentPlayerIndex + 1 ) % 2;
+  const nextUserId = updatedPlayers[nextUserIndex].UserId;
+  // Check if the move is valid
+  if (row < 0 || row > 2 || col < 0 || col > 2 || group.board[row][col] !== '') {
+    throw new Error("Invalid move");
+  }
+
+  // Update the game board
+  group.board[row][col] = group.updatedPlayers[currentPlayerIndex].sign;
+   
+  // Check for a winner or draw
+  const winner = checkWinner(group.board);
+  if (winner) {
+    const overGameforWinner = await declareWinner(ticTacToe,gameName, false);  
+      const updatedPlayersForRes = overGameforWinner.updatedPlayers.map(
+        ({ UserId, points, dicePoints, prevPoint }) => ({
+          UserId,
+          points,
+          dicePoints,
+          prevPoint
+        })
+      );
+      let result = {
+        message:"Game is Over !",
+        currentTurn: overGameforWinner.currentUserId,
+        currentTime: new Date(),
+        nextTurnTime: overGameforWinner.nextTurnTime,
+        updatedPlayers: updatedPlayersForRes,
+        isGameOver: overGameforWinner.isGameOver,
+        gameEndTime: overGameforWinner.gameEndTime,
+      };
+      console.log("response when winner declared====>");
+      return res.status(200).json(result);
+  } else if (isDraw(group.board)) {
+    const overGame = await declareWinner(ticTacToe,gameName, false);  
+    const updatedPlayersForRes = overGame.updatedPlayers.map(
+      ({ UserId, points, dicePoints, prevPoint }) => ({
+        UserId,
+        points,
+        dicePoints,
+        prevPoint
+      })
+    );
+    let result = {
+      message:"Game is Over !",
+      currentTurn: overGame.currentUserId,
+      currentTime: new Date(),
+      nextTurnTime: overGame.nextTurnTime,
+      updatedPlayers: updatedPlayersForRes,
+      isGameOver: overGame.isGameOver,
+      gameEndTime: overGame.gameEndTime,
+    };
+    console.log("response when match is draw====>");
+    return res.status(200).json(result);
+  } else {
+   group.updatedPlayers[currentPlayerIndex].turn = false;
+   group.nextTurnTime = new Date( Date.now() + 12 * 1000 ); 
+   group.currentUserId = group.updatedPlayers[nextUserIndex].UserId;
+   group.updatedPlayers[nextUserIndex].turn = true;
+   group.lastHitTime = new Date();
+   // Save the updated game group
+   const updatedData =  await group.save();
+    // If it's the bot's turn, make a move for the bot
+    let botPlayer = updatedData.updatedPlayers.find(
+      ( player ) => player.isBot && player.UserId === nextUserId
+    );
+    if (botPlayer) {
+      const updateDataForBot = updateBotPosition( botPlayer, updatedData, 'TicTacToe');
+      const updatedPlayersForRes = updateDataForBot.updatedPlayers.map(
+        ({ UserId, points, dicePoints, prevPoint }) => ({
+          UserId,
+          points,
+          dicePoints,
+          prevPoint
+        })
+      );
+      let result = {
+        currentTurn: updateDataForBot.currentUserId,
+        currentTime: new Date(),
+        nextTurnTime: updateDataForBot.nextTurnTime,
+        dicePointForPlayer: randomValue,
+        updatedPlayers: updatedPlayersForRes,
+        isGameOver: updateDataForBot.isGameOver,
+        gameEndTime: updateDataForBot.gameEndTime,
+      };
+      console.log("response after tab the dice for bot=====>");
+      return res.status(200).json(result);
+    }else{
+      const updatedPlayersForRes = updatedData.updatedPlayers.map(
+        ({ UserId, points, dicePoints, prevPoint }) => ({
+          UserId,
+          points,
+          dicePoints,
+          prevPoint
+        })
+      );
+      let result = {
+        currentTurn: updatedData.currentUserId,
+        currentTime: new Date(),
+        nextTurnTime: updatedData.nextTurnTime,
+        dicePointForPlayer: randomValue,
+        updatedPlayers: updatedPlayersForRes,
+        isGameOver: updatedData.isGameOver,
+        gameEndTime: updatedData.gameEndTime,
+      };
+      console.log("response after tab the dice=====>");
+      return res.status(200).json(result);
+
+    }
+   
+   
+ 
+  }
+
+  
+}catch(error){
+  console.log("error in update tictac toe===",error);
+  return res.status(500).send({status:false, message:error.message});
+}
+}
+
+//___________________micro api for getting players__________________
 
 const getPlayersOfTicTacToe = async function (req, res) {
   try {
     let players = await ticTacToeTournamentModel
       .find({ endTime: { $gt: new Date() } })
       .sort({ maxTime: 1 })
-      .select({ _id: 1, players: 1 });
+      .select({ _id: 1, players: 1});
 
     if (players.length === 0) {
-      return res.status(404).send({
+      return res.status(200).send({
         status: false,
-        message: " Data not present",
+        message: "Data not present",
       });
     }
+
+    // players.forEach((item) => {
+    //   item.players = item.playerWithBot;
+    //   console.log(
+    //     item.players,
+    //     "==========data.players in ma=======",
+    //     item.playerWithBot
+    //   );
+    // });
 
     return res.status(200).send({
       status: true,
@@ -705,10 +906,12 @@ const getPlayersOfTicTacToe = async function (req, res) {
 
 const getAllGroupsOfTicTacToe = async function (req, res) {
   try {
-    let groupsData = await ticTacToeGroupModel.find().sort({createdTime:-1});;
+    let groupsData = await ticTacToeGroupModel
+      .find()
+      .sort({ createdTime: -1 });
 
     if (groupsData.length === 0) {
-      return res.status(404).send({
+      return res.status(200).send({
         status: false,
         message: "data not found",
       });
@@ -722,57 +925,7 @@ const getAllGroupsOfTicTacToe = async function (req, res) {
   }
 };
 
-//______________________update tic tac toe data by user __________________
 
-const  makeMoven = async function (req, res) {
-  try{
-    const {groupId, row, col, playerId} = req.query ;
-  // Find the game group in the database
-  const group = await TicTacToeGroup.findById(groupId);
-  if (!group) {
-    throw new Error("Group not found");
-  }
-
-  // Check if it's the player's turn
-  const currentPlayerIndex = group.updatedPlayers.findIndex(player => player.UserId === playerId && player.turn);
-  if (currentPlayerIndex === -1) {
-    throw new Error("It's not your turn");
-  }
-
-  // Check if the move is valid
-  if (row < 0 || row > 2 || col < 0 || col > 2 || group.board[row][col] !== '') {
-    throw new Error("Invalid move");
-  }
-
-  // Update the game board
-  group.board[row][col] = group.updatedPlayers[currentPlayerIndex] = 'X';
-
-  // Check for a winner or draw
-  const winner = checkWinner(group.board);
-  if (winner) {
-    group.isGameOver = true;
-    group.winner = winner;
-  } else if (isDraw(group.board)) {
-    group.isGameOver = true;
-    group.isDraw = true;
-  } else {
-    // If it's the bot's turn, make a move for the bot
-    if (group.updatedPlayers[(currentPlayerIndex + 1) % 2].isBot) {
-      const botMoveCoordinates = botMove(group.board);
-      group.board[botMoveCoordinates.row][botMoveCoordinates.col] = 'O';
-    }
-    // Switch turns
-    group.updatedPlayers[currentPlayerIndex].turn = false;
-    group.updatedPlayers[(currentPlayerIndex + 1) % 2].turn = true;
-  }
-
-  // Save the updated game group
-  await group.save();
-}catch(error){
-  console.log("error in update tictac toe===",error);
-  return res.status(500).send({status:false, message:error.message});
-}
-}
 module.exports = {
   updateTic,
   getAllTic,
@@ -784,5 +937,5 @@ module.exports = {
   getPlayersOfTicTacToe,
   getAllGroupsOfTicTacToe,
   getGroupsOfTicTacToeAsPerGrpId,
-  makeMoven
+  makeMovenForPlayer
 };

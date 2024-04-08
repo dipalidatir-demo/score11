@@ -459,7 +459,7 @@ const getGroupsByUserForAirHoc = async function (req, res) {
 const getAirHocByGroupId = async function (req, res) {
   try {
     let groupId = req.query.groupId;
-console.log("inputgroupId===>",groupId);
+     console.log("inputgroupId===>",groupId);
     if (!mongoose.Types.ObjectId.isValid(groupId)) {
       return res
         .status(200)
@@ -688,7 +688,7 @@ const getPlayersOfAirHoc = async function (req, res) {
     let players = await airHockyTrnmtModel
       .find({ endTime: { $gt: new Date() } })
       .sort({ maxTime: 1 })
-      .select({ _id: 1, players: 1, playerWithBot: 1 });
+      .select({ _id: 1, players: 1 });
 
     if (players.length === 0) {
       return res.status(200).send({
@@ -697,14 +697,14 @@ const getPlayersOfAirHoc = async function (req, res) {
       });
     }
 
-    players.forEach((item) => {
-      item.players = item.playerWithBot;
-      console.log(
-        item.players,
-        "==========data.players in ma=======",
-        item.playerWithBot
-      );
-    });
+    // players.forEach((item) => {
+    //   item.players = item.playerWithBot;
+    //   console.log(
+    //     item.players,
+    //     "==========data.players in ma=======",
+    //     item.playerWithBot
+    //   );
+    // });
 
     return res.status(200).send({
       status: true,

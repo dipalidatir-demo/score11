@@ -18,8 +18,8 @@ let currentDate = new Date();
 const moment = require("moment");
 const cron = require("node-cron");
 const rocketTournamentModel = require("../model/rocketTournamentModel");
-delete require.cache[require.resolve("../controller/rocketController")];
-const rktGroupModel = require("../controller/rocketController");
+const ticTacToeTrnmtModel = require("../model/ticTacToeTournamentModel");
+const {createGroupForticTacToe} = require("../reusableCodes/reusablecode");
 
 //____________________________________create snakeladder tournaments by admin___________
 
@@ -204,12 +204,26 @@ const createSnakeLadderTables = async function (req, res) {
       prizeAmount: 10 * 2,
       maxTime: 4,
     };
+
+    let data1ForTic = {
+      entryFee: 1,
+      prizeAmount: 1 * 2, //___win amount will be entry fee multiply with 4 players(5-1 = 4)
+      maxTime: 1,
+    };
+
+    let data2ForTic = {
+      entryFee: 10,
+      prizeAmount: 10 * 2,
+      maxTime: 4,
+    };
     let tournamentTable1;
     let tournamentTable2;
     let tournamentTable1ForRkt;
     let tournamentTable2ForRkt;
     let tournamentTable1ForAirHoc;
     let tournamentTable2ForAirHoc;
+    let tournamentTable1ForTic;
+    let tournamentTable2ForTic;
 
     //_______________________create table1 with setinterval an end time___________
     let tableId1;
@@ -257,15 +271,32 @@ const createSnakeLadderTables = async function (req, res) {
    tableId1ForAirHoc = tournamentTable1ForAirHoc._id;
    console.log(tournamentTable1ForAirHoc);
  }
+
+ //_____________________create table1 for tictactoe_______________________
+ let tableId1ForTic;
+ async function createTournament1ForTic() {
+   if (tableId1ForTic != undefined ) {
+    createGroupForticTacToe(tableId1ForTic, 'TicTacToe');
+   }
+
+   endTime = Date.now() + 1 * 60 * 1000;
+   data1ForTic.endTime = req.query.endTime = endTime;
+
+   tournamentTable1ForTic = await ticTacToeTrnmtModel.create(data1ForTic);
+   tableId1ForTic = tournamentTable1ForTic._id;
+   console.log(tournamentTable1ForTic);
+ }
     setInterval(function() {
       createTournament1();
       createTournament1ForRkt();
       createTournament1ForAirHoc();
+      createTournament1ForTic();
   }, 60000);
 
     createTournament1();
     createTournament1ForRkt();
     createTournament1ForAirHoc();
+    createTournament1ForTic();
 
     //_______________________create table2 with setinterval an end time________________
     let tableId2;
@@ -312,19 +343,35 @@ const createSnakeLadderTables = async function (req, res) {
   //  console.log(tournamentTable2ForAirHoc);
  }
 
+ ////_______________________create table2 with setinterval an end time for tictactoe___________
+ let tableId2ForTic;
+ async function createTournament2ForTic() {
+   if (tableId2ForTic != undefined ) {
+    createGroupForticTacToe(tableId2ForTic, 'TicTacToe');
+   }
+
+   endTime = Date.now() + 1 * 60 * 1000;
+   data2ForTic.endTime = req.query.endTime = endTime;
+
+   tournamentTable2ForTic = await airHockyTrnmtModel.create(data2ForTic);
+   tableId2ForTic = tournamentTable2ForTic._id;
+  //  console.log(tournamentTable2ForAirHoc);
+ }
  setInterval(function() {
   createTournament2();
   createTournament2ForRkt();
   createTournament2ForAirHoc();
+  createTournament2ForTic();
 }, 240000);
 
 createTournament2();
 createTournament2ForRkt();
 createTournament2ForAirHoc();
+createTournament2ForTic();
 
     return res.status(201).send({
       status: true,
-      message: "Success for snakeladder, rocket and airHockey",
+      message: "Success for snakeladder, rocket, ticTacToe and airHockey",
       data: tournamentTable1,
     });
   } catch (err) {
@@ -1009,7 +1056,7 @@ const getPlayersOfSnkLadder = async function (req, res) {
     let players = await snkTournamentModel
       .find({ endTime: { $gt: new Date() } })
       .sort({ maxTime: 1 })
-      .select({ _id: 1, players: 1, playerWithBot: 1 });
+      .select({ _id: 1, players: 1});
 
     if (players.length === 0) {
       return res.status(200).send({
@@ -1018,14 +1065,14 @@ const getPlayersOfSnkLadder = async function (req, res) {
       });
     }
 
-    players.forEach((item) => {
-      item.players = item.playerWithBot;
-      console.log(
-        item.players,
-        "==========data.players in ma=======",
-        item.playerWithBot
-      );
-    });
+    // players.forEach((item) => {
+    //   item.players = item.playerWithBot;
+    //   console.log(
+    //     item.players,
+    //     "==========data.players in ma=======",
+    //     item.playerWithBot
+    //   );
+    // });
 
     return res.status(200).send({
       status: true,

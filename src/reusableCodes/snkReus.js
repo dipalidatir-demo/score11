@@ -112,8 +112,6 @@ const createGroupForSnakeLadder = async function (tableId, gameName) {
   }
 };
 
-
-
 async function startMatchForSnkLdr ( grpId, group, gameName, grpModel ) {
   console.log( "grpid>>>>>>>>>>>", grpId );
   console.log( "gameName>>>>>>>>>>>>>>>>>", gameName );
@@ -204,19 +202,13 @@ async function startMatchForSnkLdr ( grpId, group, gameName, grpModel ) {
 async function updateBotPoints ( botPlayer, gameData, grpModel, gameName ) {
   try {
     console.log( "gameName in updateBotData======>", gameName );
-    // let grpModel;
-    // if (gameName === "SnakeLadder") {
-    //     grpModel = groupModelForSnakeLadder;
-    // } else {
-    //     grpModel = rktGroupModel;
-    // }
     let botPlayerId = botPlayer.UserId;
     let updatedPlayers = gameData.updatedPlayers;
     const currentUserIndex = gameData.updatedPlayers.findIndex(
       ( player ) => player.UserId === botPlayerId
     );
     const nextUserIndex = ( currentUserIndex + 1 ) % updatedPlayers.length;
-    const nextUserId = gameData.updatedPlayers[nextUserIndex].UserId;
+    // const nextUserId = gameData.updatedPlayers[nextUserIndex].UserId;
     const possibleValues = [1, 2, 3, 4, 5, 6];
 
     const randomIndex = Math.floor( Math.random() * possibleValues.length );
@@ -237,14 +229,13 @@ async function updateBotPoints ( botPlayer, gameData, grpModel, gameName ) {
     // Update player data
     updatedPlayers[currentUserIndex].points = currentPosition;
     updatedPlayers[currentUserIndex].dicePoints = randomValue;
-    updatedPlayers[nextUserIndex].dicePoints = 0;
     updatedPlayers[currentUserIndex].turn = false;
     updatedPlayers[currentUserIndex].prevPoint = prevPoint ;
-
+    updatedPlayers[nextUserIndex].dicePoints = 0;
+    updatedPlayers[nextUserIndex].turn = true
     // Update game data with next turn details
     gameData.nextTurnTime = new Date( Date.now() + 15 * 1000 ); // Set turn 15 sec for real user
-    gameData.currentUserId = nextUserId;
-    gameData.updatedPlayers[nextUserIndex].turn = true;
+    gameData.currentUserId = updatedPlayers[nextUserIndex].UserId;
     gameData.lastHitTime = new Date();
 
     // Save updated game data
@@ -293,7 +284,7 @@ function calculateSnakeLadderPosition ( currentPosition ) {
 
 function calculateRocketPosition ( currentPosition, prevPosition ) {
   // Ensure that the current position does not exceed 20
-  return currentPosition >= 20 ? prevPoint : currentPosition;
+  return currentPosition > 19 ? prevPoint : currentPosition;
 }
 
 async function checkTurn ( groupId, gameName) {
@@ -529,7 +520,7 @@ async function checkTurn ( groupId, gameName) {
     }
 
     const timeSinceLastHit =
-      Math.abs( lastHitTime.getTime() - currentDate.getTime() ) / 1000;
+      Math.abs( lastHitTime.getTime() - new Date().getTime() ) / 1000;
     const timeSinceNextTurnTime =
       ( nextTurnTime.getTime() - currentDate.getTime() ) / 1000;
 
@@ -546,7 +537,7 @@ async function checkTurn ( groupId, gameName) {
 async function changeTurn ( snakeLadder, gameName ) {
   try {
     console.log( "gameName in change turn =====>", gameName );
-
+    console.log("time for changing turn ====>", ( snakeLadder.lastHitTime.getTime() - new Date().getTime() ) / 1000);
     let grpModel;
     if ( gameName === "SnakeLadder" ) {
       grpModel = groupModelForSnakeLadder;

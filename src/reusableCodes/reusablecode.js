@@ -1,150 +1,168 @@
-// const mongoose = require("mongoose");
-// const userModel = require("../model/userModel");
-// const _ = require("lodash");
-// const fakeUsers = require("../controller/dummyUsers");
-// const { find } = require("lodash");
-// delete require.cache[require.resolve("../controller/rocketController")];
-// const ticTacToeTournamentModel = require("../model/ticTacToeTournamentModel");
-// const ticTacToeGroupModel = require("../model/ticTacToeGroupModel");
-// const Decimal = require("decimal.js");
-// const profitLossModel = require("../model/profitLossModel");
-// const botModel = require("../model/botModel");
-// const moment = require("moment");
-// const cron = require("node-cron");
+const mongoose = require("mongoose");
+const userModel = require("../model/userModel");
+const _ = require("lodash");
+const fakeUsers = require("../controller/dummyUsers");
+const { find } = require("lodash");
+delete require.cache[require.resolve("../controller/rocketController")];
+const ticTacToeTournamentModel = require("../model/ticTacToeTournamentModel");
+const ticTacToeGroupModel = require("../model/ticTacToeGroupModel");
+const Decimal = require("decimal.js");
+const profitLossModel = require("../model/profitLossModel");
+const botModel = require("../model/botModel");
+const moment = require("moment");
+const cron = require("node-cron");
 // const {makeMoven} = require("../controller/ticTacToeController");
-// const TicTacToeGroup = require("./TicTacToeGroupModel");
-
-
+const { pushNotification } = require( "../controller/sendNotificationsController" );
+const { updateProfitLoss } = require( "../reusableCodes/profitAndLossReu" );
 // //_______________________________for TicTacToe_____________________________________________
 
-// const createGroupForticTacToe = async function (tableId) {
-//   console.log(tableId, "============create gorup in tictactoe");
-//   if (tableId != undefined) {
-//     let table = await ticTacToeTournamentModel.findOne({ _id: tableId });
-
-//     if (table != undefined || table != null) {
-//       let players = table.players;
-//       let users = table.Users;
-
-//       if (users.length !== 0) {
-//         users = users.map((user) => {
-//           return {
-//             UserId: user.UserId,
-//             userName: user.userName,
-//             isBot: user.isBot,
-//           };
-//         });
-//         //________________________________import dummyusers and add as per need to complete groups
-
-//         let dummyUsers = fakeUsers.fakeUsers;
-//         dummyUsers = dummyUsers.map((user) => {
-//           return {
-//             UserId: user.UserId,
-//             userName: user.userName,
-//             isBot: user.isBot,
-//           };
-//         });
-//         const groups = _.chunk(players, 2);
-
-//         let completePlayers = [
-//           ...users,
-//           ...dummyUsers.slice(0, 2 - (users.length % 2)),
-//         ];
-
-//         let completeGroups = _.chunk(completePlayers, 2);
-
-//         for (let i = 0; i < completeGroups.length; i++) {
-//           let createGrp = await ticTacToeGroupModel.create({
-//             group: completeGroups[i],
-//             tableId: tableId,
-//           });
-//           let grpId = createGrp._id;
-//           let group = createGrp.group;
-//           console.log(createGrp);
-//           // setTimeout(function () {
-//           startMatchForticTacToe(grpId, group);
-//           //  }, 5000);
-//         }
-//       }
-//     }
-//   }
-// };
-
-// async function startMatchForticTacToe(grpId, group) {
-//   console.log("grpid>>>>>>>>>>>", grpId);
-//   console.log("groups>>>>>>>>>>>>>>>>>", group);
-//   if (grpId !== undefined) {
-//     const result = group.map((name) => ({
-//       UserId: name.UserId,
-//       userName: name.userName,
-//       isBot: name.isBot,
-//       positions: [],
-//       turn: name.turn,
-//       movement: "",
-//     }));
-//     console.log("result", result);
-
-//     let totalBot = result.filter((players) => players.isBot === true);
-//     totalBot = totalBot.length;
-//     let totalRealPlayres = result.filter((players) => players.isBot === false);
-//     totalRealPlayres = totalRealPlayres.length;
-
-//     let matchData = await ticTacToeGroupModel.findOneAndUpdate(
-//       { _id: grpId },
-//       {
-//         updatedPlayers: result,
-//         $set: {
-//           totalBotInGrp: totalBot,
-//           totalPlayerInGrp: totalRealPlayres,
-//           start: true,
-//           board:[
-//             ['', '', ''],
-//             ['', '', ''],
-//             ['', '', '']
-//           ],
-//           gameEndTime: Date.now() + 135000 ,
-//         },
-//       },
-//       { new: true, setDefaultsOnInsert: true }
-//     );
-
-//     await new Promise( async ( resolve ) => {
-//       let updatedPlayers = matchData.updatedPlayers;
-//       const isBot = updatedPlayers.find( ( player ) => player.isBot );
-//       let currentPlayerIndex;
-//       if ( isBot ) {
-//         console.log( "<========if bot is present=====>", isBot.UserId );
-//         currentPlayerIndex = updatedPlayers.findIndex(
-//           ( players ) => players.UserId !== isBot.UserId
-//         );
-//         console.log( "currentPlayerIndex====>", currentPlayerIndex );
-//       } else {
-//         console.log( "<========if bot is not present=====>" );
-//         currentPlayerIndex = Math.floor( Math.random() * updatedPlayers.length );
-//       }
-//       matchData.updatedPlayers[currentPlayerIndex].turn = true;
-//       matchData.updatedPlayers[currentPlayerIndex].turn  = 'x' ;
-//       matchData.lastHitTime = new Date();
-//       matchData.isGameStart = 1;
-//       matchData.currentUserId = updatedPlayers[currentPlayerIndex].UserId;
-//       matchData.nextTurnTime = new Date( Date.now() + 15 * 1000 );
-
-//       const updatedGroupFst = await matchData.save();
-//       console.log(
-//         new Date().getSeconds(),
-//         "--after 6 sec of starting the game--",
-//         updatedGroupFst.isGameStart
-//       );
-//       resolve(); // Resolve the promise to continue with the rest of the code
-//         overTheGameForPlayers( grpId, gameName, Token);
-//     } );
+const createGroupForticTacToe = async function (tableId, gameName) {
+    console.log(tableId, "============call group in", `${gameName}`);
+    try {
+      if (tableId != undefined) {
+        
+        let table = await ticTacToeTournamentModel.findOne({ _id: tableId });
+  
+        if (table && table.Users.length !== 0) {
+        //   console.log(tableId, "============create group in snk===>");
+  
+          let players = table.players;
+          let users = table.Users;
+  
+          users = users.map((user) => {
+            return {
+              UserId: user.UserId,
+              userName: user.userName,
+              token: user.token,
+              isBot: user.isBot,
+            };
+          });
+          let totalBot = players % 2;
+          const updateTournament = await ticTacToeTournamentModel.findOneAndUpdate(
+            { _id: tableId },
+            { $set: { totalBotInTable: totalBot, totalPlayersInTable: players } },
+            { new: true }
+          );
+  
+          // Get bot players array
+          let botPlayersArray = fakeUsers.fakeUsers;
+  
+          // If there are sufficient real players, don't add any bot players
+          if (players % 2 === 0) {
+            botPlayersArray = [];
+          }
+  
+          // Calculate the number of dummy users needed to complete groups
+          const remainingPlayers = (players + totalBot) % 2; 
+          const completePlayers = [
+            ...users,
+            ...botPlayersArray.slice(0, remainingPlayers),
+          ];
+  
+          const completeGroups = _.chunk(completePlayers, 2);
+  
+          for (let i = 0; i < completeGroups.length; i++) {
+            let groupPlayers = completeGroups[i];
+            // Add a random bot if needed
+            if (groupPlayers.length === 1 && totalBot > 0) {
+              const randomIndex = Math.floor(Math.random() * botPlayersArray.length);
+              const randomBotPlayer = botPlayersArray[randomIndex];
+              groupPlayers.push(randomBotPlayer);
+              totalBot--;
+            }
+            const createGrp = await ticTacToeGroupModel.create({
+              group: groupPlayers,
+              tableId: tableId,
+            });
+  
+            const grpId = createGrp._id;
+            const group = createGrp.group;
+  
+            startMatchForticTacToe(grpId, group, gameName);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error in createGroupForSnakeLadder:", error);
+    }
+  };
   
 
-//     // Rest of your code here...
-//   }
-// }
+async function startMatchForticTacToe(grpId, group, gameName) {
+  console.log("grpid>>>>>>>>>>>", grpId);
+  console.log("groups>>>>>>>>>>>>>>>>>", group);
+  if (grpId !== undefined) {
+    const result = group.map((name) => ({
+      UserId: name.UserId,
+      userName: name.userName,
+      isBot: name.isBot,
+      positions: [],
+      turn: false,
+      sign:'0'
+    }));
+    // console.log("result", result);
+    const Token = group.map( item => item.token ).filter( token => token !== undefined );
+    let totalBot = result.filter((players) => players.isBot === true);
+    totalBot = totalBot.length;
+    let totalRealPlayres = result.filter((players) => players.isBot === false);
+    totalRealPlayres = totalRealPlayres.length;
 
-// // Function to initialize the game board
+    let matchData = await ticTacToeGroupModel.findOneAndUpdate(
+      { _id: grpId },
+      {
+        updatedPlayers: result,
+        $set: {
+          totalBotInGrp: totalBot,
+          totalPlayerInGrp: totalRealPlayres,
+          start: true,
+          board:[
+            ['', '', ''],
+            ['', '', ''],
+            ['', '', '']
+          ],
+          gameEndTime: Date.now() + 135000 ,
+        },
+      },
+      { new: true, setDefaultsOnInsert: true }
+    );
+
+    await new Promise( async ( resolve ) => {
+      let updatedPlayers = matchData.updatedPlayers;
+      const isBot = updatedPlayers.find( ( player ) => player.isBot );
+      let currentPlayerIndex;
+      if ( isBot ) {
+        console.log( "<========if bot is present=====>", isBot.UserId );
+        currentPlayerIndex = updatedPlayers.findIndex(
+          ( players ) => players.UserId !== isBot.UserId
+        );
+        console.log( "currentPlayerIndex====>", currentPlayerIndex );
+      } else {
+        console.log( "<========if bot is not present=====>" );
+        currentPlayerIndex = Math.floor( Math.random() * updatedPlayers.length );
+      }
+      matchData.updatedPlayers[currentPlayerIndex].turn = true;
+      matchData.updatedPlayers[currentPlayerIndex].sign  = 'x' ;
+      matchData.lastHitTime = new Date();
+      matchData.isGameStart = 1;
+      matchData.currentUserId = updatedPlayers[currentPlayerIndex].UserId;
+      matchData.nextTurnTime = new Date( Date.now() + 15 * 1000 );
+
+      const updatedGroupFst = await matchData.save();
+      console.log(
+        new Date().getSeconds(),
+        "--after 6 sec of starting the game--",
+        updatedGroupFst.isGameStart
+      );
+      resolve(); // Resolve the promise to continue with the rest of the code
+      overTheTicTacToeGame( grpId, gameName, Token);
+    } );
+  
+
+    // Rest of your code here...
+  }
+}
+
+// Function to initialize the game board
 // function initializeBoard() {
 //   return [
 //     ['', '', ''],
@@ -153,92 +171,407 @@
 //   ];
 // }
 
-// // Function for bot move (random)
-// function botMove(board) {
-//   let row, col;
-//   do {
-//     row = Math.floor(Math.random() * 3);
-//     col = Math.floor(Math.random() * 3);
-//   } while (board[row][col] !== '');
-//   return { row, col };
-// }
+// Function for bot move (random)
+function botMove(board) {
+  let row, col;
+  do {
+    row = Math.floor(Math.random() * 3);
+    col = Math.floor(Math.random() * 3);
+  } while (board[row][col] !== '');
+  return { row, col };
+}
 
 
-// // Function to check for a winner
-// function checkWinner(board) {
-//   // Check rows
-//   for (let i = 0; i < 3; i++) {
-//     if (board[i][0] !== '' && board[i][0] === board[i][1] && board[i][1] === board[i][2]) {
-//       return board[i][0];
-//     }
-//   }
+// Function to check for a winner
+function checkWinner(board) {
+  // Check rows
+  for (let i = 0; i < 3; i++) {
+    if (board[i][0] !== '' && board[i][0] === board[i][1] && board[i][1] === board[i][2]) {
+      return board[i][0]; // retunn winner sign
+    }
+  }
 
-//   // Check columns
-//   for (let i = 0; i < 3; i++) {
-//     if (board[0][i] !== '' && board[0][i] === board[1][i] && board[1][i] === board[2][i]) {
-//       return board[0][i];
-//     }
-//   }
+  // Check columns
+  for (let i = 0; i < 3; i++) {
+    if (board[0][i] !== '' && board[0][i] === board[1][i] && board[1][i] === board[2][i]) {
+      return board[0][i];
+    }
+  }
 
-//   // Check diagonals
-//   if (board[0][0] !== '' && board[0][0] === board[1][1] && board[1][1] === board[2][2]) {
-//     return board[0][0];
-//   }
-//   if (board[0][2] !== '' && board[0][2] === board[1][1] && board[1][1] === board[2][0]) {
-//     return board[0][2];
-//   }
+  // Check diagonals
+  if (board[0][0] !== '' && board[0][0] === board[1][1] && board[1][1] === board[2][2]) {
+    return board[0][0];
+  }
+  if (board[0][2] !== '' && board[0][2] === board[1][1] && board[1][1] === board[2][0]) {
+    return board[0][2];
+  }
 
-//   return null;
-// }
+  return null;
+}
 
-// // Function to check for a draw
-// function isDraw(board) {
-//   for (let row of board) {
-//     for (let cell of row) {
-//       if (cell === '') {
-//         return false;
-//       }
-//     }
-//   }
-//   return true;
-// }
+// Function to check for a draw
+function isDraw(board) {
+  for (let row of board) {
+    for (let cell of row) {
+      if (cell === '') {
+        return false;
+      }
+    }
+  }
+  return true;
+}
 
-// // Function to start the game
-// async function startGame(tableId) {
-//   // Find the game group in the database
-//   const group = await TicTacToeGroup.findOne({ tableId });
-//   if (!group) {
-//     throw new Error("Group not found");
-//   }
+async function checkPosition ( groupId, gameName) {
+    if ( !groupId ) return false; // Check if groupId is defined
+    // console.log( "time in checkTurn ====>", new Date().getSeconds());
+    try {
+      
+      const ticTacToe = await ticTacToeGroupModel.findById( groupId );
+      if(ticTacToe.isGameOver)  return true;
+      if ( !ticTacToe ) return false; // Check if gameData exists
+      const { tableId, updatedPlayers, gameEndTime, lastHitTime, nextTurnTime } =
+        ticTacToe;
+        const currentDate = new Date();
+          const timeDiff = gameEndTime - currentDate;
+          console.log("timeDiff for ending the game in checkTurn ===>",timeDiff,"board-----",ticTacToe.board);
+      if (
+        timeDiff <= 0) {
+        console.log("<===========game end time is over ==============");
+        const winner = checkWinner(gameData.board);
+        if (winner) {
+          const overGame = await declareWinner(ticTacToe,gameName, false);  
+             if ( overGame.isGameOver === true ) {
+              console.log( "Reached minimum point!" );
+              return true;
+             }
+        } else if (isDraw(gameData.board)) {
+          const overGame = await declareWinner(ticTacToe,gameName, false);  
+          if ( overGame.isGameOver === true ) {
+           console.log( "Reached minimum point!" );
+           return true;
+          }
+      }    
+      }
+  
+      const botPlayer = updatedPlayers.find(
+        ( player ) => player.isBot && player.turn
+      );
+      if ( botPlayer ) {
+        console.log("gameName in botPlayer=======>",gameName);
+       
+        await updateBotPosition( botPlayer, ticTacToe, gameName );
+      }
+      const timeSinceNextTurnTime =
+        ( nextTurnTime.getTime() - currentDate.getTime() ) / 1000;
+  
+      if ( timeSinceNextTurnTime <= 0) {
+        // Change turn logic
+        await changeTurn( ticTacToe, gameName );
+      }
+    } catch ( error ) {
+      console.log( "Error in checkTurn function:", error );
+    }
+    return false;
+  }
+  
+async function overTheTicTacToeGame(groupId, gameName, Token) {
+    console.log("game name in ticTactToe ====>", gameName);
+    pushNotification(Token, "Game has started");
+  
+    const MAX_DURATION_SECONDS = 150; // 150 sec
+    let startTime = Date.now();
+    let timeoutId; // Store the timeout ID
+    if (groupId !== undefined) {
+        try {
+            const checkAndSetTimeout = async () => {
+                const elapsedTimeSeconds = (Date.now() - startTime) / 1000;
+                if (elapsedTimeSeconds >= MAX_DURATION_SECONDS) {
+                    console.log("Max duration reached. Stopping timeout.");
+                    clearTimeout(timeoutId); // Stop the timeout
+                    return;
+                }
+  
+                try {
+                    const isMaxCountReached = await checkPosition(groupId, gameName);
+                    if (!isMaxCountReached) {
+                        // If max count not reached, set the timeout for next iteration
+                        timeoutId = setTimeout(checkAndSetTimeout, 2000); // 2 seconds
+                    } else {
+                        console.log("Max count reached. Stopping timeout.");
+                        clearTimeout(timeoutId); // Stop the timeout
+                    }
+                } catch (error) {
+                    console.error("Error in timeout execution:", error);
+                }
+            };
+  
+            // Start the initial call to the timeout function
+            timeoutId = setTimeout(checkAndSetTimeout, 2000); // 2 seconds
+        } catch (error) {
+            console.error("Error setting up timeout:", error);
+        }
+    }
+  }
 
-//   // Initialize the game board
-//   group.board = initializeBoard();
+  async function declareWinner(ticTacToe,gameName, isDraw){
+    try{
+      let tableId = ticTacToe.tableId ;
+      let groupId = ticTacToe._id ;
+        let overTheGame = await ticTacToeTournamentModel.findByIdAndUpdate(
+            { _id: tableId },
+            { isMatchOverForTable: true },
+            { new: true }
+          );
+          
+          let updatedPlayers = ticTacToe.updatedPlayers ;
+          let profit = 0;
+          let loss = 0;
+          let entryFee = overTheGame.entryFee;
+          let playerCount = updatedPlayers.filter(
+            ( player ) => !player.isBot
+          ).length;
+    
+          if ( isDraw ) {
+            console.log( "=======calculate profit or loss if game is tie====" );
+            const prizeDecimal = new Decimal( entryFee ).times( 0.5 );
+            for ( const player of updatedPlayers ) {
+              player.prize = prizeDecimal.toNumber();
+              console.log( "===========>", {
+                  airHockeyWinAmount: player.prize,
+              } );
+              if ( !player.isBot ) {
+                await userModel.findOneAndUpdate(
+                  { UserId: player.UserId, "history.tableId": tableId },
+                  {
+                    $inc: {
+                      realMoney: player.prize,
+                      airHockeyWinAmount: player.prize,
+                    },
+                    $set: {
+                      "history.$.result": "lose",
+                      "history.$.win": player.prize,
+                    },
+                    $push: {
+                      transactionHistory: {
+                        date: new Date(),
+                        amount: player.prize,
+                        type: "winnings",
+                        gameType: gameName,
+                      },
+                    },
+                  },
+                  { new: true }
+                );
+              }
+              if ( playerCount === 2 ) {
+                const totalEntryFee = entryFee * 2;
+                profit = totalEntryFee - prizeDecimal;
+                console.log( profit, "======if tie and player is 2" );
+              } else {
+                const totalEntryFee = entryFee * 1;
+                profit = totalEntryFee - prizeDecimal;
+                console.log(
+                  profit,
+                  "======if tie and player is 1 and another is bot"
+                );
+              }
+              await updateProfitLoss(
+                gameName,
+                groupId,
+                profit,
+                loss,
+                moment().format( "DD-MM-YYYY" )
+              );
+            }
+          } else {
+            console.log( "====calculate profit and loss if game is not tie=====" );
+            const potentialWinnerPrizeDecimal = new Decimal( entryFee ).times( 1.5 );
+            potentialWinner.prize = potentialWinnerPrizeDecimal.toNumber();
+            let runner = updatedPlayers.find(
+              ( player ) => player.UserId !== potentialWinner.UserId
+            );
+            runner.prize = entryFee * 0;
+    
+            await userModel.findOneAndUpdate(
+              { UserId: potentialWinner.UserId, "history.tableId": tableId },
+              {
+                $inc: {
+                  realMoney: potentialWinnerPrizeDecimal.toNumber(),
+                  airHockeyWinAmount: potentialWinnerPrizeDecimal.toNumber(),
+                  "ticTacToeData.0.winCount": 1,
+                },
+                $set: {
+                  "history.$.result": "win",
+                  "history.$.win": potentialWinnerPrizeDecimal.toNumber(),
+                },
+                $push: {
+                  transactionHistory: {
+                    date: new Date(),
+                    amount: potentialWinnerPrizeDecimal.toNumber(),
+                    type: "winnings",
+                    gameType: gameName,
+                  },
+                },
+              },
+              { new: true }
+            );
+    
+            await userModel.findOneAndUpdate(
+              { UserId: runner.UserId, "history.tableId": tableId },
+              {
+                $set: { "history.$.result": "lose" },
+              },
+              { new: true }
+            );
+    
+            if ( playerCount === 2 || potentialWinner.isBot ) {
+              if ( potentialWinner.isBot ) {
+                profit = entryFee;
+                console.log( profit, "======if game is not tie and winner is bot" );
+              }
+              if ( playerCount === 2 ) {
+                const totalEntryFee = entryFee * 2;
+                profit = totalEntryFee - potentialWinnerPrizeDecimal.toNumber();
+                console.log( profit, "======if game is not tie and player is 2" );
+              }
+    
+              await updateProfitLoss(
+                gameName,
+                groupId,
+                profit,
+                loss,
+                moment().format( "DD-MM-YYYY" )
+              );
+            } else {
+              const totalEntryFee = entryFee * 1;
+              loss = potentialWinnerPrizeDecimal.toNumber() - totalEntryFee;
+    
+              await updateProfitLoss(
+                gameName,
+                groupId,
+                profit,
+                loss,
+                moment().format( "DD-MM-YYYY" )
+              );
+            }
+          }
+    
+          let overGame = await airHockeyGroupModel.findOneAndUpdate(
+            {
+              _id: groupId,
+              "updatedPlayers.UserId": {
+                $in: updatedPlayers.map( ( player ) => player.UserId ),
+              },
+            },
+            {
+              $set: {
+                updatedPlayers,
+                isGameOver: true,
+                isGameStart: 2,
+              },
+            },
+            { new: true }
+          );
+    
+          if ( !overGame ) {
+            console.log( { status: false, error: "Game not found" } );
+          }
+           return overGame ;
 
-//   // Randomly choose the starting player
-//   const startingPlayerIndex = Math.floor(Math.random() * 2);
-//   group.updatedPlayers[startingPlayerIndex].turn = true;
+    }catch (error) {
+            console.error("Error setting up timeout:", error);
+        }
+}
 
-//   // Set the game start time and end time
-//   group.start = true;
-//   group.gameEndTime = Date.now() + 3 * 60 * 1000;
+async function changeTurn ( ticTacToe, gameName ) {
+    try {
+      console.log( "gameName in change turn =====>", gameName );
+  
 
-//   // Save the updated game group
-//   await group.save();
-// }
+      const updatedPlayers = ticTacToe.updatedPlayers;
+      const currentUserIndex = updatedPlayers.findIndex(
+        ( player ) => player.UserId === ticTacToe.currentUserId
+      );
+      const isBotTurn = updatedPlayers[currentUserIndex].isBot;
+      if(isBotTurn){
+        let botPlayer = updatedPlayers[currentUserIndex] ;
+        await updateBotPosition( botPlayer, ticTacToe, ticTacToeGroupModel, gameName );
+      }else{
+  
+      const nextUserIndex = ( currentUserIndex + 1 ) % updatedPlayers.length;
+      const nextUserId = updatedPlayers[nextUserIndex].UserId;
+      ticTacToe.currentUserId = nextUserId;
+      //  ticTacToe.lastHitTime = new Date();
+    //   ticTacToe.updatedPlayers[currentUserIndex].dicePoints = 0;
+    //   ticTacToe.updatedPlayers[nextUserIndex].dicePoints = 0;
+      ticTacToe.updatedPlayers[nextUserIndex].turn = true;
+      ticTacToe.updatedPlayers[currentUserIndex].turn = false;
+      ticTacToe.nextTurnTime = new Date( Date.now() + 12 * 1000 );
+      ticTacToe.lastHitTime = new Date();
+      const checkBot = updatedPlayers[nextUserIndex].isBot;
+      let botPlayer = updatedPlayers.find(
+        ( player ) => player.isBot && player.UserId === nextUserId
+      );
+      if ( checkBot ) {
+        console.log(
+          "<====calling the funtion if the player's time is passed ====>"
+        );
+        await updateBotPosition( botPlayer, ticTacToe, ticTacToeGroupModel, gameName );
+      } else {
+        let updateTurn = await ticTacToeGroupModel.findByIdAndUpdate(
+          { _id: ticTacToe._id },
+          { $set: ticTacToe },
+          { new: true }
+        );
+      }
+    }
+    } catch ( error ) {
+      console.log( "Error in checkTurn function:", error );
+    }
+  }
 
-// // Example usage
-// const grpId = "yourGroupId";
-// const playerId = "yourPlayerId";
-// try {
-//   await makeMove(grpId, 0, 0, playerId); // Example move
-// } catch (error) {
-//   console.error(error.message);
-// }
+  async function updateBotPosition ( botPlayer, gameData, gameName ) {
+    try {
+      console.log( "gameName in updateBotData======>", gameName );
+      let botPlayerId = botPlayer.UserId;
+      let updatedPlayers = gameData.updatedPlayers;
+      const currentUserIndex = gameData.updatedPlayers.findIndex(
+        ( player ) => player.UserId === botPlayerId
+      );
+      const nextUserIndex = ( currentUserIndex + 1 ) % 2;
+      const botMoveCoordinates = botMove(gameData.board);
+      gameData.board[botMoveCoordinates.row][botMoveCoordinates.col] = 'O';
+      /// Check for a winner or draw
+  const winner = checkWinner(gameData.board);
+  if (winner) {
+    const overGame = await declareWinner(ticTacToe,gameName, false);   
+        return overGame;      
+  } else if (isDraw(gameData.board)) {
+    const overGame = await declareWinner(ticTacToe,gameName, false);    
+     return overGame;  
+  } else {
+    // Switch turns
+    gameData.updatedPlayers[currentUserIndex].turn = false;
+    gameData.updatedPlayers[nextUserIndex].turn = true;
+     // Update game data with next turn details
+     gameData.nextTurnTime = new Date( Date.now() + 15 * 1000 ); // Set turn 15 sec for real user
+     gameData.currentUserId = gameData.updatedPlayers[nextUserIndex].UserId;
+     gameData.lastHitTime = new Date();
+ 
+   
+  }
 
-// module.exports ={
-//   botMove,
-//   checkWinner,
-//   isDraw,
-//   startGame,
-//   createGroupForticTacToe
-// }
+  // Save the updated game gameData
+  const updatedData = await gameData.save();
+      return updatedData;
+    } catch ( error ) {
+      console.log( error );
+    }
+  }
+module.exports ={
+  botMove,
+  checkWinner,
+  isDraw,
+  createGroupForticTacToe,
+  updateBotPosition
+ }
