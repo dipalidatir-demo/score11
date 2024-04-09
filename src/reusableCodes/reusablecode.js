@@ -541,7 +541,8 @@ async function changeTurn ( ticTacToe, gameName ) {
       );
       const nextUserIndex = ( currentUserIndex + 1 ) % 2;
       const botMoveCoordinates = botMove(gameData.board);
-      gameData.board[botMoveCoordinates.row][botMoveCoordinates.col] = 'O';
+      gameData.board[botMoveCoordinates.row][botMoveCoordinates.col] = 'O'; // Assign the bot's sign ('O') to the board
+
       /// Check for a winner or draw
   const winner = checkWinner(gameData.board);
   if (winner) {
@@ -575,5 +576,7 @@ module.exports ={
   checkWinner,
   isDraw,
   createGroupForticTacToe,
-  updateBotPosition
+  updateBotPosition,
+  declareWinner,
+  isDraw
  }

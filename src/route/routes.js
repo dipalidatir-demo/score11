@@ -44,7 +44,7 @@ const { updateTic,
   getPlayersOfTicTacToe,
   getAllGroupsOfTicTacToe,
   getGroupsOfTicTacToeAsPerGrpId,
-  makeMovenForPlayer} = require("../controller/ticTacToeController");
+  makeMovenForPlayer} = require("../controller/ticTacToeController"); 
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const Router = express.Router();
@@ -59,7 +59,7 @@ Router.post("/withdrawals", razorpayController.initiateWithdrawal);
 
 // Router.post("/verifyWithdrawals", razorpayController.verifyWithdrawals);
 
-//__________________________Admin_____________________
+//__________________________Admin__________________________________________
 
 Router.post("/registerOfAdmin", adminController.createAdmin);
 
@@ -69,7 +69,7 @@ Router.get("/getAllTable", adminController.getAllTable);
 
 Router.put("/updateUsersRefAmount", userController.updateUsersRefAmountByAdmin);
 
-//_____________________________________User______________
+//_____________________________________User__________________________________
 
 Router.get("/register", userController.createUsers);
 
@@ -137,7 +137,7 @@ Router.get("/getTotalPlayerAndBot", tournamentController.getTotalPlayerAndBot);
 
 Router.get("/getNextBallTimeAsPerTableId",tournamentController.getNextBallTimeAsPerTableId);
 
-//__________________Hocky___________________
+//_____________________________Hocky___________________________________________________________
 
 Router.put("/updateHocky", hockyController.updateHoc);
 

@@ -3,7 +3,7 @@ const userModel = require("../model/userModel");
 const ticTacToeModel = require("../model/ticTacToeModel");
 const ticTacToeTournamentModel = require("../model/ticTacToeTournamentModel");
 const ticTacToeGroupModel = require("../model/ticTacToeGroupModel");
-const { createGroupForticTacToe, updateBotPosition } = require("../reusableCodes/reusablecode");
+const { createGroupForticTacToe, updateBotPosition, declareWinner, checkWinner, isDraw} = require("../reusableCodes/reusablecode");
 const moment = require("moment");
 const cron = require("node-cron");
 
@@ -744,7 +744,7 @@ const  makeMovenForPlayer = async function (req, res) {
     throw new Error("It's not your turn");
   }
   const nextUserIndex = ( currentPlayerIndex + 1 ) % 2;
-  const nextUserId = updatedPlayers[nextUserIndex].UserId;
+  const nextUserId = group.updatedPlayers[nextUserIndex].UserId;
   // Check if the move is valid
   if (row < 0 || row > 2 || col < 0 || col > 2 || group.board[row][col] !== '') {
     throw new Error("Invalid move");
@@ -810,7 +810,7 @@ const  makeMovenForPlayer = async function (req, res) {
       ( player ) => player.isBot && player.UserId === nextUserId
     );
     if (botPlayer) {
-      const updateDataForBot = updateBotPosition( botPlayer, updatedData, 'TicTacToe');
+      const updateDataForBot = await updateBotPosition( botPlayer, updatedData, 'TicTacToe');
       const updatedPlayersForRes = updateDataForBot.updatedPlayers.map(
         ({ UserId, points, dicePoints, prevPoint }) => ({
           UserId,
@@ -823,7 +823,7 @@ const  makeMovenForPlayer = async function (req, res) {
         currentTurn: updateDataForBot.currentUserId,
         currentTime: new Date(),
         nextTurnTime: updateDataForBot.nextTurnTime,
-        dicePointForPlayer: randomValue,
+        // dicePointForPlayer: randomValue,
         updatedPlayers: updatedPlayersForRes,
         isGameOver: updateDataForBot.isGameOver,
         gameEndTime: updateDataForBot.gameEndTime,
@@ -843,7 +843,7 @@ const  makeMovenForPlayer = async function (req, res) {
         currentTurn: updatedData.currentUserId,
         currentTime: new Date(),
         nextTurnTime: updatedData.nextTurnTime,
-        dicePointForPlayer: randomValue,
+        // dicePointForPlayer: randomValue,
         updatedPlayers: updatedPlayersForRes,
         isGameOver: updatedData.isGameOver,
         gameEndTime: updatedData.gameEndTime,
