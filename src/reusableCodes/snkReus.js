@@ -129,12 +129,12 @@ async function startMatchForSnkLdr ( grpId, group, gameName, grpModel ) {
       movement: "",
     } ) );
 
-    let updateEndTime = 0;
-    if (gameName === "SnakeLadder" || gameName === "Rocket") {
-      updateEndTime = 2 * 60 * 1000 + 15 * 1000; // 2 min 15 sec
-    }else if (gameName === "AirHockey") {
-      updateEndTime = 100000; // 100 sec
-    }
+    // let updateEndTime = 0;
+    // if (gameName === "SnakeLadder" || gameName === "Rocket") {
+    //   updateEndTime = 2 * 60 * 1000 + 15 * 1000; // 2 min 15 sec
+    // }else if (gameName === "AirHockey") {
+    //   updateEndTime = 100000; // 100 sec
+    // }
     const Token = group.map( item => item.token ).filter( token => token !== undefined );
     // console.log( "Token===========>", Token );
     // pushNotification( Token, "Game will start soon!" );
@@ -150,7 +150,7 @@ async function startMatchForSnkLdr ( grpId, group, gameName, grpModel ) {
           totalBotInGrp: totalBot,
           totalPlayerInGrp: totalRealPlayres,
           start: true,
-          gameEndTime: Date.now() + updateEndTime,
+          gameEndTime: Date.now() + 100000,
         },
       },
       { new: true, setDefaultsOnInsert: true }
@@ -282,7 +282,7 @@ function calculateSnakeLadderPosition ( currentPosition ) {
   }
 }
 
-function calculateRocketPosition ( currentPosition, prevPosition ) {
+function calculateRocketPosition ( currentPosition, prevPoint ) {
   // Ensure that the current position does not exceed 20
   return currentPosition > 19 ? prevPoint : currentPosition;
 }
@@ -304,6 +304,10 @@ async function checkTurn ( groupId, gameName) {
     const snakeLadder = await grpModel.findById( groupId );
 
     if ( !snakeLadder ) return false; // Check if group exists
+    if ( snakeLadder.isGameOver === true ) {
+      console.log( "Game is over !====" , snakeLadder.isGameOver);
+      return true; // Stop the calling
+    }
     // console.log("updatedPlayers==========>",typeof(snakeLadder.updatedPlayers[0].points));
     const { tableId, updatedPlayers, gameEndTime, lastHitTime, nextTurnTime } =
       snakeLadder;
@@ -318,190 +322,7 @@ async function checkTurn ( groupId, gameName) {
         updatedPlayers.some( ( player ) => player.points >= 19 ) )
     ) {
       console.log("<===========game end time is over ==============");
-      let overTheGame = await trnmtMode.findByIdAndUpdate(
-        { _id: tableId },
-        { isMatchOverForTable: true },
-        { new: true }
-      );
-      let profit = 0;
-      let loss = 0;
-      let entryFee = overTheGame.entryFee;
-      let playerCountForSnk = updatedPlayers.filter(
-        ( player ) => !player.isBot
-      ).length;
-
-      let potentialWinner = updatedPlayers.reduce(
-        ( prevPlayer, currentPlayer ) => {
-          return prevPlayer.points > currentPlayer.points
-            ? prevPlayer
-            : currentPlayer;
-        }
-      );
-
-      let isTie = updatedPlayers.every(
-        ( player ) => player.points === potentialWinner.points
-      );
-
-      if ( isTie ) {
-        console.log( "=======calculate profit or loss if game is tie====" );
-        const prizeDecimal = new Decimal( entryFee ).times( 0.5 );
-        for ( const player of updatedPlayers ) {
-          player.prize = prizeDecimal.toNumber();
-          player.turn = false;
-          player.dicePoints = 0;
-          console.log( "===========>", {
-            [gameName === "SnakeLadder"
-              ? "snkLadderWinAmount"
-              : "rocketWinAmount"]: player.prize,
-          } );
-          if ( !player.isBot ) {
-            await userModel.findOneAndUpdate(
-              { UserId: player.UserId, "history.tableId": tableId },
-              {
-                $inc: {
-                  realMoney: player.prize,
-                  [gameName === "SnakeLadder"
-                    ? "snkLadderWinAmount"
-                    : "rocketWinAmount"]: player.prize,
-                },
-                $set: {
-                  "history.$.result": "lose",
-                  "history.$.win": player.prize,
-                },
-                $push: {
-                  transactionHistory: {
-                    date: new Date(),
-                    amount: player.prize,
-                    type: "winnings",
-                    gameType: gameName,
-                  },
-                },
-              },
-              { new: true }
-            );
-          }
-          if ( playerCountForSnk === 2 ) {
-            const totalEntryFee = entryFee * 2;
-            profit = totalEntryFee - prizeDecimal;
-            console.log( profit, "======if tie and player is 2" );
-          } else {
-            const totalEntryFee = entryFee * 1;
-            profit = totalEntryFee - prizeDecimal;
-            console.log(
-              profit,
-              "======if tie and player is 1 and another is bot"
-            );
-          }
-          await updateProfitLoss(
-            gameName,
-            groupId,
-            profit,
-            loss,
-            moment().format( "DD-MM-YYYY" )
-          );
-        }
-      } else {
-        console.log( "====calculate profit and loss if game is not tie=====" );
-        const potentialWinnerPrizeDecimal = new Decimal( entryFee ).times( 1.5 );
-        potentialWinner.prize = potentialWinnerPrizeDecimal.toNumber();
-        let runner = updatedPlayers.find(
-          ( player ) => player.UserId !== potentialWinner.UserId
-        );
-        runner.prize = entryFee * 0;
-
-        potentialWinner.turn = false;
-        potentialWinner.dicePoints = 0;
-        runner.turn = false;
-        runner.dicePoints = 0;
-
-        await userModel.findOneAndUpdate(
-          { UserId: potentialWinner.UserId, "history.tableId": tableId },
-          {
-            $inc: {
-              realMoney: potentialWinnerPrizeDecimal.toNumber(),
-              [gameName === "SnakeLadder"
-                ? "snkLadderWinAmount"
-                : "rocketWinAmount"]: potentialWinnerPrizeDecimal.toNumber(),
-              [gameName === "SnakeLadder"
-                ? "snkLadderData.0.winCount"
-                : "rocketData.0.winCount"]: 1,
-            },
-            $set: {
-              "history.$.result": "win",
-              "history.$.win": potentialWinnerPrizeDecimal.toNumber(),
-            },
-            $push: {
-              transactionHistory: {
-                date: new Date(),
-                amount: potentialWinnerPrizeDecimal.toNumber(),
-                type: "winnings",
-                gameType: gameName,
-              },
-            },
-          },
-          { new: true }
-        );
-
-        await userModel.findOneAndUpdate(
-          { UserId: runner.UserId, "history.tableId": tableId },
-          {
-            $set: { "history.$.result": "lose" },
-          },
-          { new: true }
-        );
-
-        if ( playerCountForSnk === 2 || potentialWinner.isBot ) {
-          if ( potentialWinner.isBot ) {
-            profit = entryFee;
-            console.log( profit, "======if game is not tie and winner is bot" );
-          }
-          if ( playerCountForSnk === 2 ) {
-            const totalEntryFee = entryFee * 2;
-            profit = totalEntryFee - potentialWinnerPrizeDecimal.toNumber();
-            console.log( profit, "======if game is not tie and player is 2" );
-          }
-
-          await updateProfitLoss(
-            gameName,
-            groupId,
-            profit,
-            loss,
-            moment().format( "DD-MM-YYYY" )
-          );
-        } else {
-          const totalEntryFee = entryFee * 1;
-          loss = potentialWinnerPrizeDecimal.toNumber() - totalEntryFee;
-
-          await updateProfitLoss(
-            gameName,
-            groupId,
-            profit,
-            loss,
-            moment().format( "DD-MM-YYYY" )
-          );
-        }
-      }
-
-      let overGame = await grpModel.findOneAndUpdate(
-        {
-          _id: groupId,
-          // "updatedPlayers.UserId": {
-          //   $in: updatedPlayers.map( ( player ) => player.UserId ),
-          // },
-        },
-        {
-          $set: {
-            updatedPlayers,
-            isGameOver: true,
-            isGameStart: 2,
-          },
-        },
-        { new: true }
-      );
-
-      if ( !overGame ) {
-        console.log( { status: false, error: "Game not found" } );
-      }
+      const overGame = winnerDeclaredForGame(snakeLadder, trnmtMode, grpModel, gameName);
       if ( overGame.isGameOver === true ) {
         console.log( "Reached minimum point!" , overGame.isGameOver);
         return true; // Stop the calling
@@ -590,7 +411,7 @@ async function overTheGameForPlayers(groupId, gameName, Token) {
   console.log("game name in overthegame ====>", gameName);
   pushNotification(Token, "Game has started");
 
-  const MAX_DURATION_SECONDS = 150; // 2 min 30 sec
+  const MAX_DURATION_SECONDS = 120; // 2 min 
   let startTime = Date.now();
   let timeoutId; // Store the timeout ID
   if (groupId !== undefined) {
@@ -625,10 +446,206 @@ async function overTheGameForPlayers(groupId, gameName, Token) {
   }
 }
 
+async function winnerDeclaredForGame(gameDatas, trnmtMode, grpModel, gameName){
+  try{
+    let tableId = gameDatas.tableId ;
+    let groupId = gameDatas._id ;
+    let updatedPlayers = gameDatas.updatedPlayers ;
+    let overTheGame = await trnmtMode.findByIdAndUpdate(
+      { _id: tableId },
+      { isMatchOverForTable: true },
+      { new: true }
+    );
+    let profit = 0;
+    let loss = 0;
+    let entryFee = overTheGame.entryFee;
+    let playerCountForSnk = updatedPlayers.filter(
+      ( player ) => !player.isBot
+    ).length;
+
+    let potentialWinner = updatedPlayers.reduce(
+      ( prevPlayer, currentPlayer ) => {
+        return prevPlayer.points > currentPlayer.points
+          ? prevPlayer
+          : currentPlayer;
+      }
+    );
+
+    let isTie = updatedPlayers.every(
+      ( player ) => player.points === potentialWinner.points
+    );
+
+    if ( isTie ) {
+      console.log( "=======calculate profit or loss if game is tie====" );
+      const prizeDecimal = new Decimal( entryFee ).times( 0.5 );
+      for ( const player of updatedPlayers ) {
+        player.prize = prizeDecimal.toNumber();
+        player.turn = false;
+        player.dicePoints = 0;
+        console.log( "===========>", {
+          [gameName === "SnakeLadder"
+            ? "snkLadderWinAmount"
+            : "rocketWinAmount"]: player.prize,
+        } );
+        if ( !player.isBot ) {
+          await userModel.findOneAndUpdate(
+            { UserId: player.UserId, "history.tableId": tableId },
+            {
+              $inc: {
+                realMoney: player.prize,
+                [gameName === "SnakeLadder"
+                  ? "snkLadderWinAmount"
+                  : "rocketWinAmount"]: player.prize,
+              },
+              $set: {
+                "history.$.result": "lose",
+                "history.$.win": player.prize,
+              },
+              $push: {
+                transactionHistory: {
+                  date: new Date(),
+                  amount: player.prize,
+                  type: "winnings",
+                  gameType: gameName,
+                },
+              },
+            },
+            { new: true }
+          );
+        }
+        if ( playerCountForSnk === 2 ) {
+          const totalEntryFee = entryFee * 2;
+          profit = totalEntryFee - prizeDecimal;
+          console.log( profit, "======if tie and player is 2" );
+        } else {
+          const totalEntryFee = entryFee * 1;
+          profit = totalEntryFee - prizeDecimal;
+          console.log(
+            profit,
+            "======if tie and player is 1 and another is bot"
+          );
+        }
+        await updateProfitLoss(
+          gameName,
+          groupId,
+          profit,
+          loss,
+          moment().format( "DD-MM-YYYY" )
+        );
+      }
+    } else {
+      console.log( "====calculate profit and loss if game is not tie=====" );
+      const potentialWinnerPrizeDecimal = new Decimal( entryFee ).times( 1.5 );
+      potentialWinner.prize = potentialWinnerPrizeDecimal.toNumber();
+      let runner = updatedPlayers.find(
+        ( player ) => player.UserId !== potentialWinner.UserId
+      );
+      runner.prize = entryFee * 0;
+
+      potentialWinner.turn = false;
+      potentialWinner.dicePoints = 0;
+      runner.turn = false;
+      runner.dicePoints = 0;
+
+      await userModel.findOneAndUpdate(
+        { UserId: potentialWinner.UserId, "history.tableId": tableId },
+        {
+          $inc: {
+            realMoney: potentialWinnerPrizeDecimal.toNumber(),
+            [gameName === "SnakeLadder"
+              ? "snkLadderWinAmount"
+              : "rocketWinAmount"]: potentialWinnerPrizeDecimal.toNumber(),
+            [gameName === "SnakeLadder"
+              ? "snkLadderData.0.winCount"
+              : "rocketData.0.winCount"]: 1,
+          },
+          $set: {
+            "history.$.result": "win",
+            "history.$.win": potentialWinnerPrizeDecimal.toNumber(),
+          },
+          $push: {
+            transactionHistory: {
+              date: new Date(),
+              amount: potentialWinnerPrizeDecimal.toNumber(),
+              type: "winnings",
+              gameType: gameName,
+            },
+          },
+        },
+        { new: true }
+      );
+
+      await userModel.findOneAndUpdate(
+        { UserId: runner.UserId, "history.tableId": tableId },
+        {
+          $set: { "history.$.result": "lose" },
+        },
+        { new: true }
+      );
+
+      if ( playerCountForSnk === 2 || potentialWinner.isBot ) {
+        if ( potentialWinner.isBot ) {
+          profit = entryFee;
+          console.log( profit, "======if game is not tie and winner is bot" );
+        }
+        if ( playerCountForSnk === 2 ) {
+          const totalEntryFee = entryFee * 2;
+          profit = totalEntryFee - potentialWinnerPrizeDecimal.toNumber();
+          console.log( profit, "======if game is not tie and player is 2" );
+        }
+
+        await updateProfitLoss(
+          gameName,
+          groupId,
+          profit,
+          loss,
+          moment().format( "DD-MM-YYYY" )
+        );
+      } else {
+        const totalEntryFee = entryFee * 1;
+        loss = potentialWinnerPrizeDecimal.toNumber() - totalEntryFee;
+
+        await updateProfitLoss(
+          gameName,
+          groupId,
+          profit,
+          loss,
+          moment().format( "DD-MM-YYYY" )
+        );
+      }
+    }
+
+    let overGame = await grpModel.findOneAndUpdate(
+      {
+        _id: groupId,
+        // "updatedPlayers.UserId": {
+        //   $in: updatedPlayers.map( ( player ) => player.UserId ),
+        // },
+      },
+      {
+        $set: {
+          updatedPlayers,
+          isGameOver: true,
+          isGameStart: 2,
+        },
+      },
+      { new: true }
+    );
+
+    if ( !overGame ) {
+      console.log( { status: false, error: "Game not found" } );
+    }
+         return overGame ;
+
+  }catch (error) {
+          console.error("Error setting up timeout:", error);
+      }
+}
 module.exports = {
   createGroupForSnakeLadder,
   updateBotPoints,
   changeTurn,
   overTheGameForPlayers,
   checkTurn,
+  winnerDeclaredForGame
 };

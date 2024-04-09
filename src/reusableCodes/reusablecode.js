@@ -313,7 +313,7 @@ async function overTheTicTacToeGame(groupId, gameName, Token) {
     }
   }
 
-  async function declareWinner(ticTacToe,gameName, isDraw){
+  async function declareWinner(ticTacToe,gameName, isDraw, winner){
     try{
       let tableId = ticTacToe.tableId ;
       let groupId = ticTacToe._id ;
@@ -384,6 +384,7 @@ async function overTheTicTacToeGame(groupId, gameName, Token) {
               );
             }
           } else {
+            let potentialWinner = ticTacToe.updatedPlayers.find(players => players.sign === winner);
             console.log( "====calculate profit and loss if game is not tie=====" );
             const potentialWinnerPrizeDecimal = new Decimal( entryFee ).times( 1.5 );
             potentialWinner.prize = potentialWinnerPrizeDecimal.toNumber();
@@ -544,10 +545,11 @@ async function changeTurn ( ticTacToe, gameName ) {
       /// Check for a winner or draw
   const winner = checkWinner(gameData.board);
   if (winner) {
-    const overGame = await declareWinner(ticTacToe,gameName, false);   
+    console.log("sign of winner=====>", winner);
+    const overGame = await declareWinner(gameData,gameName, false, winner);   
         return overGame;      
   } else if (isDraw(gameData.board)) {
-    const overGame = await declareWinner(ticTacToe,gameName, false);    
+    const overGame = await declareWinner(gameData,gameName, true, null);    
      return overGame;  
   } else {
     // Switch turns

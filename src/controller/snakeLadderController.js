@@ -8,7 +8,7 @@ const Decimal = require("decimal.js");
 const {
   updateBotPoints,
   createGroupForSnakeLadder,
-  checkTurn
+  winnerDeclaredForGame
 } = require("../reusableCodes/snkReus");
 const { log } = require("console");
 const { promises } = require("dns");
@@ -335,7 +335,7 @@ const createSnakeLadderTables = async function (req, res) {
      createGroupForSnakeLadder(tableId2ForAirHoc, gameNameForAirHoc);
    }
 
-   endTime = Date.now() + 1 * 60 * 1000;
+   endTime = Date.now() + 4 * 60 * 1000;
    data2ForAirHoc.endTime = req.query.endTime = endTime;
 
    tournamentTable2ForAirHoc = await airHockyTrnmtModel.create(data2ForAirHoc);
@@ -350,7 +350,7 @@ const createSnakeLadderTables = async function (req, res) {
     createGroupForticTacToe(tableId2ForTic, 'TicTacToe');
    }
 
-   endTime = Date.now() + 1 * 60 * 1000;
+   endTime = Date.now() + 4 * 60 * 1000;
    data2ForTic.endTime = req.query.endTime = endTime;
 
    tournamentTable2ForTic = await airHockyTrnmtModel.create(data2ForTic);
@@ -881,11 +881,12 @@ const updatePointOfUser = async function (req, res) {
     }
     if(groupExist.isGameOver){
       const updatedPlayersForRes = groupExist.updatedPlayers.map(
-        ({ UserId, points, dicePoints, prevPoint }) => ({
+        ({ UserId, points, dicePoints, prevPoint, prize }) => ({
           UserId,
           points,
           dicePoints,
-          prevPoint
+          prevPoint,
+          prize
         })
       );
       let result = {
@@ -932,6 +933,7 @@ const updatePointOfUser = async function (req, res) {
       currentPosition > 99
         ? updatedPlayers[currentUserIndex].points
         : currentPosition;
+  
 
     const snakeLadderAndTunnel = {
       2: 21, //--------------ladder .
@@ -986,6 +988,31 @@ const updatePointOfUser = async function (req, res) {
     groupExist.currentUserId = nextUserId;
 
     let updatedData = await groupExist.save();
+    if(newPosition === 99){
+      const overSnkGame =  await winnerDeclaredForGame(updatedData, snkTournamentModel, groupModelForSnakeLadder, 'SnakeLadder');
+      console.log("overSnkGame=======>",overSnkGame);
+      const updatedPlayersForRes = overSnkGame.updatedPlayers.map(
+        ({ UserId, points, dicePoints, prevPoint, prize }) => ({
+          UserId,
+          points,
+          dicePoints,
+          prevPoint,
+          prize
+        })
+      );
+      let result = {
+        message:"Game is Over",
+        currentTurn: overSnkGame.currentUserId,
+        currentTime: new Date(),
+        nextTurnTime: overSnkGame.nextTurnTime,
+        dicePointForPlayer: randomValue,
+        updatedPlayers: updatedPlayersForRes,
+        isGameOver: overSnkGame.isGameOver,
+        gameEndTime: overSnkGame.gameEndTime,
+      };
+      console.log("response when game is over=====>");
+      return res.status(200).json(result);
+    }
     let botPlayer = updatedData.updatedPlayers.find(
       (player) => player.isBot && player.turn
     );

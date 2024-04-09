@@ -6,7 +6,7 @@ const moment = require("moment");
 const cron = require("node-cron");
 // In rocketController.js
 // delete require.cache[require.resolve("../reusableCodes/rocktReuCode")];
- const {  updateBotPoints, createGroupForSnakeLadder } = require("../reusableCodes/snkReus");
+ const {  updateBotPoints, createGroupForSnakeLadder, winnerDeclaredForGame } = require("../reusableCodes/snkReus");
 
 //____________________________________create snakeladder tournaments by admin___________
 //---------------------using node crone---------------------------------
@@ -620,61 +620,65 @@ const updateRocketTournaments = async function (req, res) {
   const updateRktPointOfUser = async function (req, res) {
     try {
       let UserId = req.query.UserId;
-      let groupId = req.query.groupId;
-      let hit = false;
-  
-      if (!UserId && !groupId) {
-        return res.status(200).send({
-          status: false,
-          message: "please provide both groupId and UserId",
-        });
-      }
-      if (!mongoose.Types.ObjectId.isValid(groupId)) {
-        return res
-          .status(200)
-          .send({ status: false, message: "invalid groupId" });
-      }
-  
-      let groupExist = await rktGroupModel.findOne({
-        _id: groupId,
-        "updatedPlayers.UserId": UserId,
+    let groupId = req.query.groupId;
+    let hit = false;
+
+    if (!UserId && !groupId) {
+      return res.status(200).send({
+        status: false,
+        message: "please provide both groupId and UserId",
       });
-      if (!groupExist) {
-        return res
-          .status(200)
-          .send({ status: false, message: "groupId is not present" });
-      }
-      if(groupExist.isGameOver){
-        const updatedPlayersForRes = groupExist.updatedPlayers.map(
-          ({ UserId, points, dicePoints, prevPoint }) => ({
-            UserId,
-            points,
-            dicePoints,
-            prevPoint
-          })
-        );
-        let result = {
-          status:false,
-          messge:"Game is Over",
-          currentTurn: groupExist.currentUserId,
-          currentTime: new Date(),
-          nextTurnTime: groupExist.nextTurnTime,
-          dicePointForPlayer:0,
-          updatedPlayers: updatedPlayersForRes,
-          isGameOver: groupExist.isGameOver,
-          gameEndTime: groupExist.gameEndTime,
-        };
-        console.log("response when game is over=====>");
-        return res.status(200).json(result);
-      }
-      let isUserExist = groupExist.updatedPlayers.find(
-        (players) => players.UserId === UserId && players.turn
+    }
+    if (!mongoose.Types.ObjectId.isValid(groupId)) {
+      return res
+        .status(200)
+        .send({ status: false, message: "invalid groupId" });
+    }
+
+    let groupExist = await rktGroupModel.findOne({
+      _id: groupId,
+      "updatedPlayers.UserId": UserId,
+    });
+    if (!groupExist) {
+      return res
+        .status(200)
+        .send({ status: false, message: "groupId is not present" });
+    }
+    if(groupExist.isGameOver){
+      const updatedPlayersForRes = groupExist.updatedPlayers.map(
+        ({ UserId, points, dicePoints, prevPoint, prize }) => ({
+          UserId,
+          points,
+          dicePoints,
+          prevPoint,
+          prize
+        })
       );
-      // let turn = isUserExist.turn;
-  
-      if (!isUserExist) {
-        return res.status(200).send({ message: "not your turn" });
-      }
+      let result = {
+        status:false,
+        messge:"Game is Over",
+        currentTurn: groupExist.currentUserId,
+        currentTime: new Date(),
+        nextTurnTime: groupExist.nextTurnTime,
+        dicePointForPlayer: 0,
+        updatedPlayers: updatedPlayersForRes,
+        isGameOver: groupExist.isGameOver,
+        gameEndTime: groupExist.gameEndTime,
+      };
+      console.log("response when game is over=====>");
+      return res.status(200).json(result);
+    }
+    let isUserExist = groupExist.updatedPlayers.find(
+      (players) => players.UserId === UserId
+    );
+    if(!isUserExist){
+      return res.status(200).send({status:false, message:"User not found"});
+    }
+    let turn = isUserExist.turn;
+
+    if (turn === false) {
+      return res.status(200).send({ message: "not your turn" });
+    }
       const updatedPlayers = groupExist.updatedPlayers;
       const currentUserIndex = updatedPlayers.findIndex(
         (player) => player.UserId === UserId
@@ -691,7 +695,7 @@ const updateRocketTournaments = async function (req, res) {
       const currentPosition = prevPoint + randomValue;
   
       // Ensure that the current position does not exceed 99
-      const newPosition =
+      const newPosition = 
         currentPosition > 19
           ? prevPoint
           : currentPosition;
@@ -711,6 +715,32 @@ const updateRocketTournaments = async function (req, res) {
           groupExist.currentUserId = nextUserId;
       
           let updatedData = await groupExist.save();
+
+          if(newPosition === 19){
+            const overRktGame = await winnerDeclaredForGame(updatedData, rktTournameModel, rktGroupModel,'Rocket');
+            const updatedPlayersForRes = overRktGame.updatedPlayers.map(
+              ({ UserId, points, dicePoints, prevPoint, prize }) => ({
+                UserId,
+                points,
+                dicePoints,
+                prevPoint,
+                prize
+              })
+            );
+            let result = {
+              message:"Game is Over",
+              currentTurn: overRktGame.currentUserId,
+              currentTime: new Date(),
+              nextTurnTime: overRktGame.nextTurnTime,
+              dicePointForPlayer: randomValue,
+              updatedPlayers: updatedPlayersForRes,
+              isGameOver: overRktGame.isGameOver,
+              gameEndTime: overRktGame.gameEndTime,
+            };
+            console.log("response when game is over=====>");
+            return res.status(200).json(result);
+          }
+
           let botPlayer = updatedData.updatedPlayers.find(
             (player) => player.isBot && player.turn
           );

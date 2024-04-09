@@ -574,10 +574,11 @@ const updateAirHocPointOfUser = async function (req, res) {
     }
     if (groupExist.isGameOver) {
       const winnerlayersForRes = groupExist.updatedPlayers.map(
-        ({ UserId, points, prize }) => ({
+        ({ UserId, points, prize, userName }) => ({
           UserId,
           points,
           prize,
+          userName
         })
       );
       let result = {
@@ -597,10 +598,11 @@ const updateAirHocPointOfUser = async function (req, res) {
     if (maxPoints) {
       const resultDeclared = await declareWinner(groupExist, "AirHockey");
       const updatedPlayersForRes = resultDeclared.updatedPlayers.map(
-        ({ UserId, points, prize }) => ({
+        ({ UserId, points, prize, userName }) => ({
           UserId,
           points,
           prize,
+          userName
         })
       );
       let result = {
@@ -642,10 +644,11 @@ const updateAirHocPointOfUser = async function (req, res) {
       const resultDeclared = await declareWinner(updatedGroup, "AirHockey");
       console.log("resultDeclared======>", resultDeclared);
       const updatedPlayersForRes = resultDeclared.updatedPlayers.map(
-        ({ UserId, points, prize }) => ({
+        ({ UserId, points, prize, userName}) => ({
           UserId,
           points,
           prize,
+          userName
         })
       );
       let result = {
@@ -659,9 +662,10 @@ const updateAirHocPointOfUser = async function (req, res) {
     }
 
     const updatedPlayersForRes = updatedGroup.updatedPlayers.map(
-      ({ UserId, points }) => ({
+      ({ UserId, points, userName }) => ({
         UserId,
         points,
+        userName
       })
     );
     let result = {
