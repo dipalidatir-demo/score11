@@ -481,7 +481,7 @@ async function winnerDeclaredForGame(gameDatas, trnmtMode, grpModel, gameName){
       for ( const player of updatedPlayers ) {
         player.prize = prizeDecimal.toNumber();
         player.turn = false;
-        player.dicePoints = 0;
+        // player.dicePoints = 0;
         console.log( "===========>", {
           [gameName === "SnakeLadder"
             ? "snkLadderWinAmount"
@@ -543,9 +543,9 @@ async function winnerDeclaredForGame(gameDatas, trnmtMode, grpModel, gameName){
       runner.prize = entryFee * 0;
 
       potentialWinner.turn = false;
-      potentialWinner.dicePoints = 0;
+      // potentialWinner.dicePoints = 0;
       runner.turn = false;
-      runner.dicePoints = 0;
+      // runner.dicePoints = 0;
 
       await userModel.findOneAndUpdate(
         { UserId: potentialWinner.UserId, "history.tableId": tableId },

@@ -353,20 +353,20 @@ const createSnakeLadderTables = async function (req, res) {
    endTime = Date.now() + 4 * 60 * 1000;
    data2ForTic.endTime = req.query.endTime = endTime;
 
-   tournamentTable2ForTic = await airHockyTrnmtModel.create(data2ForTic);
+   tournamentTable2ForTic = await ticTacToeTrnmtModel.create(data2ForTic);
    tableId2ForTic = tournamentTable2ForTic._id;
   //  console.log(tournamentTable2ForAirHoc);
  }
  setInterval(function() {
   createTournament2();
   createTournament2ForRkt();
-  createTournament2ForAirHoc();
+  // createTournament2ForAirHoc();
   createTournament2ForTic();
 }, 240000);
 
 createTournament2();
 createTournament2ForRkt();
-createTournament2ForAirHoc();
+// createTournament2ForAirHoc();
 createTournament2ForTic();
 
     return res.status(201).send({
