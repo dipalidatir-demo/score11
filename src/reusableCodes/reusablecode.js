@@ -98,7 +98,7 @@ async function startMatchForticTacToe(grpId, group, gameName) {
       isBot: name.isBot,
       positions: [],
       turn: false,
-      sign:'0'
+      sign:'O'
     }));
     // console.log("result", result);
     const Token = group.map( item => item.token ).filter( token => token !== undefined );
@@ -116,9 +116,9 @@ async function startMatchForticTacToe(grpId, group, gameName) {
           totalPlayerInGrp: totalRealPlayres,
           start: true,
           board:[
-            ['', '', ''],
-            ['', '', ''],
-            ['', '', '']
+            '', '', '',
+            '', '', '',
+            '', '', ''
           ],
           gameEndTime: Date.now() + 135000 ,
         },
@@ -141,7 +141,7 @@ async function startMatchForticTacToe(grpId, group, gameName) {
         currentPlayerIndex = Math.floor( Math.random() * updatedPlayers.length );
       }
       matchData.updatedPlayers[currentPlayerIndex].turn = true;
-      matchData.updatedPlayers[currentPlayerIndex].sign  = 'x' ;
+      matchData.updatedPlayers[currentPlayerIndex].sign  = 'X' ;
       matchData.lastHitTime = new Date();
       matchData.isGameStart = 1;
       matchData.currentUserId = updatedPlayers[currentPlayerIndex].UserId;
@@ -173,53 +173,97 @@ async function startMatchForticTacToe(grpId, group, gameName) {
 
 // Function for bot move (random)
 function botMove(board) {
-  let row, col;
+  let position;
   do {
-    row = Math.floor(Math.random() * 3);
-    col = Math.floor(Math.random() * 3);
-  } while (board[row][col] !== '');
-  return { row, col };
+    position = Math.floor(Math.random() * board.length);
+   
+  } while (board[position] !== '');
+  return position;
 }
 
 
 // Function to check for a winner
 function checkWinner(board) {
   // Check rows
-  for (let i = 0; i < 3; i++) {
-    if (board[i][0] !== '' && board[i][0] === board[i][1] && board[i][1] === board[i][2]) {
-      return board[i][0]; // retunn winner sign
-    }
+  switch (board[0] + board[1] + board[2]) {
+      case 'XXX':
+          return 'X';
+      case 'OOO':
+          return 'O';
+  }
+  switch (board[3] + board[4] + board[5]) {
+      case 'XXX':
+          return 'X';
+      case 'OOO':
+          return 'O';
+  }
+  switch (board[6] + board[7] + board[8]) {
+      case 'XXX':
+          return 'X';
+      case 'OOO':
+          return 'O';
   }
 
   // Check columns
-  for (let i = 0; i < 3; i++) {
-    if (board[0][i] !== '' && board[0][i] === board[1][i] && board[1][i] === board[2][i]) {
-      return board[0][i];
-    }
+  switch (board[0] + board[3] + board[6]) {
+      case 'XXX':
+          return 'X';
+      case 'OOO':
+          return 'O';
+  }
+  switch (board[1] + board[4] + board[7]) {
+      case 'XXX':
+          return 'X';
+      case 'OOO':
+          return 'O';
+  }
+  switch (board[2] + board[5] + board[8]) {
+      case 'XXX':
+          return 'X';
+      case 'OOO':
+          return 'O';
   }
 
   // Check diagonals
-  if (board[0][0] !== '' && board[0][0] === board[1][1] && board[1][1] === board[2][2]) {
-    return board[0][0];
+  switch (board[0] + board[4] + board[8]) {
+      case 'XXX':
+          return 'X';
+      case 'OOO':
+          return 'O';
   }
-  if (board[0][2] !== '' && board[0][2] === board[1][1] && board[1][1] === board[2][0]) {
-    return board[0][2];
+  switch (board[2] + board[4] + board[6]) {
+      case 'XXX':
+          return 'X';
+      case 'OOO':
+          return 'O';
   }
 
+  // If no winner is found, return null
   return null;
 }
 
+// // Example usage:
+// const board = [ "", "O", "X", "O", "X", "X", "X", "", "O"];
+
+// const winner = checkWinner(board);
+// if (winner) {
+//     console.log(`${winner} is the winner!`);
+// } else {
+//     console.log('It\'s a draw!');
+// }
+
 // Function to check for a draw
-function isDraw(board) {
-  for (let row of board) {
-    for (let cell of row) {
-      if (cell === '') {
-        return false;
-      }
+function gameDraw(board) {
+  for (let i = 0; i < board.length; i++) {
+    if (board[i] === '') {
+      // If any position is empty, the game is not a draw
+      return false;
     }
   }
+  // If all positions are filled and there is no winner, it's a draw
   return true;
 }
+
 
 async function checkPosition ( groupId, gameName) {
     if ( !groupId ) return false; // Check if groupId is defined
@@ -233,19 +277,19 @@ async function checkPosition ( groupId, gameName) {
         ticTacToe;
         const currentDate = new Date();
           const timeDiff = gameEndTime - currentDate;
-          console.log("timeDiff for ending the game in checkTurn ===>",timeDiff,"board-----",ticTacToe.board);
+          console.log("timeDiff for ending the game in checkTurn ===>");
       if (
         timeDiff <= 0) {
         console.log("<===========game end time is over ==============");
-        const winner = checkWinner(gameData.board);
+        const winner = checkWinner(ticTacToe.board);
         if (winner) {
-          const overGame = await declareWinner(ticTacToe,gameName, false);  
+          const overGame = await declareWinner(ticTacToe, gameName, false, winner);  
              if ( overGame.isGameOver === true ) {
               console.log( "Reached minimum point!" );
               return true;
              }
-        } else if (isDraw(gameData.board)) {
-          const overGame = await declareWinner(ticTacToe,gameName, false);  
+        } else if(gameDraw(ticTacToe.board)) { //match is draw
+          const overGame = await declareWinner(ticTacToe, gameName, true, null);  
           if ( overGame.isGameOver === true ) {
            console.log( "Reached minimum point!" );
            return true;
@@ -313,7 +357,7 @@ async function overTheTicTacToeGame(groupId, gameName, Token) {
     }
   }
 
-  async function declareWinner(ticTacToe,gameName, isDraw, winner){
+  async function declareWinner(ticTacToe, gameName, isDraw, winner){
     try{
       let tableId = ticTacToe.tableId ;
       let groupId = ticTacToe._id ;
@@ -457,7 +501,7 @@ async function overTheTicTacToeGame(groupId, gameName, Token) {
             }
           }
     
-          let overGame = await airHockeyGroupModel.findOneAndUpdate(
+          let overGame = await ticTacToeGroupModel.findOneAndUpdate(
             {
               _id: groupId,
               "updatedPlayers.UserId": {
@@ -531,52 +575,62 @@ async function changeTurn ( ticTacToe, gameName ) {
     }
   }
 
-  async function updateBotPosition ( botPlayer, gameData, gameName ) {
+  async function updateBotPosition(botPlayer, gameData, gameName) {
     try {
-      console.log( "gameName in updateBotData======>", gameName );
+      console.log("gameName in updateBotData======>", gameName);
       let botPlayerId = botPlayer.UserId;
       let updatedPlayers = gameData.updatedPlayers;
       const currentUserIndex = gameData.updatedPlayers.findIndex(
-        ( player ) => player.UserId === botPlayerId
+        (player) => player.UserId === botPlayerId
       );
-      const nextUserIndex = ( currentUserIndex + 1 ) % 2;
+      const nextUserIndex = (currentUserIndex + 1) % 2;
       const botMoveCoordinates = botMove(gameData.board);
-      gameData.board[botMoveCoordinates.row][botMoveCoordinates.col] = 'O'; // Assign the bot's sign ('O') to the board
-
+      gameData.board[botMoveCoordinates] = "O"; // Assign the bot's sign ('O') to the board
+      // Switch turns
+      gameData.updatedPlayers[currentUserIndex].turn = false;
+      gameData.updatedPlayers[nextUserIndex].turn = true;
+      // Update game data with next turn details
+      gameData.nextTurnTime = new Date(Date.now() + 15 * 1000); // Set turn 15 sec for real user
+      gameData.currentUserId = gameData.updatedPlayers[nextUserIndex].UserId;
+      gameData.lastHitTime = new Date();
+      // gameData.markModified('board') // Mark 'board' field as modified ncase of nested array or obj it unable to save the changes
+      // Save the updated game gameData
+      const updatedData = await gameData.save();
       /// Check for a winner or draw
-  const winner = checkWinner(gameData.board);
-  if (winner) {
-    console.log("sign of winner=====>", winner);
-    const overGame = await declareWinner(gameData,gameName, false, winner);   
-        return overGame;      
-  } else if (isDraw(gameData.board)) {
-    const overGame = await declareWinner(gameData,gameName, true, null);    
-     return overGame;  
-  } else {
-    // Switch turns
-    gameData.updatedPlayers[currentUserIndex].turn = false;
-    gameData.updatedPlayers[nextUserIndex].turn = true;
-     // Update game data with next turn details
-     gameData.nextTurnTime = new Date( Date.now() + 15 * 1000 ); // Set turn 15 sec for real user
-     gameData.currentUserId = gameData.updatedPlayers[nextUserIndex].UserId;
-     gameData.lastHitTime = new Date();
- 
-   
-  }
-
-  // Save the updated game gameData
-  const updatedData = await gameData.save();
-      return updatedData;
-    } catch ( error ) {
-      console.log( error );
+      const winner = checkWinner(updatedData.board);
+      if (winner) {
+        console.log("sign of winner=====>", winner);
+        const overGame = await declareWinner(
+          updatedData,
+          gameName,
+          false,
+          winner
+        );
+        return overGame;
+      } else if(gameDraw(updatedData.board)){ // match is draw
+        const overGame = await declareWinner(updatedData, gameName, true, null);
+        return overGame;
+      } 
+        return updatedData;
+    
+    } catch (error) {
+      console.log(error);
     }
   }
 module.exports ={
   botMove,
   checkWinner,
-  isDraw,
   createGroupForticTacToe,
   updateBotPosition,
   declareWinner,
-  isDraw
+  gameDraw
  }
+
+ //____________________flatten array______________________
+// const array = [
+//   '', '', '',
+//   '', '', '',
+//   '', '', ''
+// ]
+//  const flatArray = array.join(', ');
+//  console.log(flatArray);

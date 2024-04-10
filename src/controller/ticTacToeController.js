@@ -3,10 +3,14 @@ const userModel = require("../model/userModel");
 const ticTacToeModel = require("../model/ticTacToeModel");
 const ticTacToeTournamentModel = require("../model/ticTacToeTournamentModel");
 const ticTacToeGroupModel = require("../model/ticTacToeGroupModel");
-const { createGroupForticTacToe, updateBotPosition, declareWinner, checkWinner, isDraw} = require("../reusableCodes/reusablecode");
+const { createGroupForticTacToe, updateBotPosition, declareWinner, checkWinner, gameDraw} = require("../reusableCodes/reusablecode");
 const moment = require("moment");
 const cron = require("node-cron");
 
+// async function flattenArray(array){
+//   const flatArray = array.flatMap(row => row.map(cell => cell.trim())).join(', ');
+//   return flatArray ;
+// }
 //____________________________update Table_______________________________________
 
 const updateTic = async function (req, res) {
@@ -21,7 +25,7 @@ const updateTic = async function (req, res) {
     );
 
     if (matchData.length == 0) {
-      return res.status(404).send({
+      return res.status(200).send({
         status: false,
         message: "user not found",
       });
@@ -50,7 +54,7 @@ const getAllTic = async function (req, res) {
 
     if (data.length == 0) {
       return res
-        .status(404)
+        .status(200)
         .send({ status: false, message: " no data is  found " });
     }
 
@@ -641,7 +645,7 @@ const getGroupsOfTicTacToeAsPerGrpId = async function (req, res) {
         .status(200)
         .send({ status: false, message: "this groupId not found" });
     }
-
+    const board = ticTacToe.board.join(', ');
     let timeDiff = ticTacToe.gameEndTime - new Date();
     console.log(timeDiff, "endtime of a group==========");
     let crntPlayer = ticTacToe.updatedPlayers.find(
@@ -649,12 +653,10 @@ const getGroupsOfTicTacToeAsPerGrpId = async function (req, res) {
     );
 
     const updatedPlayersForRes = ticTacToe.updatedPlayers.map(
-      ({ UserId,userName, points,dicePoints,prevPoint }) => ({
+      ({ UserId,userName, sign}) => ({
         UserId,
-        points,
-        dicePoints,
-        prevPoint,
-        userName
+        userName,
+        sign
       })
     );
 
@@ -662,13 +664,11 @@ const getGroupsOfTicTacToeAsPerGrpId = async function (req, res) {
 
     if (ticTacToe.isGameOver) {
       const DataAftrGameOver = ticTacToe.updatedPlayers.map(
-        ({ UserId, points,dicePoints, prize, userName,prevPoint }) => ({
+        ({ UserId, prize, userName, sign }) => ({
           UserId,
           userName,
-          points,
-          dicePoints,
-          prize,
-          prevPoint
+          sign,
+          prize,  
         })
       );
       let result = {
@@ -676,6 +676,7 @@ const getGroupsOfTicTacToeAsPerGrpId = async function (req, res) {
         currentTurn:ticTacToe.currentUserId,
         currentTime: new Date(),
         nextTurnTime: ticTacToe.nextTurnTime,
+        board:board,
         updatedPlayers: DataAftrGameOver,
         isGameOver: ticTacToe.isGameOver,
         gameEndTime: ticTacToe.gameEndTime,
@@ -696,6 +697,7 @@ const getGroupsOfTicTacToeAsPerGrpId = async function (req, res) {
         currentTurn: ticTacToe.currentUserId,
         currentTime: new Date(),
         nextTurnTime: ticTacToe.nextTurnTime,
+        board:board,
         updatedPlayers: updatedPlayersForRes,
         isGameOver: ticTacToe.isGameOver,
         gameEndTime: ticTacToe.gameEndTime,
@@ -707,6 +709,7 @@ const getGroupsOfTicTacToeAsPerGrpId = async function (req, res) {
         currentTurn: ticTacToe.currentUserId,
         currentTime: new Date(),
         nextTurnTime: ticTacToe.nextTurnTime,
+        board:board,
         updatedPlayers: updatedPlayersForRes,
         isGameOver: ticTacToe.isGameOver,
         gameEndTime: ticTacToe.gameEndTime,
@@ -724,145 +727,195 @@ const getGroupsOfTicTacToeAsPerGrpId = async function (req, res) {
 };
 //______________________update tic tac toe data by user __________________
 
-const  makeMovenForPlayer = async function (req, res) {
-  try{
-    const {groupId, row, col, UserId} = req.query ;
+const makeMovenForPlayer = async function (req, res) {
+  try {
+    const { groupId, position, UserId } = req.query;
 
-    if(!groupId || !row || !col || !UserId){
-      return res.status(200).send({status:false, message:"Please provide groupId, row, col, UserId"});
+    if (!groupId || !position || !UserId) {
+      return res
+        .status(200)
+        .send({
+          status: false,
+          message: "Please provide groupId, position, UserId",
+        });
     }
-  // Find the game group in the database
-  const group = await ticTacToeGroupModel.findOne({_id:groupId, "updatedPlayers.UserId":UserId});
 
-  if (!group) {
-    throw new Error("Group not found");
-  }
+    // Find the game group in the database
+    const group = await ticTacToeGroupModel.findOne({
+      _id: groupId,
+      "updatedPlayers.UserId": UserId,
+    });
 
-  // Check if it's the player's turn
-  const currentPlayerIndex = group.updatedPlayers.findIndex(player => player.UserId === UserId && player.turn);
-  if (currentPlayerIndex === -1) {
-    throw new Error("It's not your turn");
-  }
-  const nextUserIndex = ( currentPlayerIndex + 1 ) % 2;
-  const nextUserId = group.updatedPlayers[nextUserIndex].UserId;
-  // Check if the move is valid
-  if (row < 0 || row > 2 || col < 0 || col > 2 || group.board[row][col] !== '') {
-    throw new Error("Invalid move");
-  }
-
-  // Update the game board
-  group.board[row][col] = group.updatedPlayers[currentPlayerIndex].sign;
-   
-  // Check for a winner or draw
-  const winner = checkWinner(group.board);
-  if (winner) {
-    const overGameforWinner = await declareWinner(ticTacToe,gameName, false);  
-      const updatedPlayersForRes = overGameforWinner.updatedPlayers.map(
-        ({ UserId, points, dicePoints, prevPoint }) => ({
+    if (!group) {
+      return res
+        .status(200)
+        .send({ status: false, message: "Group not found" });
+    }
+    if (group.isGameOver) {
+      const board = group.board.join(", ");
+      const updatedPlayersForRes = group.updatedPlayers.map(
+        ({ UserId, userName, sign, prize }) => ({
           UserId,
-          points,
-          dicePoints,
-          prevPoint
+          userName,
+          sign,
+          prize,
         })
       );
       let result = {
-        message:"Game is Over !",
+        message: "Game is Over!",
+        currentTurn: group.currentUserId,
+        currentTime: new Date(),
+        nextTurnTime: group.nextTurnTime,
+        board: board,
+        updatedPlayers: updatedPlayersForRes,
+        isGameOver: group.isGameOver,
+        gameEndTime: group.gameEndTime,
+      };
+      console.log("response when GAME IS ALREDY OVER====>");
+      return res.status(200).json(result);
+    }
+    // Check if it's the player's turn
+    const currentPlayerIndex = group.updatedPlayers.findIndex(
+      (player) => player.UserId === UserId && player.turn
+    );
+    if (currentPlayerIndex === -1) {
+      return res
+        .status(200)
+        .send({ status: false, message: "It's not your turn" });
+    }
+
+    // Check if the move is valid
+    if (
+      position < 0 ||
+      position >= group.board.length ||
+      group.board[position] !== ""
+    ) {
+      return res
+      .status(200)
+      .send({ status: false, message:"Invalid move"});
+    }
+
+    // Update the game board
+    group.board[position] = group.updatedPlayers[currentPlayerIndex].sign;
+    group.updatedPlayers[currentPlayerIndex].turn = false;
+    group.nextTurnTime = new Date(Date.now() + 12 * 1000);
+    const nextUserIndex = (currentPlayerIndex + 1) % 2;
+    group.currentUserId = group.updatedPlayers[nextUserIndex].UserId;
+    group.updatedPlayers[nextUserIndex].turn = true;
+    group.lastHitTime = new Date();
+
+    // Save the updated game group
+    const updatedData = await group.save();
+
+    // Check for a winner or draw
+    const winner = checkWinner(updatedData.board);
+    if (winner) {
+      const overGameforWinner = await declareWinner(
+        updatedData,
+        "TicTacToe",
+        false,
+        winner
+      );
+      const board = overGameforWinner.board.join(", ");
+      const updatedPlayersForRes = overGameforWinner.updatedPlayers.map(
+        ({ UserId, userName, sign, prize }) => ({
+          UserId,
+          userName,
+          sign,
+          prize,
+        })
+      );
+      let result = {
+        message: "Game is Over!",
         currentTurn: overGameforWinner.currentUserId,
         currentTime: new Date(),
         nextTurnTime: overGameforWinner.nextTurnTime,
+        board: board,
         updatedPlayers: updatedPlayersForRes,
         isGameOver: overGameforWinner.isGameOver,
         gameEndTime: overGameforWinner.gameEndTime,
       };
       console.log("response when winner declared====>");
       return res.status(200).json(result);
-  } else if (isDraw(group.board)) {
-    const overGame = await declareWinner(ticTacToe,gameName, false);  
-    const updatedPlayersForRes = overGame.updatedPlayers.map(
-      ({ UserId, points, dicePoints, prevPoint }) => ({
-        UserId,
-        points,
-        dicePoints,
-        prevPoint
-      })
-    );
-    let result = {
-      message:"Game is Over !",
-      currentTurn: overGame.currentUserId,
-      currentTime: new Date(),
-      nextTurnTime: overGame.nextTurnTime,
-      updatedPlayers: updatedPlayersForRes,
-      isGameOver: overGame.isGameOver,
-      gameEndTime: overGame.gameEndTime,
-    };
-    console.log("response when match is draw====>");
-    return res.status(200).json(result);
-  } else {
-   group.updatedPlayers[currentPlayerIndex].turn = false;
-   group.nextTurnTime = new Date( Date.now() + 12 * 1000 ); 
-   group.currentUserId = group.updatedPlayers[nextUserIndex].UserId;
-   group.updatedPlayers[nextUserIndex].turn = true;
-   group.lastHitTime = new Date();
-   // Save the updated game group
-   const updatedData =  await group.save();
-    // If it's the bot's turn, make a move for the bot
-    let botPlayer = updatedData.updatedPlayers.find(
-      ( player ) => player.isBot && player.UserId === nextUserId
-    );
-    if (botPlayer) {
-      const updateDataForBot = await updateBotPosition( botPlayer, updatedData, 'TicTacToe');
-      const updatedPlayersForRes = updateDataForBot.updatedPlayers.map(
-        ({ UserId, points, dicePoints, prevPoint }) => ({
+    } else if (gameDraw(updatedData.board)) {
+      // Match is draw or not
+      const overGame = await declareWinner(
+        updatedData,
+        "TicTacToe",
+        true,
+        null
+      );
+      const board = overGame.board.join(", ");
+      const updatedPlayersForRes = overGame.updatedPlayers.map(
+        ({ UserId, userName, sign, prize }) => ({
           UserId,
-          points,
-          dicePoints,
-          prevPoint
+          userName,
+          sign,
+          prize,
         })
       );
       let result = {
-        currentTurn: updateDataForBot.currentUserId,
+        message: "Game is Over!",
+        currentTurn: overGame.currentUserId,
         currentTime: new Date(),
-        nextTurnTime: updateDataForBot.nextTurnTime,
-        // dicePointForPlayer: randomValue,
+        nextTurnTime: overGame.nextTurnTime,
+        board: board,
         updatedPlayers: updatedPlayersForRes,
-        isGameOver: updateDataForBot.isGameOver,
-        gameEndTime: updateDataForBot.gameEndTime,
+        isGameOver: overGame.isGameOver,
+        gameEndTime: overGame.gameEndTime,
       };
-      console.log("response after tab the dice for bot=====>");
+      console.log("response when match is draw====>");
       return res.status(200).json(result);
-    }else{
-      const updatedPlayersForRes = updatedData.updatedPlayers.map(
-        ({ UserId, points, dicePoints, prevPoint }) => ({
-          UserId,
-          points,
-          dicePoints,
-          prevPoint
-        })
+    } else {
+      // If it's the bot's turn, make a move for the bot
+      let botPlayer = updatedData.updatedPlayers.find(
+        (player) => player.isBot && player.UserId === updatedData.currentUserId
       );
-      let result = {
-        currentTurn: updatedData.currentUserId,
-        currentTime: new Date(),
-        nextTurnTime: updatedData.nextTurnTime,
-        // dicePointForPlayer: randomValue,
-        updatedPlayers: updatedPlayersForRes,
-        isGameOver: updatedData.isGameOver,
-        gameEndTime: updatedData.gameEndTime,
-      };
-      console.log("response after tab the dice=====>");
-      return res.status(200).json(result);
-
+      if (botPlayer) {
+        const updateDataForBot = await updateBotPosition(
+          botPlayer,
+          updatedData,
+          "TicTacToe"
+        );
+        const board = updateDataForBot.board.join(", ");
+        const updatedPlayersForRes = updateDataForBot.updatedPlayers.map(
+          ({ UserId, userName, sign }) => ({ UserId, userName, sign })
+        );
+        let result = {
+          currentTurn: updateDataForBot.currentUserId,
+          currentTime: new Date(),
+          nextTurnTime: updateDataForBot.nextTurnTime,
+          board: board,
+          updatedPlayers: updatedPlayersForRes,
+          isGameOver: updateDataForBot.isGameOver,
+          gameEndTime: updateDataForBot.gameEndTime,
+        };
+        console.log("response after tab the dice for bot=====>");
+        return res.status(200).json(result);
+      } else {
+        const board = updatedData.board.join(", ");
+        const updatedPlayersForRes = updatedData.updatedPlayers.map(
+          ({ UserId, userName, sign }) => ({ UserId, userName, sign })
+        );
+        let result = {
+          currentTurn: updatedData.currentUserId,
+          currentTime: new Date(),
+          nextTurnTime: updatedData.nextTurnTime,
+          board: board,
+          updatedPlayers: updatedPlayersForRes,
+          isGameOver: updatedData.isGameOver,
+          gameEndTime: updatedData.gameEndTime,
+        };
+        console.log("response after tab the dice=====>");
+        return res.status(200).json(result);
+      }
     }
-   
-   
- 
+  } catch (error) {
+    console.log("error in update tictac toe===", error);
+    return res.status(500).send({ status: false, message: error.message });
   }
+};
 
-  
-}catch(error){
-  console.log("error in update tictac toe===",error);
-  return res.status(500).send({status:false, message:error.message});
-}
-}
 
 //___________________micro api for getting players__________________
 
