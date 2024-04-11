@@ -411,7 +411,7 @@ async function overTheGameForPlayers(groupId, gameName, Token) {
   console.log("game name in overthegame ====>", gameName);
   pushNotification(Token, "Game has started");
 
-  const MAX_DURATION_SECONDS = 120; // 2 min 
+  const MAX_DURATION_SECONDS = 130; // 2 min 
   let startTime = Date.now();
   let timeoutId; // Store the timeout ID
   if (groupId !== undefined) {

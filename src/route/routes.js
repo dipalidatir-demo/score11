@@ -48,6 +48,11 @@ const { updateTic,
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const Router = express.Router();
+const multer = require('multer');
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
 
 //_____________________________razorpay api________________
 
@@ -245,6 +250,11 @@ Router.get("/getLossData", profitLossController.getLossData);
 Router.get("/getDailyProfitAndLoss", profitLossController.getDailyProfit);
 
 Router.get("/getprofitLossChart", profitLossController.profitLossChart);
+
+//___________________notification_________________
+
+Router.post("/sendNotificationToAll", upload.array('images', 100), sendNotificatinController.sendingNotificationToAll);
+
 
 //************ checking your end point valid or not */
 

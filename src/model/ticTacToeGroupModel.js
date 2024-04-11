@@ -33,7 +33,7 @@ const TicTacToeGroupSchema = new mongoose.Schema(
           },
           sign:{
             type: String,
-            default:'O'
+            default:'o'
           }
       },
     ],

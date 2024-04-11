@@ -98,7 +98,7 @@ async function startMatchForticTacToe(grpId, group, gameName) {
       isBot: name.isBot,
       positions: [],
       turn: false,
-      sign:'O'
+      sign:'o'
     }));
     // console.log("result", result);
     const Token = group.map( item => item.token ).filter( token => token !== undefined );
@@ -141,7 +141,7 @@ async function startMatchForticTacToe(grpId, group, gameName) {
         currentPlayerIndex = Math.floor( Math.random() * updatedPlayers.length );
       }
       matchData.updatedPlayers[currentPlayerIndex].turn = true;
-      matchData.updatedPlayers[currentPlayerIndex].sign  = 'X' ;
+      matchData.updatedPlayers[currentPlayerIndex].sign  = 'x' ;
       matchData.lastHitTime = new Date();
       matchData.isGameStart = 1;
       matchData.currentUserId = updatedPlayers[currentPlayerIndex].UserId;
@@ -186,56 +186,56 @@ function botMove(board) {
 function checkWinner(board) {
   // Check rows
   switch (board[0] + board[1] + board[2]) {
-      case 'XXX':
-          return 'X';
-      case 'OOO':
-          return 'O';
+      case 'xxx':
+          return 'x';
+      case 'ooo':
+          return 'o';
   }
   switch (board[3] + board[4] + board[5]) {
-      case 'XXX':
-          return 'X';
-      case 'OOO':
-          return 'O';
+      case 'xxx':
+          return 'x';
+      case 'ooo':
+          return 'o';
   }
   switch (board[6] + board[7] + board[8]) {
-      case 'XXX':
-          return 'X';
-      case 'OOO':
-          return 'O';
+    case 'xxx':
+      return 'x';
+    case 'ooo':
+      return 'o';
   }
 
   // Check columns
   switch (board[0] + board[3] + board[6]) {
-      case 'XXX':
-          return 'X';
-      case 'OOO':
-          return 'O';
+    case 'xxx':
+      return 'x';
+     case 'ooo':
+      return 'o';
   }
   switch (board[1] + board[4] + board[7]) {
-      case 'XXX':
-          return 'X';
-      case 'OOO':
-          return 'O';
+    case 'xxx':
+      return 'x';
+  case 'ooo':
+      return 'o';
   }
   switch (board[2] + board[5] + board[8]) {
-      case 'XXX':
-          return 'X';
-      case 'OOO':
-          return 'O';
+    case 'xxx':
+      return 'x';
+  case 'ooo':
+      return 'o';
   }
 
   // Check diagonals
   switch (board[0] + board[4] + board[8]) {
-      case 'XXX':
-          return 'X';
-      case 'OOO':
-          return 'O';
+    case 'xxx':
+      return 'x';
+  case 'ooo':
+      return 'o';
   }
   switch (board[2] + board[4] + board[6]) {
-      case 'XXX':
-          return 'X';
-      case 'OOO':
-          return 'O';
+    case 'xxx':
+      return 'x';
+  case 'ooo':
+      return 'o';
   }
 
   // If no winner is found, return null
@@ -243,7 +243,7 @@ function checkWinner(board) {
 }
 
 // // Example usage:
-// const board = [ "", "O", "X", "O", "X", "X", "X", "", "O"];
+// const board = [ "", "o", "x", "o", "x", "x", "x", "", "o"];
 
 // const winner = checkWinner(board);
 // if (winner) {
@@ -585,7 +585,7 @@ async function changeTurn ( ticTacToe, gameName ) {
       );
       const nextUserIndex = (currentUserIndex + 1) % 2;
       const botMoveCoordinates = botMove(gameData.board);
-      gameData.board[botMoveCoordinates] = "O"; // Assign the bot's sign ('O') to the board
+      gameData.board[botMoveCoordinates] = "o"; // Assign the bot's sign ('o') to the board
       // Switch turns
       gameData.updatedPlayers[currentUserIndex].turn = false;
       gameData.updatedPlayers[nextUserIndex].turn = true;

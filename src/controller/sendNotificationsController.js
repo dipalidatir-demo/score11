@@ -1,258 +1,9 @@
-// const twilio = require('twilio');
-// const userModel = require("../model/userModel");
-// const accountSid = 'AC7f71cc70f9f7edf8c95cf1d0fb930f21';
-// const authToken = '5a783b0a3907e64c5ac37df976d427dd';
-// const client = new twilio(accountSid, authToken);
-
-// const sendNotificationsToPlayers = async function(req, res) {
-
-//   // const users = await userModel.find().select({phone:1, userName:1, UserId:1, _id:0});
-//   // if(users.length === 0 ){
-//   //   return res.status(404).send({status:false, message:"Data not found"});
-//   // }
-//   // const validUsers = users.filter(user => user.phone && /^[0-9]+$/.test(user.phone));
-//   // console.log(users,"--------------------users");
-//   // validUsers.forEach(user => {
-//   //   const phoneNumber = user.phone;
-
-//   //   client.messages
-//   //     .create({
-//   //       body: 'game will be lunch on 15th august at 5pm',
-//   //       from: '+17066003566',
-//   //       to: `+91${phoneNumber}` // Adding '91' as the country code
-//   //     })
-//   //     .then(message => console.log(`Message sent to ${phoneNumber}: ${message.sid}`))
-//   //     .catch(error => console.error(`Error sending message to ${phoneNumber}:`, error));
-//   // });
-//   // res.status(200).send({message:"successfully send Notification to every player",data:users});
-//   const {to,body} = req.body;
-//   client.messages.create({
-//     body:body,
-//     to:to,
-//     from:'+17066003566'
-//   }).then(()=>{
-//     res.send('Notification sent successfully!');
-//   }).catch((err) => {
-//     console.log(err);
-//     res.status(500).send('Error senting sms')
-//   })
-// }
-
-// module.exports = {sendNotificationsToPlayers};
-
-//----------------firebase-----------------------------------------
-
-// const admin = require('./firebase');  // Path to your firebase.js file
-// const userDevice = require('../model/userModel'); // Create a Mongoose model for devices
-// const admin = require('firebase-admin');
-// const serviceAccount = require('../firebaseService.json');
-
-// admin.initializeApp({
-//   credential: admin.credential.cert(serviceAccount)
-// });
-
-// const sendNotification = async function (req, res) {
-//   const { title, body } = req.body;
-
-//   try {
-//     const devices = await userDevice.find();
-//     const registrationTokens = devices.map(device => device.registrationToken);
-
-//     const message = {
-//       notification: {
-//         title,
-//         body,
-//       },
-//       tokens: registrationTokens,
-//     };
-
-//     const response = await admin.messaging().sendMulticast([message]);
-
-//     console.log('Notification sent:', response);
-//     res.json({ message: 'Notification sent successfully' });
-//   } catch (error) {
-//     console.error('Error sending notification:', error);
-//     res.status(500).json({ error: 'Error sending notification' });
-//   }
-// };
-
-// module.exports = { sendNotification };
-
-// //_________________another way _________________________________
-
-// const userDevice = require("../model/userModel"); // Create a Mongoose model for devices
-// const admin = require("firebase-admin");
-// const serviceAccount = require("../firebaseService.json");
-
-// admin.initializeApp({
-//   credential: admin.credential.cert(serviceAccount),
-// });
-
-// const sendNotification = async function (req, res) {
-//   try {
-//     // const devices = await userDevice.find();
-//     // const registrationTokens = devices.map(device => device.registrationToken);
-//     const registrationTokens = ["12344556677"]
-
-//     const payload = {
-//       notification: {
-//         title: "This is a Notification",
-//         body: "Welcome to our gaming world",
-//       },
-//     };
-
-//     const options = {
-//       priority: "high",
-//       timeToLive: 60 * 60 * 24,
-//     };
-
-//     const response = await admin.messaging().sendToDevice(registrationTokens, payload, options);
-
-//     console.log("Notification sent:", response);
-//     res.json({ message: "Notification sent successfully" });
-//   } catch (error) {
-//     console.error("Error sending notification:", error);
-//     res.status(500).json({ error: 'Error sending notification' });
-//   }
-// };
-
-// module.exports = { sendNotification };
-
-
-
-
-//__________________________new_______________
-// const request = require('request');
-
-// const sendNotification = async function(req,res){
-// try{
-
-// const serverKey = '164306dcf068810b803e0bbe98b061c072acfa33'; // Replace with your server key
-// const registrationTokens = ['12344556677']; // Replace with your device tokens
-// const payload = {
-//   notification: {
-//     title: 'This is a Notification',
-//     body: 'Welcome to our gaming world',
-//   },
-// };
-
-// const options = {
-//   priority: 'high',
-//   timeToLive: 60 * 60 * 24,
-// };
-
-// const headers = {
-//   Authorization: 'key=' + serverKey,
-//   'Content-Type': 'application/json',
-// };
-
-// const body = JSON.stringify({
-//   registration_ids: registrationTokens,
-//   data: payload,
-//   android: options,
-// });
-
-// request.post(
-//   {
-//     url: 'https://fcm.googleapis.com/fcm/send',
-//     headers: headers,
-//     body: body,
-//   },
-//   function (error, response, body) {
-//     if (error) {
-//       console.error('Error sending notification:', error);
-//     } else {
-//       console.log('Notification sent:', body);
-//     }
-//   }
-// );
-// return res.json({ message: "Notification sent successfully" });
-// }catch(error){
-//   console.error("Error sending notification:", error);
-//   res.status(500).json({ error: 'Error sending notification' });
-// }
-// }
-// module.exports = { sendNotification };
-//____________________________________notification using firebase________________________
-
-// const admin = require('firebase-admin');
-// const { initializeApp } = require('firebase-admin/app');
-// const { getMessaging } = require('firebase-admin/messaging');
-// const userModel = require('../model/userModel'); // Assuming this is the correct path
-// const serviceAccount = require('../firebaseService.json');
-
-// const fbApp = initializeApp({
-//     credential: admin.credential.cert(serviceAccount),
-// });
-
-// const messaging = getMessaging(fbApp);
-
-// const sendNotification = async (req, res) => {
-//     try {
-//         const query = { 
-//             token: { 
-//                 $exists: true,  
-//                 $ne: ''        
-//             }
-//         };
-
-//         const fetchTokens = await userModel.find(query).select({ token: 1, _id: 0 });
-//         const registrationTokens = fetchTokens.map(tokens => tokens.token);
-
-//         console.log(registrationTokens, "====================");
-
-//         const messages = registrationTokens.map(token => ({
-//             notification: {
-//                 title: 'Game Started',
-//                 body: 'Your game has started!'
-//             },
-//             token: token
-//         }));
-
-//         const sendPromises = messages.map(message => messaging.send(message));
-
-//         Promise.all(sendPromises)
-//     .then((responses) => {
-//         let successCount = 0; // Counter to keep track of successful notifications
-//         responses.forEach((response, index) => {
-//             if (response.error) {
-//                 // Handle invalid registration token error
-//                 console.error('Error sending message for token at index', index, ':', response.error);
-//                 // Remove the invalid token from your database or mark it as invalid
-//                 // Example: userModel.findOneAndDelete({ token: registrationTokens[index] })
-//             } else {
-//                 console.log('Successfully sent message for token at index', index);
-//                 successCount++; // Increment success count
-//             }
-//         });
-
-//         // Log a success message if there are no errors
-//         if (successCount === registrationTokens.length) {
-//             console.log('All messages sent successfully');
-//         }
-
-//         return res.status(200).send({ status: true, message: "Messages sent successfully" });
-//     })
-//     .catch((error) => {
-//         console.error('Error sending messages:', error);
-//         return res.status(500).send({ status: false, message: error.message });
-//     });
-
-    
-//     } catch (error) {
-//         console.log(error);
-//         return res.status(500).send({ status: false, message: error.message });
-//     }
-// }
-
-// module.exports = { sendNotification };
-
-
 
 const fs = require("fs");
 const path = require('path');
 var FCM = require('fcm-node');
 const userModel = require("../model/userModel");
+const { validationResult } = require('express-validator');
 
 const sendNotification = async(req,res) => {
 
@@ -388,4 +139,64 @@ const sendNotification = async(req,res) => {
     }
 };
 
-  module.exports = { sendNotification, pushNotification }
+//_______________________sending notification to all ___________________________
+
+// const multer = require('multer');
+// const upload = multer({ dest: 'uploads/' }); // Set the destination folder for uploaded files
+
+const sendingNotificationToAll = async (req, res) => {
+    try {
+        // Check for validation errors
+        // const errors = validationResult(req);
+        // if (!errors.isEmpty()) {
+        //     return res.status(400).json({ status: false, errors: errors.array() });
+        // }
+
+        const { message } = req.body;
+        console.log("message===",req.body);
+
+        if (!message) {
+            return res.status(400).send({ status: false, message: "Message is required" });
+        }
+
+        const img = req.files;
+        console.log("img=====>",img);
+        if (!img) {
+            return res.status(400).send({ status: false, message: "Image is required" });
+        }
+
+        // Craft notification payload
+        const pushMessage = {
+            registration_ids: pushTokens.map(token => token.token),
+            priority: 'high',
+            content_available: true,
+            mutable_content: true,
+            notification: {
+                body: message,
+                icon: img.buffer.toString('base64'), // Convert image buffer to base64 string
+                sound: 'default',
+            },
+        };
+
+        // Send push notifications
+        fcm.send(pushMessage, function (err, response) {
+            if (err) {
+                console.log("Failed to send notification:", err);
+                return res.status(500).send({ status: false, message: "Failed to send notification" });
+            } else {
+                console.log("Notification sent successfully:", response);
+                return res.status(200).send({ status: true, message: "Notification sent successfully" });
+            }
+        });
+    } catch (error) {
+        console.log("Error:", error.message);
+        return res.status(500).send({ status: false, message: error.message });
+    }
+};
+
+
+// Define the route for handling file uploads
+// app.post('/send-notification', upload.single('image'), sendingNotificationToAll);
+
+
+  module.exports = { sendNotification, pushNotification, sendingNotificationToAll }
