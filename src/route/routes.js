@@ -51,8 +51,9 @@ const Router = express.Router();
 const multer = require('multer');
 
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
-
+const upload = multer({
+  storage: multer.memoryStorage(), // Store files in memory
+})
 
 //_____________________________razorpay api________________
 
@@ -253,7 +254,7 @@ Router.get("/getprofitLossChart", profitLossController.profitLossChart);
 
 //___________________notification_________________
 
-Router.post("/sendNotificationToAll", upload.array('images', 100), sendNotificatinController.sendingNotificationToAll);
+Router.post("/sendNotificationToAll", upload.single('image'), sendNotificatinController.sendingNotificationToAll);
 
 
 //************ checking your end point valid or not */

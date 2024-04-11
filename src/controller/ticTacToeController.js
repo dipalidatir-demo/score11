@@ -8,7 +8,7 @@ const moment = require("moment");
 const cron = require("node-cron");
 
 // async function flattenArray(array){
-//   const flatArray = array.flatMap(row => row.map(cell => cell.trim())).join(', ');
+//   const flatArray = array.flatMap(row => row.map(cell => cell.trim())).join(',');
 //   return flatArray ;
 // }
 //____________________________update Table_______________________________________
@@ -645,7 +645,7 @@ const getGroupsOfTicTacToeAsPerGrpId = async function (req, res) {
         .status(200)
         .send({ status: false, message: "this groupId not found" });
     }
-    const board = ticTacToe.board.join(', ');
+    const board = ticTacToe.board.join(',');
     let timeDiff = ticTacToe.gameEndTime - new Date();
     console.log(timeDiff, "endtime of a group==========");
     let crntPlayer = ticTacToe.updatedPlayers.find(
@@ -752,7 +752,7 @@ const makeMovenForPlayer = async function (req, res) {
         .send({ status: false, message: "Group not found" });
     }
     if (group.isGameOver) {
-      const board = group.board.join(", ");
+      const board = group.board.join(",");
       const updatedPlayersForRes = group.updatedPlayers.map(
         ({ UserId, userName, sign, prize }) => ({
           UserId,
@@ -816,7 +816,7 @@ const makeMovenForPlayer = async function (req, res) {
         false,
         winner
       );
-      const board = overGameforWinner.board.join(", ");
+      const board = overGameforWinner.board.join(",");
       const updatedPlayersForRes = overGameforWinner.updatedPlayers.map(
         ({ UserId, userName, sign, prize }) => ({
           UserId,
@@ -845,7 +845,7 @@ const makeMovenForPlayer = async function (req, res) {
         true,
         null
       );
-      const board = overGame.board.join(", ");
+      const board = overGame.board.join(",");
       const updatedPlayersForRes = overGame.updatedPlayers.map(
         ({ UserId, userName, sign, prize }) => ({
           UserId,
@@ -877,7 +877,7 @@ const makeMovenForPlayer = async function (req, res) {
           updatedData,
           "TicTacToe"
         );
-        const board = updateDataForBot.board.join(", ");
+        const board = updateDataForBot.board.join(",");
         const updatedPlayersForRes = updateDataForBot.updatedPlayers.map(
           ({ UserId, userName, sign }) => ({ UserId, userName, sign })
         );
@@ -893,7 +893,7 @@ const makeMovenForPlayer = async function (req, res) {
         console.log("response after tab the dice for bot=====>");
         return res.status(200).json(result);
       } else {
-        const board = updatedData.board.join(", ");
+        const board = updatedData.board.join(",");
         const updatedPlayersForRes = updatedData.updatedPlayers.map(
           ({ UserId, userName, sign }) => ({ UserId, userName, sign })
         );
