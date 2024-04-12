@@ -809,7 +809,7 @@ const makeMovenForPlayer = async function (req, res) {
 
     // Check for a winner or draw
     const winner = checkWinner(updatedData.board);
-    if (winner) {
+    if (winner || updatedData.board.every((el) => el != '')) {
       const overGameforWinner = await declareWinner(
         updatedData,
         "TicTacToe",
