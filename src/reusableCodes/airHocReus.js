@@ -273,9 +273,9 @@ async function declareWinner(airHockey,gameName){
           let overGame = await airHockeyGroupModel.findOneAndUpdate(
             {
               _id: groupId,
-              "updatedPlayers.UserId": {
-                $in: updatedPlayers.map( ( player ) => player.UserId ),
-              },
+              // "updatedPlayers.UserId": {
+              //   $in: updatedPlayers.map( ( player ) => player.UserId ),
+              // },
             },
             {
               $set: {

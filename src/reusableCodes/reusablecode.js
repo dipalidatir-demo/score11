@@ -504,9 +504,9 @@ async function overTheTicTacToeGame(groupId, gameName, Token) {
           let overGame = await ticTacToeGroupModel.findOneAndUpdate(
             {
               _id: groupId,
-              "updatedPlayers.UserId": {
-                $in: updatedPlayers.map( ( player ) => player.UserId ),
-              },
+              // "updatedPlayers.UserId": {
+              //   $in: updatedPlayers.map( ( player ) => player.UserId ),
+              // },
             },
             {
               $set: {
