@@ -141,63 +141,7 @@ const sendNotification = async(req,res) => {
 
 //_______________________sending notification to all ___________________________
 
-// const multer = require('multer');
-// const upload = multer({ dest: 'uploads/' }); // Set the destination folder for uploaded files
 
-// const sendingNotificationToAll = async (req, res) => {
-//     try {
-//         // Check for validation errors
-//         // const errors = validationResult(req);
-//         // if (!errors.isEmpty()) {
-//         //     return res.status(400).json({ status: false, errors: errors.array() });
-//         // }
-
-//         const { message } = req.body;
-//         console.log("message===",req.body);
-
-//         if (!message) {
-//             return res.status(400).send({ status: false, message: "Message is required" });
-//         }
-
-//         const image = req.file;
-//         console.log("img=====>",image);
-//         if (!image) {
-//             return res.status(400).send({ status: false, message: "Image is required" });
-//         }
-//         const pushTokens = await userModel.find().select({ _id: 0, token: 1 });
-
-//         if (pushTokens.length === 0) {
-//             throw new Error("No users found");
-//         }
-//         const fcm = new FCM(serverKey);
-//         // Craft notification payload
-//         const pushMessage = {
-            // registration_ids: pushTokens.map(token => token.token),
-            // priority: 'high',
-            // content_available: true,
-            // mutable_content: true,
-            // notification: {
-            //     body: message,
-            //     icon: img.buffer.toString('base64'), // Convert image buffer to base64 string
-            //     sound: 'default',
-            // },
-//         };
-
-//         // Send push notifications
-        // fcm.send(pushMessage, function (err, response) {
-        //     if (err) {
-        //         console.log("Failed to send notification:", err);
-        //         return res.status(500).send({ status: false, message: "Failed to send notification" });
-        //     } else {
-        //         console.log("Notification sent successfully:", response);
-        //         return res.status(200).send({ status: true, message: "Notification sent successfully" });
-        //     }
-//         });
-//     } catch (error) {
-//         console.log("Error:", error.message);
-//         return res.status(500).send({ status: false, message: error.message });
-//     }
-// };
  const sendingNotificationToAll = async function (req, res) {
    try {
      let message  = req.body;
@@ -208,13 +152,16 @@ const sendNotification = async(req,res) => {
          .send({ status: false, message: "Message is required" });
      }
      message = message.message ;
-     const image = req.file;
-     console.log("img=====>", image);
-     if (!image) {
-       return res
-         .status(400)
-         .send({ status: false, message: "Image is required" });
-     }
+    //  const image = req.file;
+    //  console.log("img=====>", image);
+    //  if (!image) {
+    //    return res
+    //      .status(400)
+    //      .send({ status: false, message: "Image is required" });
+    //  }
+     // Convert image buffer to base64-encoded string
+    //  const imageBase64 = image.buffer.toString('base64');
+
      fs.readFile(
        path.join(__dirname, "../firebaseService.json"),
        "utf8",
@@ -250,7 +197,8 @@ const sendNotification = async(req,res) => {
                mutable_content: true,
                notification: {
                  body: message,
-                 icon: image.buffer.toString("base64"), // Convert image buffer to base64 string
+                //  icon: `data:image/png;base64,${imageBase64}`,
+                icon: 'myicon', // Default Icon
                  sound: "default",
                },
              };

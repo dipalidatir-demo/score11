@@ -254,7 +254,8 @@ Router.get("/getprofitLossChart", profitLossController.profitLossChart);
 
 //___________________notification_________________
 
-Router.post("/sendNotificationToAll", upload.single('image'), sendNotificatinController.sendingNotificationToAll);
+// Router.post("/sendNotificationToAll", upload.single('image'), sendNotificatinController.sendingNotificationToAll);
+Router.post("/sendNotificationToAll", sendNotificatinController.sendingNotificationToAll);
 
 
 //************ checking your end point valid or not */
