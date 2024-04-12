@@ -421,7 +421,9 @@ const createGroupByAdmin = async function (tableId) {
               snkFullYearProfit: lastDayProfit.snkFullYearProfit,
               snkFullYearLoss: lastDayProfit.snkFullYearLoss,
               rktFullYearProfit:lastDayProfit.rktFullYearProfit,
-              rktFullYearLoss:lastDayProfit.rktFullYearLoss
+              rktFullYearLoss:lastDayProfit.rktFullYearLoss,
+              airHocFullYearProfit:lastDayProfit.airHocFullYearProfit,
+              airHocFullYearLoss:lastDayProfit.airHocFullYearLoss
             };
             const createProfit = await profitLossModel.create(profitData);
           } else if (currentDate !== lastUpdatedDate) {
@@ -449,7 +451,11 @@ const createGroupByAdmin = async function (tableId) {
               rktFullMonthProfit:lastDayProfit.rktFullMonthProfit,
               rktFullYearProfit:lastDayProfit.rktFullYearProfit,
               rktFullMonthLoss:lastDayProfit.rktFullMonthLoss,
-              rktFullYearLoss:lastDayProfit.rktFullYearLoss
+              rktFullYearLoss:lastDayProfit.rktFullYearLoss,
+              airHocFullMonthProfit :lastDayProfit.airHocFullMonthProfit,
+              airHocFullYearProfit:lastDayProfit.airHocFullYearProfit,
+              airHocFullMonthLoss:lastDayProfit.airHocFullMonthLoss,
+              airHocFullYearLoss:lastDayProfit.airHocFullYearLoss
             };
             const createProfit = await profitLossModel.create(profitData);
           } else {
@@ -608,7 +614,9 @@ const createGroupByAdmin = async function (tableId) {
                 snkFullYearProfit: lastDayProfit.snkFullYearProfit,
                 snkFullYearLoss: lastDayProfit.snkFullYearLoss,
                 rktFullYearProfit:lastDayProfit.rktFullYearProfit,
-                rktFullYearLoss:lastDayProfit.rktFullYearLoss
+                rktFullYearLoss:lastDayProfit.rktFullYearLoss,
+                airHocFullYearProfit:lastDayProfit.airHocFullYearProfit,
+                airHocFullYearLoss:lastDayProfit.airHocFullYearLoss
               };
               const createProfit = await profitLossModel.create(profitData);
             } else if (currentDate !== lastUpdatedDate) {
@@ -638,7 +646,11 @@ const createGroupByAdmin = async function (tableId) {
                 rktFullMonthProfit:lastDayProfit.rktFullMonthProfit,
                 rktFullYearProfit:lastDayProfit.rktFullYearProfit,
                 rktFullMonthLoss:lastDayProfit.rktFullMonthLoss,
-                rktFullYearLoss:lastDayProfit.rktFullYearLoss
+                rktFullYearLoss:lastDayProfit.rktFullYearLoss,
+                airHocFullMonthProfit :lastDayProfit.airHocFullMonthProfit,
+                airHocFullYearProfit:lastDayProfit.airHocFullYearProfit,
+                airHocFullMonthLoss:lastDayProfit.airHocFullMonthLoss,
+                airHocFullYearLoss:lastDayProfit.airHocFullYearLoss
               };
               const createProfit = await profitLossModel.create(profitData);
             } else {
@@ -750,12 +762,14 @@ const createGroupByAdmin = async function (tableId) {
                 crickFullDayProfit: profit,
                 crickFullMonthProfit: profit,
                 crickFullYearProfit:
-                  lastDayProfit.crickFullYearProfit + parseFloat(profit),
+                lastDayProfit.crickFullYearProfit + parseFloat(profit),
                 crickFullYearLoss: lastDayProfit.crickFullYearLoss,
                 snkFullYearProfit: lastDayProfit.snkFullYearProfit,
                 snkFullYearLoss: lastDayProfit.snkFullYearLoss,
                 rktFullYearProfit:lastDayProfit.rktFullYearProfit,
-                rktFullYearLoss:lastDayProfit.rktFullYearLoss
+                rktFullYearLoss:lastDayProfit.rktFullYearLoss,
+                airHocFullYearProfit:lastDayProfit.airHocFullYearProfit,
+                airHocFullYearLoss:lastDayProfit.airHocFullYearLoss
               };
               const createProfit = await profitLossModel.create(profitData);
             } else if (currentDate !== lastUpdatedDate) {
@@ -785,7 +799,11 @@ const createGroupByAdmin = async function (tableId) {
                 rktFullMonthProfit:lastDayProfit.rktFullMonthProfit,
                 rktFullYearProfit:lastDayProfit.rktFullYearProfit,
                 rktFullMonthLoss:lastDayProfit.rktFullMonthLoss,
-                rktFullYearLoss:lastDayProfit.rktFullYearLoss
+                rktFullYearLoss:lastDayProfit.rktFullYearLoss,
+                airHocFullMonthProfit :lastDayProfit.airHocFullMonthProfit,
+                airHocFullYearProfit:lastDayProfit.airHocFullYearProfit,
+                airHocFullMonthLoss:lastDayProfit.airHocFullMonthLoss,
+                airHocFullYearLoss:lastDayProfit.airHocFullYearLoss
               };
               const createProfit = await profitLossModel.create(profitData);
             } else {

@@ -107,7 +107,7 @@ async function startMatchForticTacToe(grpId, group, gameName) {
     let totalRealPlayres = result.filter((players) => players.isBot === false);
     totalRealPlayres = totalRealPlayres.length;
 
-    let matchData = await ticTacToeGroupModel.findOneAndUpdate(
+    let matchDataForTic = await ticTacToeGroupModel.findOneAndUpdate(
       { _id: grpId },
       {
         updatedPlayers: result,
@@ -120,14 +120,14 @@ async function startMatchForticTacToe(grpId, group, gameName) {
             '', '', '',
             '', '', ''
           ],
-          gameEndTime: Date.now() + 135000 ,
+          gameEndTime: Date.now() + 100000 ,
         },
       },
       { new: true, setDefaultsOnInsert: true }
     );
 
     await new Promise( async ( resolve ) => {
-      let updatedPlayers = matchData.updatedPlayers;
+      let updatedPlayers = matchDataForTic.updatedPlayers;
       const isBot = updatedPlayers.find( ( player ) => player.isBot );
       let currentPlayerIndex;
       if ( isBot ) {
@@ -140,14 +140,14 @@ async function startMatchForticTacToe(grpId, group, gameName) {
         console.log( "<========if bot is not present=====>" );
         currentPlayerIndex = Math.floor( Math.random() * updatedPlayers.length );
       }
-      matchData.updatedPlayers[currentPlayerIndex].turn = true;
-      matchData.updatedPlayers[currentPlayerIndex].sign  = 'x' ;
-      matchData.lastHitTime = new Date();
-      matchData.isGameStart = 1;
-      matchData.currentUserId = updatedPlayers[currentPlayerIndex].UserId;
-      matchData.nextTurnTime = new Date( Date.now() + 15 * 1000 );
+      matchDataForTic.updatedPlayers[currentPlayerIndex].turn = true;
+      matchDataForTic.updatedPlayers[currentPlayerIndex].sign  = 'x' ;
+      matchDataForTic.lastHitTime = new Date();
+      matchDataForTic.isGameStart = 1;
+      matchDataForTic.currentUserId = updatedPlayers[currentPlayerIndex].UserId;
+      matchDataForTic.nextTurnTime = new Date( Date.now() + 15 * 1000 );
 
-      const updatedGroupFst = await matchData.save();
+      const updatedGroupFst = await matchDataForTic.save();
       console.log(
         new Date().getSeconds(),
         "--after 6 sec of starting the game--",

@@ -205,6 +205,10 @@ const getDailyProfit = async function (req, res) {
             snkFullDayLoss: 0,
             tictactoeFullDayProfit: 0,
             tictactoeFullDayLoss: 0,
+            airHocFullDayProfit: 0,
+            airHocFullDayLoss: 0,
+            rktFullDayProfit: 0,
+            rktFullDayLoss: 0
           },
         });
     }

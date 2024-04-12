@@ -141,6 +141,30 @@ const profitLossSchema = new mongoose.Schema({
         type: Number,
         default: 0,
       },
+      airHocFullDayProfit:{
+        type: Number,
+        default: 0,
+      },
+      airHocFullMonthProfit:{
+        type: Number,
+        default: 0,
+      },
+      airHocFullYearProfit:{
+        type: Number,
+        default: 0,
+      },
+      airHocFullDayLoss:{
+        type: Number,
+        default: 0,
+      },
+      airHocFullMonthLoss:{
+        type: Number,
+        default: 0,
+      },
+      airHocFullYearLoss:{
+        type: Number,
+        default: 0,
+      },
       yaxis:{
         type: Array,
         default: [5000,10000,15000,20000,25000]
