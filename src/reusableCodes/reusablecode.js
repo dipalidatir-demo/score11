@@ -271,8 +271,8 @@ async function checkPosition ( groupId, gameName) {
     try {
       
       const ticTacToe = await ticTacToeGroupModel.findById( groupId );
-      if(ticTacToe.isGameOver)  return true;
       if ( !ticTacToe ) return false; // Check if gameData exists
+      if(ticTacToe.isGameOver)  return true;
       const { tableId, updatedPlayers, gameEndTime, lastHitTime, nextTurnTime } =
         ticTacToe;
         const currentDate = new Date();
