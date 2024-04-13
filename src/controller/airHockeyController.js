@@ -567,11 +567,13 @@ const updateAirHocPointOfUser = async function (req, res) {
       _id: groupId,
       "updatedPlayers.UserId": UserId,
     }).select({group:0});
+
     if (!groupExist) {
       return res
         .status(200)
         .send({ status: false, message: "groupId is not present" });
     }
+
     if (groupExist.isGameOver) {
       const winnerlayersForRes = groupExist.updatedPlayers.map(
         ({ UserId, points, prize, userName }) => ({
@@ -606,6 +608,7 @@ const updateAirHocPointOfUser = async function (req, res) {
         })
       );
       let result = {
+        message: "Game is Over!",
         currentTime: new Date(),
         updatedPlayers: updatedPlayersForRes,
         isGameOver: resultDeclared.isGameOver,
@@ -652,6 +655,7 @@ const updateAirHocPointOfUser = async function (req, res) {
         })
       );
       let result = {
+        message:"Game is Over!",
         currentTime: new Date(),
         updatedPlayers: updatedPlayersForRes,
         isGameOver: resultDeclared.isGameOver,

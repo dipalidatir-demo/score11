@@ -21,6 +21,7 @@ async function checkPoint ( groupId, gameName) {
   
       if ( !airHockey ) return false; // Check if group exists
       // console.log("==========>",airHockey);
+      if ( airHockey.isGameOver ) return true ;
       const { tableId, updatedPlayers, gameEndTime, lastHitTime } =
         airHockey;
         const currentDate = new Date();
@@ -117,6 +118,7 @@ async function overTheGameAirHoc(groupId, gameName, Token) {
   };
 async function declareWinner(airHockey,gameName){
     try{
+      console.log("winner i declare for ===>", gameName);
       let tableId = airHockey.tableId ;
       let groupId = airHockey._id ;
         let overTheGame = await airHockyTrnmtModel.findByIdAndUpdate(
