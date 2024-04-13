@@ -295,7 +295,13 @@ async function checkPosition ( groupId, gameName) {
            console.log( "Reached minimum point!" );
            return true;
           }
-      }    
+      } else{
+        const overGame = await declareWinner(ticTacToe, gameName, true, null);  
+          if ( overGame.isGameOver === true ) {
+           console.log( "Reached minimum point!" );
+           return true;
+          }
+      }   
       }
   
       const botPlayer = updatedPlayers.find(
@@ -360,6 +366,7 @@ async function overTheTicTacToeGame(groupId, gameName, Token) {
 
   async function declareWinner(ticTacToe, gameName, isDraw, winner){
     try{
+      console.log("declarewinner   ===>", ticTacToe._id);
       let tableId = ticTacToe.tableId ;
       let groupId = ticTacToe._id ;
         let overTheGame = await ticTacToeTournamentModel.findByIdAndUpdate(

@@ -322,7 +322,7 @@ async function checkTurn ( groupId, gameName) {
         updatedPlayers.some( ( player ) => player.points >= 19 ) )
     ) {
       console.log("<===========game end time is over ==============");
-      const overGame = winnerDeclaredForGame(snakeLadder, trnmtMode, grpModel, gameName);
+      const overGame = await winnerDeclaredForGame(snakeLadder, trnmtMode, grpModel, gameName);
       if ( overGame.isGameOver === true ) {
         console.log( "Reached minimum point!" , overGame.isGameOver);
         return true; // Stop the calling
