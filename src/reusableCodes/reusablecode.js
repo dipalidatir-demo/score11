@@ -173,13 +173,37 @@ async function startMatchForticTacToe(grpId, group, gameName) {
 
 // Function for bot move (random)
 function botMove(board) {
+  // Check for potential winning moves for the bot
+  for (let i = 0; i < board.length; i++) {
+    if (board[i] === '') {
+      const newBoard = [...board];
+      newBoard[i] = 'o'; // Try placing the bot's sign in an empty spot
+      if (checkWinner(newBoard) === 'o') {
+        return i; // If bot wins, return this move
+      }
+    }
+  }
+
+  // Check for potential winning moves for the user and block them
+  for (let i = 0; i < board.length; i++) {
+    if (board[i] === '') {
+      const newBoard = [...board];
+      newBoard[i] = 'x'; // Try placing the user's sign in an empty spot
+      if (checkWinner(newBoard) === 'x') {
+        return i; // If user wins, block this move
+      }
+    }
+  }
+
+  // If no winning moves for either player, make a random move
   let position;
   do {
     position = Math.floor(Math.random() * board.length);
-   
   } while (board[position] !== '');
+
   return position;
 }
+
 
 
 // Function to check for a winner

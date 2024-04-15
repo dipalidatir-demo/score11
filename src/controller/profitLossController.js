@@ -229,9 +229,9 @@ const profitLossChart = async function (req, res) {
       // No documents found
       return res.status(404).send({ status: false, message: "No data found" });
     }
-  //  const sortedData = findData.sort((a, b) => a.createdAt - b.createdAt);
+   const sortedData = findData.sort((a, b) => a.createdAt - b.createdAt);
     // If less than 10 documents found, return all available documents
-    return res.status(200).send({ status: true, data: findData });
+    return res.status(200).send({ status: true, data: sortedData });
   } catch (error) {
     console.log(error);
     return res.status(500).send({ status: false, message: error.message });
