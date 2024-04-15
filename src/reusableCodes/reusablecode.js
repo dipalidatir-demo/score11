@@ -77,7 +77,7 @@ const createGroupForticTacToe = async function (tableId, gameName) {
   
             const grpId = createGrp._id;
             const group = createGrp.group;
-  
+            console.log("grpId after creating group===",grpId);
             startMatchForticTacToe(grpId, group, gameName);
           }
         }

@@ -8,6 +8,8 @@ const cricketModel = require("../model/tournamentModel");
 const snakeLadderModel = require("../model/snkTournamentModel");
 const ticTacToeModel = require("../model/ticTacToeTournamentModel");
 const cricketController = require("../controller/cricketController");
+const roketTrnmtModel = require("../model/rocketTournamentModel.js");
+const arHockeyTrnmtModel = require("../model/airHocTrnmtModel")
 
 module.exports = (httpServer) => {
   const io = socketIO(httpServer, {
@@ -197,22 +199,34 @@ module.exports = (httpServer) => {
       try {
         const cricketData = await cricketModel.aggregate([
           { $sort: { createdAt: -1, entryFee: 1 } },
-          { $limit: 25 },
+          { $limit: 10 },
         ]);
 
         const snakeLadderData = await snakeLadderModel.aggregate([
           { $sort: { createdAt: -1, entryFee: 1 } },
-          { $limit: 25 },
+          { $limit: 10 },
+        ]);
+        
+        const rocketData = await roketTrnmtModel.aggregate([
+          { $sort: { createdAt: -1, entryFee: 1 } },
+          { $limit: 10 },
+        ]);
+
+        const airHockeyData = await arHockeyTrnmtModel.aggregate([
+          { $sort: { createdAt: -1, entryFee: 1 } },
+          { $limit: 10 },
         ]);
 
         const ticTacToeData = await ticTacToeModel.aggregate([
           { $sort: { createdAt: -1, entryFee: 1 } },
-          { $limit: 25 },
+          { $limit: 10 },
         ]);
 
         const allTournaments = [
           ...cricketData,
           ...snakeLadderData,
+          ...rocketData,
+          ...airHockeyData,
           ...ticTacToeData,
         ];
 

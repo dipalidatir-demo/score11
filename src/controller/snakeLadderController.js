@@ -135,7 +135,6 @@ const snkTablesCreatedByAdmin = async function (req, res) {
             // Schedule the createGroupByAdmin function after maxTime
             console.log("calling the setTimeout function");
             setTimeout(function () {
-              console.log();
               createGroupForSnakeLadder(tableId1,'SnakeLadder');
               console.log(
                 tableByAdmin1,

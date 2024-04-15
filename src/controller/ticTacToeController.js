@@ -182,13 +182,16 @@ const ticTacToeTablesCreatedByAdmin = async function (req, res) {
             // Schedule the createGroupByAdmin function after maxTime
             console.log("calling the setTimeout function");
             setTimeout(function () {
-              console.log();
-              createGroupForticTacToe(tableId1,'TicTacToe');
-              console.log(
-                tableByAdmin1,
-                "==========table for rkt after setTimeOut===",
-                new Date().getMinutes()
-              );
+              try {
+                createGroupForticTacToe(tableId1, 'TicTacToe');
+                console.log(
+                  tableByAdmin1,
+                  "==========table for rkt after setTimeOut===",
+                  new Date().getMinutes()
+                );
+              } catch (error) {
+                console.error("Error in setTimeout:", error.message);
+              }
             }, maxTime + 60 * 1000);
           }
         } catch (error) {
