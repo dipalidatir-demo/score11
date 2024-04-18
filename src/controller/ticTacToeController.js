@@ -73,53 +73,6 @@ const getAllTic = async function (req, res) {
 
 //____________________________________create ticTacToe tournaments by admin___________
 
-// const ticTacToeTablesCreatedByAdmin = async function (req, res) {
-//   try {
-//     let {
-//       entryFee,
-//       prizeAmount,
-//       players,
-//       status,
-//       maxTime,
-//       endTime,
-//       maxPlayers,
-//       rank,
-//       rank1,
-//       rank2,
-//       rank3,
-//       rank4,
-//       tableByAdmin,
-//     } = req.body;
-//     maxTime = parseInt(maxTime);
-//     endTime = Date.now() + maxTime * 60 * 1000;
-//     entryFee = parseInt(entryFee);
-//     maxPlayers = parseInt(maxPlayers);
-//     req.body.endTime = endTime;
-//     req.body.tableByAdmin = true;
-//     req.body.maxPlayers = maxPlayers;
-//     req.body.entryFee = entryFee;
-
-//     let tableByAdmin1I = await ticTacToeTournamentModel.create(req.body);
-//     let tableId1 = tableByAdmin1I._id;
-//     console.log(tableId1, "--------------tableId1I");
-//     setTimeout(function () {
-//       createGroupForticTacToe(tableId1);
-//       console.log(tableByAdmin1I,"===========create group setTimeOut");
-//     }, maxTime + 60 * 1000);
-
-//     return res.status(201).send({
-//       status: true,
-//       message: "Success",
-//       data: tableByAdmin1I,
-//     });
-//   } catch (error) {
-//     return res.status(500).send({
-//       status: false,
-//       message: error.message,
-//     });
-//   }
-// };
-
 //---------------------using node crone---------------------------------
 const ticTacToeTablesCreatedByAdmin = async function (req, res) {
   try {
@@ -778,15 +731,20 @@ const makeMovenForPlayer = async function (req, res) {
       return res.status(200).json(result);
     }
     // Check if it's the player's turn
-    const currentPlayerIndex = group.updatedPlayers.findIndex(
-      (player) => player.UserId === UserId && player.turn
+    const isUserExist = group.updatedPlayers.find(
+      (players) => players.UserId === UserId
     );
-    if (currentPlayerIndex === -1) {
-      return res
-        .status(200)
-        .send({ status: false, message: "It's not your turn" });
+    if(!isUserExist){
+      return res.status(200).send({status:false, message:"User not found"});
     }
+    let turn = isUserExist.turn;
 
+    if (turn === false) {
+      return res.status(200).send({ message: "not your turn" });
+    }
+    const currentPlayerIndex = group.updatedPlayers.findIndex(
+      (player) => player.UserId === UserId
+    );
     // Check if the move is valid
     if (
       position < 0 ||

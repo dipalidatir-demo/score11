@@ -513,26 +513,26 @@ async function winnerDeclaredForGame(gameDatas, trnmtMode, grpModel, gameName){
             { new: true }
           );
         }
-        if ( playerCountForSnk === 2 ) {
-          const totalEntryFee = entryFee * 2;
-          profit = totalEntryFee - prizeDecimal;
-          console.log( profit, "======if tie and player is 2" );
-        } else {
-          const totalEntryFee = entryFee * 1;
-          profit = totalEntryFee - prizeDecimal;
-          console.log(
-            profit,
-            "======if tie and player is 1 and another is bot"
-          );
-        }
-        await updateProfitLoss(
-          gameName,
-          groupId,
+      }
+      if ( playerCountForSnk === 2 ) {
+        const totalEntryFee = entryFee * 2;
+        profit = totalEntryFee - prizeDecimal;
+        console.log( profit, "======if tie and player is 2" );
+      } else {
+        const totalEntryFee = entryFee * 1;
+        profit = totalEntryFee - prizeDecimal;
+        console.log(
           profit,
-          loss,
-          moment().format( "DD-MM-YYYY" )
+          "======if tie and player is 1 and another is bot"
         );
       }
+      await updateProfitLoss(
+        gameName,
+        groupId,
+        profit,
+        loss,
+        moment().format( "DD-MM-YYYY" )
+      );
     } else {
       console.log( "====calculate profit and loss if game is not tie=====" );
       const potentialWinnerPrizeDecimal = new Decimal( entryFee ).times( 1.5 );

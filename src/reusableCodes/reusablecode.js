@@ -412,9 +412,7 @@ async function overTheTicTacToeGame(groupId, gameName, Token) {
             const prizeDecimal = new Decimal( entryFee ).times( 0.5 );
             for ( const player of updatedPlayers ) {
               player.prize = prizeDecimal.toNumber();
-              console.log( "===========>", {
-                  airHockeyWinAmount: player.prize,
-              } );
+              player.turn = false;
               if ( !player.isBot ) {
                 await userModel.findOneAndUpdate(
                   { UserId: player.UserId, "history.tableId": tableId },
@@ -439,26 +437,26 @@ async function overTheTicTacToeGame(groupId, gameName, Token) {
                   { new: true }
                 );
               }
-              if ( playerCount === 2 ) {
-                const totalEntryFee = entryFee * 2;
-                profit = totalEntryFee - prizeDecimal;
-                console.log( profit, "======if tie and player is 2" );
-              } else {
-                const totalEntryFee = entryFee * 1;
-                profit = totalEntryFee - prizeDecimal;
-                console.log(
-                  profit,
-                  "======if tie and player is 1 and another is bot"
-                );
-              }
-              await updateProfitLoss(
-                gameName,
-                groupId,
+            }
+            if ( playerCount === 2 ) {
+              const totalEntryFee = entryFee * 2;
+              profit = totalEntryFee - prizeDecimal;
+              console.log( profit, "======if tie and player is 2" );
+            } else {
+              const totalEntryFee = entryFee * 1;
+              profit = totalEntryFee - prizeDecimal;
+              console.log(
                 profit,
-                loss,
-                moment().format( "DD-MM-YYYY" )
+                "======if tie and player is 1 and another is bot"
               );
             }
+            await updateProfitLoss(
+              gameName,
+              groupId,
+              profit,
+              loss,
+              moment().format( "DD-MM-YYYY" )
+            );
           } else {
             let potentialWinner = ticTacToe.updatedPlayers.find(players => players.sign === winner);
             console.log( "====calculate profit and loss if game is not tie=====" );
@@ -468,7 +466,8 @@ async function overTheTicTacToeGame(groupId, gameName, Token) {
               ( player ) => player.UserId !== potentialWinner.UserId
             );
             runner.prize = entryFee * 0;
-    
+            potentialWinner.turn = false;
+            runner.turn = false;
             await userModel.findOneAndUpdate(
               { UserId: potentialWinner.UserId, "history.tableId": tableId },
               {
