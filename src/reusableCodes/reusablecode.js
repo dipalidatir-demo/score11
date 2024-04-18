@@ -304,7 +304,7 @@ async function checkPosition ( groupId, gameName) {
           console.log("timeDiff for ending the game in checkTurn ===>");
           // const isEmptyBoard = ticTacToe.board.every((el) => el !='')
       if (
-        timeDiff <= 0 || ticTacToe.board.every((el) => el != '')) {
+        timeDiff <= 0) {
         console.log("<===========game end time is over ==============");
         const winner = checkWinner(ticTacToe.board);
         if (winner) {
@@ -313,6 +313,7 @@ async function checkPosition ( groupId, gameName) {
               console.log( "Reached minimum point!" );
               return true;
              }
+             
         } else if(gameDraw(ticTacToe.board)) { //match is draw
           const overGame = await declareWinner(ticTacToe, gameName, true, null);  
           if ( overGame.isGameOver === true ) {
@@ -629,7 +630,7 @@ async function changeTurn ( ticTacToe, gameName ) {
       const updatedData = await gameData.save();
       /// Check for a winner or draw
       const winner = checkWinner(updatedData.board);
-      if (winner || updatedData.board.every((el) => el != '')) {
+      if (winner ) {
         console.log("sign of winner=====>", winner);
         const overGame = await declareWinner(
           updatedData,

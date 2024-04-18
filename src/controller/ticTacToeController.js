@@ -696,16 +696,20 @@ const makeMovenForPlayer = async function (req, res) {
         });
     }
 
-    // Find the game group in the database
-    const group = await ticTacToeGroupModel.findOne({
+    if (!mongoose.Types.ObjectId.isValid(groupId)) {
+      return res
+        .status(200)
+        .send({ status: false, message: "invalid groupId" });
+    }
+
+    let group = await ticTacToeGroupModel.findOne({
       _id: groupId,
       "updatedPlayers.UserId": UserId,
     });
-
     if (!group) {
       return res
         .status(200)
-        .send({ status: false, message: "Group not found" });
+        .send({ status: false, message: "groupId is not present" });
     }
     if (group.isGameOver) {
       const board = group.board.join(",");
@@ -731,7 +735,7 @@ const makeMovenForPlayer = async function (req, res) {
       return res.status(200).json(result);
     }
     // Check if it's the player's turn
-    const isUserExist = group.updatedPlayers.find(
+    let isUserExist = group.updatedPlayers.find(
       (players) => players.UserId === UserId
     );
     if(!isUserExist){
@@ -770,7 +774,7 @@ const makeMovenForPlayer = async function (req, res) {
 
     // Check for a winner or draw
     const winner = checkWinner(updatedData.board);
-    if (winner || updatedData.board.every((el) => el != '')) {
+    if (winner) {
       const overGameforWinner = await declareWinner(
         updatedData,
         "TicTacToe",
@@ -807,7 +811,7 @@ const makeMovenForPlayer = async function (req, res) {
         null
       );
       const board = overGame.board.join(",");
-      const updatedPlayersForRes = overGame.updatedPlayers.map(
+      const updatedPlayersForDraw = overGame.updatedPlayers.map(
         ({ UserId, userName, sign, prize }) => ({
           UserId,
           userName,
@@ -821,7 +825,7 @@ const makeMovenForPlayer = async function (req, res) {
         currentTime: new Date(),
         nextTurnTime: overGame.nextTurnTime,
         board: board,
-        updatedPlayers: updatedPlayersForRes,
+        updatedPlayers: updatedPlayersForDraw,
         isGameOver: overGame.isGameOver,
         gameEndTime: overGame.gameEndTime,
       };
