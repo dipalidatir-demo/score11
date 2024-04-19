@@ -329,14 +329,14 @@ async function checkPosition ( groupId, gameName) {
       }   
       }
   
-      // const botPlayer = updatedPlayers.find(
-      //   ( player ) => player.isBot && player.turn
-      // );
-      // if ( botPlayer ) {
-      //   console.log("gameName in botPlayer=======>",gameName);
+      const botPlayer = updatedPlayers.find(
+        ( player ) => player.isBot && player.turn
+      );
+      if ( botPlayer ) {
+        console.log("gameName in botPlayer=======>",gameName);
        
-      //   await updateBotPosition( botPlayer.UserId, ticTacToe, gameName );
-      // }
+        await updateBotPosition( botPlayer.UserId, ticTacToe, gameName );
+      }
       const timeSinceNextTurnTime =
         ( nextTurnTime.getTime() - currentDate.getTime() ) / 1000;
   
@@ -371,7 +371,7 @@ async function overTheTicTacToeGame(groupId, gameName, Token) {
                     const isMaxCountReached = await checkPosition(groupId, gameName);
                     if (!isMaxCountReached) {
                         // If max count not reached, set the timeout for next iteration
-                        timeoutId = setTimeout(checkAndSetTimeout, 4000); // 4 seconds
+                        timeoutId = setTimeout(checkAndSetTimeout, 2000); // 2 seconds
                     } else {
                         console.log("Max count reached. Stopping timeout.");
                         clearTimeout(timeoutId); // Stop the timeout
@@ -382,7 +382,7 @@ async function overTheTicTacToeGame(groupId, gameName, Token) {
             };
   
             // Start the initial call to the timeout function
-            timeoutId = setTimeout(checkAndSetTimeout, 4000); // 4 seconds
+            timeoutId = setTimeout(checkAndSetTimeout, 2000); // 2 seconds
         } catch (error) {
             console.error("Error setting up timeout:", error);
         }
