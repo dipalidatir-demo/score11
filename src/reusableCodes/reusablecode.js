@@ -335,7 +335,7 @@ async function checkPosition ( groupId, gameName) {
       if ( botPlayer ) {
         console.log("gameName in botPlayer=======>",gameName);
        
-        await updateBotPosition( botPlayer, ticTacToe, gameName );
+        await updateBotPosition( botPlayer.UserId, ticTacToe, gameName );
       }
       const timeSinceNextTurnTime =
         ( nextTurnTime.getTime() - currentDate.getTime() ) / 1000;
@@ -571,7 +571,7 @@ async function changeTurn ( ticTacToe, gameName ) {
       );
       const isBotTurn = updatedPlayers[currentUserIndex].isBot;
       if(isBotTurn){
-        let botPlayer = updatedPlayers[currentUserIndex] ;
+        let botPlayer = updatedPlayers[currentUserIndex].UserId;
         await updateBotPosition( botPlayer, ticTacToe, ticTacToeGroupModel, gameName );
       }else{
   
@@ -593,7 +593,7 @@ async function changeTurn ( ticTacToe, gameName ) {
         console.log(
           "<====calling the funtion if the player's time is passed ====>"
         );
-        await updateBotPosition( botPlayer, ticTacToe, ticTacToeGroupModel, gameName );
+        await updateBotPosition( botPlayer.UserId, ticTacToe, ticTacToeGroupModel, gameName );
       } else {
         let updateTurn = await ticTacToeGroupModel.findByIdAndUpdate(
           { _id: ticTacToe._id },
@@ -607,10 +607,10 @@ async function changeTurn ( ticTacToe, gameName ) {
     }
   }
 
-  async function updateBotPosition(botPlayer, gameData, gameName) {
+  async function updateBotPosition(botPlayerId, gameData, gameName) {
     try {
       console.log("gameName in updateBotData======>", gameName);
-      let botPlayerId = botPlayer.UserId;
+      // let botPlayerId = botPlayer.UserId;
       let updatedPlayers = gameData.updatedPlayers;
       const currentUserIndex = gameData.updatedPlayers.findIndex(
         (player) => player.UserId === botPlayerId
@@ -648,7 +648,8 @@ async function changeTurn ( ticTacToe, gameName ) {
     } catch (error) {
       console.log(error);
     }
-  }
+  };
+
 module.exports ={
   botMove,
   checkWinner,

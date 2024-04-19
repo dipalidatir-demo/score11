@@ -766,12 +766,15 @@ const makeMovenForPlayer = async function (req, res) {
     group.nextTurnTime = new Date(Date.now() + 12 * 1000);
     const nextUserIndex = (currentPlayerIndex + 1) % 2;
     group.currentUserId = group.updatedPlayers[nextUserIndex].UserId;
-    group.updatedPlayers[nextUserIndex].turn = true;
+
+    if(!group.updatedPlayers[nextUserIndex].isBot){
+      group.updatedPlayers[nextUserIndex].turn = true;
+    }
     group.lastHitTime = new Date();
 
     // Save the updated game group
     const updatedData = await group.save();
-
+    console.log("updatedData AFTER SAVE CHANGES===>", updatedData.updatedPlayers);
     // Check for a winner or draw
     const winner = checkWinner(updatedData.board);
     if (winner) {
@@ -838,7 +841,7 @@ const makeMovenForPlayer = async function (req, res) {
       );
       if (botPlayer) {
         const updateDataForBot = await updateBotPosition(
-          botPlayer,
+          botPlayer.UserId,
           updatedData,
           "TicTacToe"
         );
