@@ -494,6 +494,7 @@ console.log("tableUpdate token=====>",tableUpdate.Users);
               time: time,
               result: "",
               win: 0,
+              entry:entryFee
             },
             transactionHistory: {
               date: new Date(),
@@ -523,6 +524,7 @@ console.log("tableUpdate token=====>",tableUpdate.Users);
               time: time,
               result: "",
               win: 0,
+              entry:entryFee
             },
             transactionHistory: [
               {

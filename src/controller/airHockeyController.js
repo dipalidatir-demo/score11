@@ -322,6 +322,7 @@ const updateAirHockeyTournaments = async function (req, res) {
               time: time,
               result: "",
               win: 0,
+              entry:entryFee
             },
             transactionHistory: {
               date: new Date(),
@@ -350,6 +351,7 @@ const updateAirHockeyTournaments = async function (req, res) {
               time: time,
               result: "",
               win: 0,
+              entry:entryFee
             },
             transactionHistory: {
               date: new Date(),

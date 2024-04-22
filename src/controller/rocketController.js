@@ -392,6 +392,7 @@ const updateRocketTournaments = async function (req, res) {
                 time: time,
                 result: "",
                 win: 0,
+                entry:entryFee
               },
               transactionHistory: {
                 date: new Date(),
@@ -420,6 +421,7 @@ const updateRocketTournaments = async function (req, res) {
                 time: time,
                 result: "",
                 win: 0,
+                entry:entryFee
               },
               transactionHistory: {
                 date: new Date(),

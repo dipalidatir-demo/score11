@@ -308,20 +308,20 @@ async function checkPosition ( groupId, gameName) {
         console.log("<===========game end time is over ==============");
         const winner = checkWinner(ticTacToe.board);
         if (winner) {
-          const overGame = await declareWinner(ticTacToe, gameName, false, winner);  
+          const overGame = await declareWinner(ticTacToe, "tictactoe", false, winner);  
              if ( overGame.isGameOver === true ) {
               console.log( "Reached minimum point!" );
               return true;
              }
              
         } else if(gameDraw(ticTacToe.board)) { //match is draw
-          const overGame = await declareWinner(ticTacToe, gameName, true, null);  
+          const overGame = await declareWinner(ticTacToe, "tictactoe", true, null);  
           if ( overGame.isGameOver === true ) {
            console.log( "Reached minimum point!" );
            return true;
           }
       } else{
-        const overGame = await declareWinner(ticTacToe, gameName, true, null);  
+        const overGame = await declareWinner(ticTacToe, "tictactoe", true, null);  
           if ( overGame.isGameOver === true ) {
            console.log( "Reached minimum point!" );
            return true;
@@ -335,7 +335,7 @@ async function checkPosition ( groupId, gameName) {
       if ( botPlayer ) {
         console.log("gameName in botPlayer=======>",gameName);
        
-        await updateBotPosition( botPlayer.UserId, ticTacToe, gameName );
+        await updateBotPosition( botPlayer.UserId, ticTacToe, "tictactoe" );
       }
       const timeSinceNextTurnTime =
         ( nextTurnTime.getTime() - currentDate.getTime() ) / 1000;
@@ -572,7 +572,7 @@ async function changeTurn ( ticTacToe, gameName ) {
       const isBotTurn = updatedPlayers[currentUserIndex].isBot;
       if(isBotTurn){
         let botPlayer = updatedPlayers[currentUserIndex].UserId;
-        await updateBotPosition( botPlayer, ticTacToe, ticTacToeGroupModel, gameName );
+        await updateBotPosition( botPlayer, ticTacToe, ticTacToeGroupModel, "tictactoe" );
       }else{
   
       const nextUserIndex = ( currentUserIndex + 1 ) % updatedPlayers.length;
@@ -593,7 +593,7 @@ async function changeTurn ( ticTacToe, gameName ) {
         console.log(
           "<====calling the funtion if the player's time is passed ====>"
         );
-        await updateBotPosition( botPlayer.UserId, ticTacToe, ticTacToeGroupModel, gameName );
+        await updateBotPosition( botPlayer.UserId, ticTacToe, ticTacToeGroupModel, "tictactoe" );
       } else {
         let updateTurn = await ticTacToeGroupModel.findByIdAndUpdate(
           { _id: ticTacToe._id },
@@ -634,13 +634,13 @@ async function changeTurn ( ticTacToe, gameName ) {
         console.log("sign of winner=====>", winner);
         const overGame = await declareWinner(
           updatedData,
-          gameName,
+          "tictactoe",
           false,
           winner
         );
         return overGame;
       } else if(gameDraw(updatedData.board)){ // match is draw
-        const overGame = await declareWinner(updatedData, gameName, true, null);
+        const overGame = await declareWinner(updatedData, "tictactoe", true, null);
         return overGame;
       } 
         return updatedData;
