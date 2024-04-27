@@ -17,15 +17,16 @@ const createGroupByAdmin = async function (tableId) {
     if (tableId != undefined) {
       let table = await tournamentModel.findOne({ _id: tableId });
   
-      if (table != undefined || table != null) {
+      if (table && table.Users.length !== 0) {
         let players = table.players;
         let users = table.Users;
   
-        if (users.length !== 0) {
+        // if (users.length !== 0) {
           users = users.map((user) => {
             return {
               UserId: user.UserId,
               userName: user.userName,
+              token:user.token,
               isBot: user.isBot,
             };
           });
@@ -67,7 +68,7 @@ const createGroupByAdmin = async function (tableId) {
   
             // runUpdateBalls(grpId);
           }
-        }
+        // }
       }
     }
   };
@@ -126,10 +127,21 @@ const createGroupByAdmin = async function (tableId) {
               .slice(0, 3);
             completePlayers.push(hardBot, ...normalBots);
           } else {
-            // If there are more real players, add normal bots as needed
-            completePlayers.push(...dummyUsers.slice(0, 5 - (users.length % 5)));
+            // Calculate the number of bots needed to fill incomplete groups
+            const remainingSlots = 5 - (users.length % 5);
+            const totalPlayersNeeded = users.length + remainingSlots;
+          
+            // If the total number of players needed is divisible by 5,
+            // adjust the number of bots to avoid creating an extra group
+            if (totalPlayersNeeded % 5 === 0) {
+              const numBotsToAdd = remainingSlots - 5;
+              completePlayers.push(...dummyUsers.slice(0, numBotsToAdd));
+            } else {
+              // Add normal bots as needed
+              completePlayers.push(...dummyUsers.slice(0, remainingSlots));
+            }
           }
-  
+          
           let completeGroups = _.chunk(completePlayers, 5);
   
           for (let i = 0; i < completeGroups.length; i++) {

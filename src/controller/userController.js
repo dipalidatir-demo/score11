@@ -39,9 +39,23 @@ const createUsers = async function (req, res) {
     // }
     // queryData.token = token ;
     let checkUserId = await userModel
-      .findOneAndUpdate({ UserId: UserId },{token:token},{new:true})
-      .select({ _id: 0 });
-    console.log("checkUserId========>",checkUserId);
+      .findOneAndUpdate({ UserId: UserId }, { token: token }, { new: true })
+      .select({
+        _id: 0,
+        UserId: 1,
+        userName: 1,
+        email: 1,
+        referralCode: 1,
+        referralAmount: 1,
+        isActive: 1,
+        credits: 1,
+        realMoney: 1,
+        banned: 1,
+        createdAt: 1,
+        updatedAt:1,
+        isBot:1
+      });
+    console.log("checkUserId========>", checkUserId);
     if (checkUserId != null && checkUserId != undefined) {
       if (checkUserId.banned === true) {
         return res.status(200).send({
@@ -127,12 +141,7 @@ const createUsers = async function (req, res) {
     return res.status(201).send({
       status: true,
       message: "success",
-      data: userCreated,
-      CricTable,
-      airHockeyTable,
-      SnakeTable,
-      TicTable,
-      rocketTable
+      data: userCreated
     });
   } catch (error) {
     return res.status(500).send({
@@ -449,7 +458,7 @@ const updateUsersRefAmountByAdmin = async function (req, res) {
 const leadderBoard = async function (req, res) {
   try {
     let queryData = req.query;
-    const { cricket, snakeLadder, ticTacToe, airHockey } = queryData;
+    const { cricket, snakeLadder, rocket, ticTacToe, airHockey } = queryData;
     // logger.info(`inputs: ${cricket},${snakeLadder}, ${ticTacToe},${airHockey}`)
     let resp = {
       status: true,
@@ -498,13 +507,24 @@ const leadderBoard = async function (req, res) {
       };
       resp.message = "airHockey Leaderboard";
       sortField = "airHockeyWinAmount";
+    }else if(rocket){
+      selectFields = {
+        UserId: 1,
+        userName: 1,
+        rocketData: 1,
+        rocketWinAmount: 1,
+        _id: 0,
+      };
+      resp.message = "rocket Leaderboard";
+      sortField = "rocketWinAmount";
+
     }
 
     const leaderBoardData = await userModel
       .find({ isDeleted: false }, selectFields)
       .sort({ [sortField]: -1 }) // Sort in descending order based on the chosen field
       .limit(100);
-
+// console.log("leaderBoardData===>",leaderBoardData);
     if (leaderBoardData.length === 0) {
       return res.status(200).send({ status: false, message: "Data not found" });
     }
@@ -566,6 +586,20 @@ const leadderBoard = async function (req, res) {
           // wins: user.airHockeyData[0].winCount,
           Total: user.airHockeyWinAmount || 0,
         }));
+    }else if (rocket) {
+      resp.users = leaderBoardData
+        .filter(
+          (user) =>
+            user.rocketData &&
+            user.rocketData[0] &&
+            user.rocketData[0].playCount !== 0
+        ) // Filter out users with playCount = 0
+        .map((user) => ({
+          userName: user.userName,
+          matches: user.rocketData[0].playCount || 0,
+          // wins: user.airHockeyData[0].winCount,
+          Total: user.rocketWinAmount || 0,
+        }));
     }
 
     logger.info("Document fetched successfully");
@@ -589,9 +623,8 @@ const userHistory = async function (req, res) {
     }
     const findUserData = await userModel
       .findOne({ UserId: UserId, isDeleted: false })
-      .select({ history: 1, _id: 0 }) // Select the 'history' field only
+      .select({ history: 1, _id: 0 }).limit(50) // Select the 'history' field only
       .lean();
-
     if (!findUserData) {
       return res
         .status(200)
