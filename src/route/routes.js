@@ -13,6 +13,11 @@ const sendNotificatinController = require("../controller/sendNotificationsContro
 const botController = require("../controller/botController");
 const razorpayController = require("../controller/razorpayController");
 const profitLossController = require("../controller/profitLossController");
+// const multer = require('multer');
+// const sharp = require('sharp');
+
+// Multer configuration for file upload
+// const upload = multer({ dest: 'uploads/' });
 const { 
   rktTablesCreatedByAdmin,
   createRocketTables,
@@ -48,12 +53,12 @@ const { updateTic,
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const Router = express.Router();
-const multer = require('multer');
+// const multer = require('multer');
 
-const storage = multer.memoryStorage();
-const upload = multer({
-  storage: multer.memoryStorage(), // Store files in memory
-})
+// const storage = multer.memoryStorage();
+// const upload = multer({
+//   storage: multer.memoryStorage(), // Store files in memory
+// })
 
 //_____________________________razorpay api________________
 

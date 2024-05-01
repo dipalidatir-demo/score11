@@ -24,6 +24,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    IMEINum: {
+      type: String,
+      trim: true,
+      unique:true,
+      default: ""
+    },
     token: {
       type: String,
       dfault: "",

@@ -23,6 +23,7 @@ const createUsers = async function (req, res) {
       userName,
       email,
       phone,
+      IMEINum,
       token,
       referralCode,
     } = queryData;
@@ -45,6 +46,7 @@ const createUsers = async function (req, res) {
         UserId: 1,
         userName: 1,
         email: 1,
+        IMEINum: 1,
         referralCode: 1,
         referralAmount: 1,
         isActive: 1,
@@ -56,7 +58,14 @@ const createUsers = async function (req, res) {
         isBot:1
       });
     console.log("checkUserId========>", checkUserId);
-    if (checkUserId != null && checkUserId != undefined) {
+
+    if (checkUserId != null && checkUserId != undefined) {  
+    if(checkUserId.IMEINum !== IMEINum){
+      return res.status(200).send({
+        status: false,
+        message: "You have already logged in with another device",
+      });
+    };
       if (checkUserId.banned === true) {
         return res.status(200).send({
           status: false,
@@ -108,18 +117,13 @@ const createUsers = async function (req, res) {
         const isAlredyUsedRefCode = referrer.referralHistory.filter(
           (user) => user.UserId === UserId
         );
-        if (isAlredyUsedRefCode.length !== 0) {
-          return res
-            .status(200)
-            .send({
-              status: false,
-              message: "You already used this referral code",
-            });
+        if (isAlredyUsedRefCode.length === 0) { // player can use refCode once 
+          referrer.credits += parseInt(referrer.referralAmount);
+          referrer.referralHistory.push({ referTo: UserId, date: new Date() });
+          await referrer.save();
+          queryData.referredBy = referrer.UserId;
         }
-        referrer.credits += parseInt(referrer.referralAmount);
-        referrer.referralHistory.push({ referTo: UserId, date: new Date() });
-        await referrer.save();
-        queryData.referredBy = referrer.UserId;
+       
       } else {
         return res.status(200).json({ error: "Invalid referral code" });
       }
@@ -202,7 +206,22 @@ const getUser = async function (req, res) {
 
     const getNewUser = await userModel
       .findOne({ UserId: UserId, isDeleted: false })
-      .select({ _id: 0 });
+      .select({
+        _id: 0,
+        UserId: 1,
+        userName: 1,
+        email: 1,
+        IMEINum: 1,
+        referralCode: 1,
+        referralAmount: 1,
+        isActive: 1,
+        credits: 1,
+        realMoney: 1,
+        banned: 1,
+        createdAt: 1,
+        updatedAt:1,
+        isBot:1
+      });
 
     if (!getNewUser) {
       return res.status(200).send({
@@ -211,10 +230,10 @@ const getUser = async function (req, res) {
       });
     }
 
-    let cricket = await cricketModel.findOne({ UserId: UserId });
-    let hocky = await hockyModel.findOne({ UserId: UserId });
-    let snakeLadder = await snakeLadderModel.findOne({ UserId: UserId });
-    let ticTacToe = await ticTacToeModel.findOne({ UserId: UserId });
+    // let cricket = await cricketModel.findOne({ UserId: UserId });
+    // let hocky = await hockyModel.findOne({ UserId: UserId });
+    // let snakeLadder = await snakeLadderModel.findOne({ UserId: UserId });
+    // let ticTacToe = await ticTacToeModel.findOne({ UserId: UserId });
     // const getNewUser = await userModel.findOne({ UserId: UserId, isDeleted: false }).select({ _id: 0 });
 
     // const sportsData = await userModel.aggregate([
@@ -265,11 +284,7 @@ const getUser = async function (req, res) {
     return res.status(200).send({
       status: true,
       message: "user already exist",
-      data: getNewUser,
-      cricket,
-      hocky,
-      snakeLadder,
-      ticTacToe,
+      data: getNewUser
     });
   } catch (err) {
     return res.status(500).send({
@@ -403,7 +418,7 @@ const updateUsersRefAmountByAdmin = async function (req, res) {
   try {
     let queryData = req.query;
     let {referralAmount, email}= queryData;
- console.log(queryData,"===============queryData");
+     console.log(queryData,"===============queryData");
     if (!referralAmount || !email) {
       return res.status(200).send({
         status: false,

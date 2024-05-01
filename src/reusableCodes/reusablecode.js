@@ -7,11 +7,7 @@ delete require.cache[require.resolve("../controller/rocketController")];
 const ticTacToeTournamentModel = require("../model/ticTacToeTournamentModel");
 const ticTacToeGroupModel = require("../model/ticTacToeGroupModel");
 const Decimal = require("decimal.js");
-const profitLossModel = require("../model/profitLossModel");
-const botModel = require("../model/botModel");
 const moment = require("moment");
-const cron = require("node-cron");
-// const {makeMoven} = require("../controller/ticTacToeController");
 const { pushNotification } = require( "../controller/sendNotificationsController" );
 const { updateProfitLoss } = require( "../reusableCodes/profitAndLossReu" );
 // //_______________________________for TicTacToe_____________________________________________
@@ -87,7 +83,7 @@ const createGroupForticTacToe = async function (tableId, gameName) {
     }
   };
   
-
+//___________________start match_________________________________
 async function startMatchForticTacToe(grpId, group, gameName) {
   console.log("grpid>>>>>>>>>>>", grpId);
   console.log("groups>>>>>>>>>>>>>>>>>", group);
@@ -161,15 +157,6 @@ async function startMatchForticTacToe(grpId, group, gameName) {
     // Rest of your code here...
   }
 }
-
-// Function to initialize the game board
-// function initializeBoard() {
-//   return [
-//     ['', '', ''],
-//     ['', '', ''],
-//     ['', '', '']
-//   ];
-// }
 
 // Function for bot move (random)
 function botMove(board) {
@@ -420,7 +407,7 @@ async function overTheTicTacToeGame(groupId, gameName, Token) {
                   {
                     $inc: {
                       realMoney: player.prize,
-                      airHockeyWinAmount: player.prize,
+                      ticTacToeWinAmount: player.prize,
                     },
                     $set: {
                       "history.$.result": "lose",
@@ -474,7 +461,7 @@ async function overTheTicTacToeGame(groupId, gameName, Token) {
               {
                 $inc: {
                   realMoney: potentialWinnerPrizeDecimal.toNumber(),
-                  airHockeyWinAmount: potentialWinnerPrizeDecimal.toNumber(),
+                  ticTacToeWinAmount: potentialWinnerPrizeDecimal.toNumber(),
                   "ticTacToeData.0.winCount": 1,
                 },
                 $set: {

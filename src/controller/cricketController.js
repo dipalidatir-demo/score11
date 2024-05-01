@@ -176,12 +176,6 @@ const updateCric = async function (req, res) {
   }
 };
 
-
-
-
-
-
-
 //__________________________declare the winner_______________________________(not used in this project)
 
 const winTheGame = async function (req, res) {
