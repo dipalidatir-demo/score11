@@ -8,6 +8,7 @@
   "author": "the proficient tech",
   "license": "ISC",
   "dependencies": {
+    "azure-storage": "^2.10.7",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "decimal.js": "^10.4.3",
@@ -19,12 +20,14 @@
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "mongoose": "^6.10.0",
+    "multer": "^1.4.5-lts.1",
     "node": "^18.17.0",
     "node-cron": "^3.0.3",
     "node-schedule": "^2.1.1",
     "nodemon": "^2.0.22",
     "razorpay": "^2.9.2",
     "request": "^2.88.2",
+    "sharp": "^0.33.3",
     "socket.io": "^4.7.2",
     "winston": "^3.10.0"
   }

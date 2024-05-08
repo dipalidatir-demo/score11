@@ -14,6 +14,9 @@ const botController = require("../controller/botController");
 const razorpayController = require("../controller/razorpayController");
 const profitLossController = require("../controller/profitLossController");
 // const multer = require('multer');
+// Multer configuration
+// const upload = multer({ dest: 'bannerImages/' }); // You can configure the destination folder as per your requirement
+// const multer = require('multer');
 // const sharp = require('sharp');
 
 // Multer configuration for file upload
@@ -50,15 +53,22 @@ const { updateTic,
   getAllGroupsOfTicTacToe,
   getGroupsOfTicTacToeAsPerGrpId,
   makeMovenForPlayer} = require("../controller/ticTacToeController"); 
+
+  // const {createBanner} = require("../controller/balanceController");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const Router = express.Router();
-// const multer = require('multer');
-
+const multer = require('multer');
+const upload = multer({ dest: 'bannerImage/' })
+const uploadForIcon =  multer({ dest: 'imgIcon/' })
 // const storage = multer.memoryStorage();
 // const upload = multer({
 //   storage: multer.memoryStorage(), // Store files in memory
 // })
+
+//_________________________banner___________
+Router.post("/createBanner", upload.single('bannerImage'), sendNotificatinController.createBanner);
+Router.get("/getBanner", sendNotificatinController.getBanner);
 
 //_____________________________razorpay api________________
 
@@ -260,8 +270,8 @@ Router.get("/getprofitLossChart", profitLossController.profitLossChart);
 //___________________notification_________________
 
 // Router.post("/sendNotificationToAll", upload.single('image'), sendNotificatinController.sendingNotificationToAll);
-Router.post("/sendNotificationToAll", sendNotificatinController.sendingNotificationToAll);
-
+// Router.post("/sendNotificationToAll", sendNotificatinController.sendingNotificationToAll);
+Router.post("/sendNotificationToAll", uploadForIcon.single('imgIcon'), sendNotificatinController.sendingNotificationToAll);
 
 //************ checking your end point valid or not */
 

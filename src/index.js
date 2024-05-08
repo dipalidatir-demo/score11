@@ -5,7 +5,11 @@ const cors = require("cors");
 const http = require("http").createServer(app);
 const mongoose = require("mongoose");
 const route = require("./route/routes");
+const azureBlobStorage = require("./config/azureCredential");
 const socketIO = require("./socket/socket"); // Import your Socket.io module
+require("dotenv").config();
+//middleware
+app.use(express.json());
 const corsOptions = {
   origin: "*", 
   methods: ["GET", "POST", "PUT", "DELETE"],
@@ -14,11 +18,17 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-app.use(express.json());
+// app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/", route);
 
 mongoose.set("strictQuery", false);
+
+// Initialize Azure Blob Storage containers
+const containers = ['score11banner'];
+containers.forEach((containerName) => {
+  azureBlobStorage.createContainerIfNotExists(containerName);
+});
 
 // Use 'process.env' to access the MongoDB connection string
 //________________for development____________________________
