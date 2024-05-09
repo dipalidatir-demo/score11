@@ -209,28 +209,29 @@ const pushNotification = async (userTokens, message) => {
 const sendingNotificationToAll = async function (req, res) {
   try {
     const containerName = "notificationicon";
-        // Ensure that the container exists
-        azureBlobStorage.createContainerIfNotExists(containerName);
-    let { message, title } = req.body;
+    // Ensure that the container exists
+    azureBlobStorage.createContainerIfNotExists(containerName);
+    let { message, title, sendTo } = req.body;
     // let imgIcon = req.file; // Uploaded icon file
 
-     console.log("message===", title);
-     const imgIcon = req.file; // Multer will add the uploaded file to req.file
-     console.log("bannerImage====>", imgIcon);
+    console.log("message===", title);
+    const imgIcon = req.file; // Multer will add the uploaded file to req.file
+    console.log("bannerImage====>", imgIcon);
 
     // console.log("imgIcon===", imgIcon);
     if (!message || !title || !imgIcon) {
-      return res
-        .status(400)
-        .send({
-          status: false,
-          message: "Message, title, and icon all are required",
-        });
+      return res.status(400).send({
+        status: false,
+        message: "Message, title, and icon all are required",
+      });
     }
-    
+
     // Upload image to Azure Blob Storage and get the image URL
-        const imageUrl = await compressAndUploadImageForNotification(imgIcon, title);
-        console.log("return imageUrl===>",imageUrl);
+    const imageUrl = await compressAndUploadImageForNotification(
+      imgIcon,
+      title
+    );
+    console.log("return imageUrl===>", imageUrl);
     // Read Firebase service account JSON
     fs.readFile(
       path.join(__dirname, "../firebaseService.json"),
@@ -244,10 +245,28 @@ const sendingNotificationToAll = async function (req, res) {
           const data = JSON.parse(jsonString);
           const serverKey = data.SERVER_KEY;
 
-          // Fetch user tokens from the database
-          const pushTokens = await userModel
-            .find()
-            .select({ _id: 0, token: 1 });
+          let pushTokens = [];
+          if (sendTo === "Active") {
+            // Fetch active user tokens from the database
+            console.log("<=====sending notification to active users ====>");
+            pushTokens = await userModel
+              .find({
+                history: { $exists: true, $ne: [] },
+              })
+              .select({ _id: 0, token: 1 });
+          } else if (sendTo === "Inactive") {
+            // Fetch inactive user tokens from the database
+            console.log("<=====sending notification to inactive users ====>");
+            pushTokens = await userModel
+              .find({
+                history: { $exists: true, $eq: [] },
+              })
+              .select({ _id: 0, token: 1 });
+          } else {
+            // Fetch all user tokens from the database
+            console.log("<=====sending notification to all users ====>");
+            pushTokens = await userModel.find().select({ _id: 0, token: 1 });
+          }
 
           if (pushTokens.length === 0) {
             return res
