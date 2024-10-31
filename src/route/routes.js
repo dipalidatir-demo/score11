@@ -68,7 +68,7 @@ const uploadForIcon =  multer({ dest: 'imgIcon/' })
 
 //_________________________banner___________
 Router.post("/createBanner", upload.single('bannerImage'), sendNotificatinController.createBanner);
-Router.get("/getBanner", sendNotificatinController.getBanner);
+// Router.get("/getBanner", sendNotificatinController.getBanner);
 
 //_____________________________razorpay api________________
 

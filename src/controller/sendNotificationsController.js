@@ -9,52 +9,52 @@ const multer = require('multer');
 // const path = require("path");
 const azure = require('azure-storage');
 const bannerModel = require('../model/bannersModel');
-const sharp = require('sharp');
+// const sharp = require('sharp');
   // const fs = require('fs');
-  const storageAccount = "storeimagesinazure";
-  const storageAccessKey =
-    "BTzBs36CoQOBrRsjeA+VViNVNiMIn1aH0QXN/KshGf2+qPGpMVcTbwCe8lo8ZcQUBBS+aOVzgRDs+ASt7/NMFw==";
+  // const storageAccount = "storeimagesinazure";
+  // const storageAccessKey =
+  //   "BTzBs36CoQOBrRsjeA+VViNVNiMIn1aH0QXN/KshGf2+qPGpMVcTbwCe8lo8ZcQUBBS+aOVzgRDs+ASt7/NMFw==";
   
-  const blobService = azure.createBlobService(storageAccount, storageAccessKey);
+  // const blobService = azure.createBlobService(storageAccount, storageAccessKey);
 //_________________compress for icon_____________________________
-const compressAndUploadImageForNotification = async (imgIcon, name) => {
-  try {
-      const blobName = name;
-      const containerName = 'notificationicon';
-      const compressedImageBuffer = await sharp(imgIcon.path) // Read the uploaded image file
-          .resize(256, 256) // Resize the image to 256x256
-          .toBuffer(); // Convert the image to a Buffer
+// const compressAndUploadImageForNotification = async (imgIcon, name) => {
+//   try {
+//       const blobName = name;
+//       const containerName = 'notificationicon';
+//       const compressedImageBuffer = await sharp(imgIcon.path) // Read the uploaded image file
+//           .resize(256, 256) // Resize the image to 256x256
+//           .toBuffer(); // Convert the image to a Buffer
       
-      await new Promise((resolve, reject) => {
-          azureBlobStorage.blobService.createBlockBlobFromText(
-              containerName,
-              blobName,
-              compressedImageBuffer, // Use the resized image buffer
-              {
-                  contentType: imgIcon.mimetype, // Set the content type based on the uploaded file type
-              },
-              async (error, result, response) => {
-                  if (!error) {
-                      console.log(`Image uploaded to Azure Blob Storage as ${blobName}.`);
-                      resolve();
-                  } else {
-                      console.error(`Error uploading image to Azure Blob Storage.`);
-                      reject(error);
-                  }
-              }
-          );
-      });
+//       await new Promise((resolve, reject) => {
+//           azureBlobStorage.blobService.createBlockBlobFromText(
+//               containerName,
+//               blobName,
+//               compressedImageBuffer, // Use the resized image buffer
+//               {
+//                   contentType: imgIcon.mimetype, // Set the content type based on the uploaded file type
+//               },
+//               async (error, result, response) => {
+//                   if (!error) {
+//                       console.log(`Image uploaded to Azure Blob Storage as ${blobName}.`);
+//                       resolve();
+//                   } else {
+//                       console.error(`Error uploading image to Azure Blob Storage.`);
+//                       reject(error);
+//                   }
+//               }
+//           );
+//       });
 
-      // Get the URL of the uploaded image
-      const imageUrl = azureBlobStorage.blobService.getUrl(containerName, blobName);
-      console.log(`Image URL: ${imageUrl}`);
-      return imageUrl;
+//       // Get the URL of the uploaded image
+//       const imageUrl = azureBlobStorage.blobService.getUrl(containerName, blobName);
+//       console.log(`Image URL: ${imageUrl}`);
+//       return imageUrl;
 
-  } catch (error) {
-      console.error(`Error processing image: ${error}`);
-      throw error;
-  }
-};
+//   } catch (error) {
+//       console.error(`Error processing image: ${error}`);
+//       throw error;
+//   }
+// };
 
   
 const sendNotification = async (req, res) => {
@@ -321,47 +321,47 @@ const sendingNotificationToAll = async function (req, res) {
 // Update your route to handle file uploads
 // app.post('/send-notification', upload.single('icon'), sendingNotificationToAll);
 
-  const compressAndUploadImage = async (bannerImage, name) => {
-    try {
-        const blobName = name;
-        const containerName = 'score11banner'
-        // Read the file content
-        const fileContent = fs.readFileSync(bannerImage.path);
+//   const compressAndUploadImage = async (bannerImage, name) => {
+//     try {
+//         const blobName = name;
+//         const containerName = 'score11banner'
+//         // Read the file content
+//         const fileContent = fs.readFileSync(bannerImage.path);
 
-        await new Promise((resolve, reject) => {
-            azureBlobStorage.blobService.createBlockBlobFromText(
-                containerName,
-                blobName,
-                fileContent, // Pass the file content as a Buffer
-                {
-                    contentType: bannerImage.mimetype, // Set the content type based on the uploaded file type
-                },
-                async (error, result, response) => {
-                    if (!error) {
-                        console.log(
-                            ` uploaded to Azure Blob Storage as ${blobName}.`
-                        );
-                        resolve();
-                    } else {
-                        console.error(
-                            `Error uploading image to Azure Blob Storage.`
-                        );
-                        reject(error);
-                    }
-                }
-            );
-        });
+//         await new Promise((resolve, reject) => {
+//             azureBlobStorage.blobService.createBlockBlobFromText(
+//                 containerName,
+//                 blobName,
+//                 fileContent, // Pass the file content as a Buffer
+//                 {
+//                     contentType: bannerImage.mimetype, // Set the content type based on the uploaded file type
+//                 },
+//                 async (error, result, response) => {
+//                     if (!error) {
+//                         console.log(
+//                             ` uploaded to Azure Blob Storage as ${blobName}.`
+//                         );
+//                         resolve();
+//                     } else {
+//                         console.error(
+//                             `Error uploading image to Azure Blob Storage.`
+//                         );
+//                         reject(error);
+//                     }
+//                 }
+//             );
+//         });
 
-        // Store image information in Azure Blob Storage and the database (imageModel)
-        const imageUrl = azureBlobStorage.blobService.getUrl(containerName, blobName);
-        console.log(`Image url ${imageUrl}.`);
-        return imageUrl;
+//         // Store image information in Azure Blob Storage and the database (imageModel)
+//         const imageUrl = azureBlobStorage.blobService.getUrl(containerName, blobName);
+//         console.log(`Image url ${imageUrl}.`);
+//         return imageUrl;
 
-    } catch (error) {
-        console.error(`Error processing image : ${error}`);
-        throw error;
-    }
-};
+//     } catch (error) {
+//         console.error(`Error processing image : ${error}`);
+//         throw error;
+//     }
+// };
 
 const createBanner = async function (req, res){
     try {
@@ -409,52 +409,52 @@ const createBanner = async function (req, res){
 
 //__________________________get images_________________________
 
-const getBanner = async (req, res) => {
-  try {
-    const containerName = 'score11banner';
-    console.log(`Fetching images for ${containerName} from Azure Blob Storage`);
+// const getBanner = async (req, res) => {
+//   try {
+//     const containerName = 'score11banner';
+//     console.log(`Fetching images for ${containerName} from Azure Blob Storage`);
 
-    console.log(`Container ${containerName} exists, fetching images`);
+//     console.log(`Container ${containerName} exists, fetching images`);
 
-    const fetchedImages = await new Promise((resolve, reject) => {
-      blobService.listBlobsSegmented(
-        containerName,
-        null,
-        (listError, listResult, listResponse) => {
-          if (!listError) {
-            const blobList = listResult.entries
-              .filter((entry) => entry.name)
-              .map((entry) => ({
-                name: entry.name,
-                link: blobService.getUrl(containerName, entry.name)
-              }));
-              // Log headers for debugging
-            console.log('Response headers:', listResponse.headers);
-            resolve(blobList);
-          } else {
-            console.error(
-              `Error listing container images for ${containerName}: ${listError.message}`
-            );
-            reject(`Error listing container images for ${containerName}`);
-          }
-        }
-      );
-    });
+//     const fetchedImages = await new Promise((resolve, reject) => {
+//       blobService.listBlobsSegmented(
+//         containerName,
+//         null,
+//         (listError, listResult, listResponse) => {
+//           if (!listError) {
+//             const blobList = listResult.entries
+//               .filter((entry) => entry.name)
+//               .map((entry) => ({
+//                 name: entry.name,
+//                 link: blobService.getUrl(containerName, entry.name)
+//               }));
+//               // Log headers for debugging
+//             console.log('Response headers:', listResponse.headers);
+//             resolve(blobList);
+//           } else {
+//             console.error(
+//               `Error listing container images for ${containerName}: ${listError.message}`
+//             );
+//             reject(`Error listing container images for ${containerName}`);
+//           }
+//         }
+//       );
+//     });
 
-    return res.status(200).send({ containerName, images: fetchedImages });
+//     return res.status(200).send({ containerName, images: fetchedImages });
 
-  } catch (error) {
-    console.error(
-      `Error fetching images for score11banner: ${error.message}`
-    );
-    return res.status(500).send({status:false, message:error.message});
-  }
-};
+//   } catch (error) {
+//     console.error(
+//       `Error fetching images for score11banner: ${error.message}`
+//     );
+//     return res.status(500).send({status:false, message:error.message});
+//   }
+// };
 
 module.exports = {
   sendNotification,
   pushNotification,
   sendingNotificationToAll,
   createBanner,
-  getBanner
+  // getBanner
 };

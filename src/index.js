@@ -25,25 +25,25 @@ app.use("/", route);
 mongoose.set("strictQuery", false);
 
 // Initialize Azure Blob Storage containers
-const containers = ['score11banner'];
-containers.forEach((containerName) => {
-  azureBlobStorage.createContainerIfNotExists(containerName);
-});
+// const containers = ['score11banner'];
+// containers.forEach((containerName) => {
+//   azureBlobStorage.createContainerIfNotExists(containerName);
+// });
 
 // Use 'process.env' to access the MongoDB connection string
 //________________for development____________________________
   // const mongooseConnectionString = process.env.mongooseConnectionString;
 //________________________for local test____________________________________
 const mongooseConnectionString =
-// "mongodb+srv://theproficienttech333:gzYGYI5pD4oAUvim@cluster0.gp7jlnb.mongodb.net/game"
- "mongodb+srv://nikita1:7CSKh9nBmgBm27YC@cluster0.suzof1p.mongodb.net/nikita";
+"mongodb+srv://theproficienttech333:gzYGYI5pD4oAUvim@cluster0.gp7jlnb.mongodb.net/game"
+ //"mongodb+srv://nikita1:7CSKh9nBmgBm27YC@cluster0.suzof1p.mongodb.net/nikita";
 
 mongoose
   .connect(mongooseConnectionString, {
     useNewUrlParser: true,
   })
   .then(() => {
-    console.log("MongoDB is connected for local");
+    console.log("MongoDB is connected for deployment");
 
     // Initialize Socket.io with your server
     socketIO(http);
